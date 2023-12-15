@@ -14,10 +14,10 @@ Tool to create and update a Zarr dataset from smaller slices
 * Target and slices are allowed live in different filesystems.
 * The tool is configurable. The configuration defines 
   - the append dimension;
-  - optional target encoding for all or individual target variable;
+  - optional target encoding for all or individual target variables;
   - the target path into the target filesystem;
   - optional target filesystem options;
-  - optional slice filesystem options;
+  - optional slice filesystem options.
 * The target chunking of the append dimension equals the size of the append 
   dimension in each slice and vice versa. 
 * The target encoding should allow specifying the target storage chunking, 
@@ -35,8 +35,10 @@ Tool to create and update a Zarr dataset from smaller slices
   - exists, and
   - is complete.
 * Check for each slice that it is valid. A valid slice
-  - is self-consistent, and
-  - has the same structure as target.
+  - is self-consistent, 
+  - has the same structure as target, and
+  - has an append dimension whose size is equal to the target chunking of
+    this dimension.
 * Before appending a slice, lock the target so that another tool invocation 
   can recognize it, e.g., write a lock file.
 * If the target is locked, either wait until it becomes available or exit 
