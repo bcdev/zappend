@@ -80,15 +80,14 @@ CLI: zappend_cli --config *config_path* *target_path* *slice_paths* ...
 ```
 def zappend_cli(target_path, slice_paths, config_path):
   config = read_config(config_path)
-  slice_iter = new_slice_iter(slice_paths, config)
-  process(target_path, slice_iter, config)
+  zappend_api(target_path, open_slice, slice_paths, config=config)
 ```
 
 API: zappend_api(*target_path*, *slice_fn*, *slice_args*, config=*config*)
 
 ```
 def zappend_api(target_path, slice_fn, slice_args, config=None):
-  slice_iter = (slice_fn(*args) for args in slice_args)
+  slice_iter = iter(slice_fn(*args, config=config) for args in slice_args)
   process(target_path, slice_iter, config)
 ```
 
