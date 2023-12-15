@@ -21,6 +21,6 @@ class Poller:
             result = self.fn(*args, **kwargs)
             if result is not None and result is not False:
                 return result
-            if (time.monotonic() - t0 + self.delay) > time.monotonic():
+            if (time.monotonic() - t0 + self.delay) > self.timeout:
                 raise TimeoutError()
             time.sleep(self.delay)
