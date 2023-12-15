@@ -70,3 +70,39 @@ Tool to create and update a Zarr dataset from smaller slices
 * Try getting along without using `xarray`, use `zarr` only,
   but honor the xarray `__ARRAY_DIMENSIONS__` attribute. 
   This avoids extra magic and complexity. 
+
+## How it works
+
+CLI: zappend_cli --config *config_path* *target_path* *slice_paths* ...
+
+```
+def zappend_cli(target_path, slice_paths, config_path):
+  config = read_config(config_path)
+  slice_iter = new_slice_iter(slice_paths, config)
+  process(target_path, slice_iter, config)
+```
+
+API: zappend_api(*target_path*, *slice_fn*, *slice_args*, config=*config*)
+
+```
+def zappend_api(target_path, slice_fn, slice_args, config=None):
+  slice_iter = (slice_fn(*args) for args in slice_args)
+  process(target_path, slice_iter, config)
+```
+
+with
+
+```
+def process(target_path, slice_iter, config):
+  target_fs = get_target_fs(config)
+  
+  if not target_fs.exist(target_path, config):
+    slice_ds = slice_iter.next()
+    target_ds = create_target(target_fs, target_path, slice_ds, config)
+  else:
+    target_ds = open_target(target_fs, target_path)
+     
+  while (slice_ds = slice_iter.next()):
+    target_ds.append(slice_ds)
+```
+
