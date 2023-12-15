@@ -6,12 +6,14 @@ Tool to create and update a Zarr dataset from smaller slices
 
 ### Core
 
-* Create a target Zarr dataset by appending Zarr dataset slice along a 
-  given *append dimension*, usually `time`.
+* Create a target Zarr dataset by appending Zarr dataset slices along a 
+  given *append dimension*, usually `time`. This includes persisting a lazy cube
+  existing only in memory sequentially along the *append dimension* (useful, when the 
+  source has performance constraints).  
 * The target and slice datasets may also be xcube multi-level datasets. 
 * The tool takes care of modifying the target dataset using the slices,
   but doesn't care how the slice datasets are created.
-* Target and slices are allowed live in different filesystems.
+* Target and slices are allowed to live in different filesystems.
 * The tool is configurable. The configuration defines 
   - the append dimension;
   - optional target encoding for all or individual target variables;
@@ -20,7 +22,7 @@ Tool to create and update a Zarr dataset from smaller slices
   - optional slice filesystem options.
 * The target chunking of the append dimension equals the size of the append 
   dimension in each slice and vice versa. 
-* The target encoding should allow specifying the target storage chunking, 
+* The target encoding should allow for specifying the target storage chunking, 
   data type, and compression. 
 * The target encoding should also allow for packing floating point data into 
   integer data with fewer bits using scaling factor and offset.
@@ -30,10 +32,13 @@ Tool to create and update a Zarr dataset from smaller slices
 * If the target does not exist, it will be created from a copy of the first 
   slice. This first slice will specify any not-yet-configured properties
   of the target dataset, e.g., the append dimension chunking.
+* If the target exists, the slice will be appended. Check if the slice to be appended is last.
+  If not, refuse to append (alternative: insert but this is probably difficult or error prone)
 * Slices are appended in the order they are provided.
 * If a slice is not yet available, wait until it 
   - exists, and
-  - is complete.
+  - is complete,
+  - or retry in case i failed. 
 * Check for each slice that it is valid. A valid slice
   - is self-consistent, 
   - has the same structure as target, and
@@ -60,6 +65,8 @@ Tool to create and update a Zarr dataset from smaller slices
     specifying a function that generates the slice datasets and an
     iterable providing the arguments for the function.
     This is similar how the Python `map()` built-in works.
+* xcube server API?
+  - API to append to an existing zarr by submitting a slice to the API.
 
 ### To be considered
 
@@ -71,7 +78,10 @@ Tool to create and update a Zarr dataset from smaller slices
 * Verify coordinate deltas of append dimension to be constant. 
 * Try getting along without using `xarray`, use `zarr` only,
   but honor the xarray `__ARRAY_DIMENSIONS__` attribute. 
-  This avoids extra magic and complexity. 
+  This avoids extra magic and complexity.
+* use it in xcube data stores for the write_data, as a parameter to
+  enforce sequential writing of zarrs as a robust option when a plain
+  write fails.   
 
 ## How it works
 
