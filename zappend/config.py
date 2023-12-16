@@ -12,16 +12,40 @@ import jsonschema
 
 from .log import LOG
 
-NON_EMPTY_STRING = {"type": "string", "minLength": 1}
-ORDINAL_INT = {"type": "integer", "minimum": 1}
-ANY_OBJECT = {"type": "object", "additionalProperties": True}
+DEFAULT_SLICE_POLLING_INTERVAL = 2
+DEFAULT_SLICE_POLLING_TIMEOUT = 60
 
-ENCODING_SCHEMA = {
+_NON_EMPTY_STRING_SCHEMA = {"type": "string", "minLength": 1}
+_ORDINAL_SCHEMA = {"type": "integer", "minimum": 1}
+_ANY_OBJECT_SCHEMA = {"type": "object", "additionalProperties": True}
+
+_SLICE_POLLING_SCHEMA = {
+    "oneOf": [
+        {"type": "boolean"},
+        {
+            "type": "object",
+            "properties": dict(
+                interval={
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "default": DEFAULT_SLICE_POLLING_INTERVAL
+                },
+                timeout={
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "default": DEFAULT_SLICE_POLLING_TIMEOUT
+                },
+            )
+        }
+    ]
+}
+
+_ENCODING_SCHEMA = {
     "type": "object",
     "properties": dict(
         chunks={
             "type": "array",
-            "items": ORDINAL_INT
+            "items": _ORDINAL_SCHEMA
         },
         fill_value={"oneOf": [
             {"type": "number"},
@@ -32,35 +56,36 @@ ENCODING_SCHEMA = {
                         "int32", "uint32",
                         "int64", "uint64",
                         "float32", "float64"]},
-        compressor=ANY_OBJECT,
-        filters={"type": "array", "items": ANY_OBJECT},
+        compressor=_ANY_OBJECT_SCHEMA,
+        filters={"type": "array", "items": _ANY_OBJECT_SCHEMA},
     ),
     "additionalProperties": False,
 }
 
-CONFIG_V1_SCHEMA = {
+_CONFIG_V1_SCHEMA = {
     "type": "object",
     "properties": dict(
         version={"const": 1},
         fixed_dims={
             "type": "object",
-            "additionalProperties": ORDINAL_INT
+            "additionalProperties": _ORDINAL_SCHEMA
         },
-        append_dim=NON_EMPTY_STRING,
+        append_dim=_NON_EMPTY_STRING_SCHEMA,
         variables={
             "type": "object",
             "additionalProperties": {
                 "type": "object",
                 "properties": dict(
-                    dims={"type": "array", "items": NON_EMPTY_STRING},
-                    attrs=ANY_OBJECT,
-                    encoding=ENCODING_SCHEMA,
+                    dims={"type": "array", "items": _NON_EMPTY_STRING_SCHEMA},
+                    attrs=_ANY_OBJECT_SCHEMA,
+                    encoding=_ENCODING_SCHEMA,
                 ),
                 "additionalProperties": False,
             },
         },
         target_fs_options={"type": "object", "additionalProperties": True},
         slice_fs_options={"type": "object", "additionalProperties": True},
+        slice_polling=_SLICE_POLLING_SCHEMA,
         temp_path={"type": "string", "minLength": 1},
         temp_fs_options={"type": "object", "additionalProperties": True},
     ),
@@ -69,7 +94,28 @@ CONFIG_V1_SCHEMA = {
 }
 
 
-def load_configs(config_paths: tuple[str, ...]) -> dict[str, Any]:
+def normalize_config(
+        config: tuple[str, ...] | str | dict[str, Any] | None
+) -> dict[str, Any]:
+    if config is None:
+        config = {}
+    elif isinstance(config, dict):
+        validate_config(config)
+    elif isinstance(config, str):
+        config = load_configs([config])
+    elif isinstance(config, (list, tuple)):
+        config = load_configs(config)
+    else:
+        raise TypeError("config must be a dict, a str, or a list of str")
+    return config
+
+
+def validate_config(config: dict[str, Any]):
+    jsonschema.validate(config, _CONFIG_V1_SCHEMA)
+
+
+def load_configs(config_paths: tuple[str, ...] | list[str, ...]) \
+        -> dict[str, Any]:
     config = {}
     if not config_paths:
         return config
@@ -77,7 +123,7 @@ def load_configs(config_paths: tuple[str, ...]) -> dict[str, Any]:
         config = load_config(config_paths[0])
     for config_path in config_paths:
         config = merge_dicts(config, load_config(config_path))
-    jsonschema.validate(config, CONFIG_V1_SCHEMA)
+    validate_config(config)
     return config
 
 

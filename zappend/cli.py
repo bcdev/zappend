@@ -18,17 +18,12 @@ def zappend(target_path: str,
             slice_paths: tuple[str, ...],
             config_paths: tuple[str, ...]):
     """Tool to create or update a Zarr dataset from slices."""
-    from zappend.config import load_configs
-    from zappend.context import Context
-    from zappend.processor import Processor
+    from zappend.api import zappend as zappend_api
 
     if not slice_paths:
         raise click.ClickException("No slice paths given.")
 
-    config = load_configs(config_paths)
-    ctx = Context(target_path, config)
-    processor = Processor(ctx)
-    processor.process_slices(iter(slice_paths))
+    zappend_api(target_path, slice_paths, config=config_paths)
 
 
 if __name__ == '__main__':
