@@ -3,15 +3,18 @@
 # https://opensource.org/licenses/MIT.
 
 import tempfile
-from typing import Iterator, Any, Dict
-
-from .config import DEFAULT_SLICE_POLLING_INTERVAL
-from .config import DEFAULT_SLICE_POLLING_TIMEOUT
+from typing import Any, Dict
 
 import fsspec
 
+from .config import DEFAULT_SLICE_POLLING_INTERVAL
+from .config import DEFAULT_SLICE_POLLING_TIMEOUT
+from .config import DEFAULT_SLICE_ACCESS_MODE
+from .config import DEFAULT_ZARR_VERSION
+
 
 class Context:
+    """Provides access to configuration values and values derived from it."""
 
     def __init__(self, target_path: str, config: Dict[str, Any]):
         self._config = config
@@ -30,12 +33,19 @@ class Context:
         )
 
     @property
-    def config(self) -> dict[str, Any]:
-        return self._config
+    def zarr_version(self):
+        return self._config.get("zarr_version", DEFAULT_ZARR_VERSION)
+
+    @property
+    def variables(self) -> dict[str, dict[str, Any]]:
+        return self._config.get("variables", {})
 
     @property
     def target_fs(self) -> fsspec.AbstractFileSystem:
         return self._target_path
+
+    def target_fs_options(self) -> dict[str, Any]:
+        return self._config.get("target_fs_options", {})
 
     @property
     def target_path(self) -> str:
@@ -53,16 +63,23 @@ class Context:
         )
 
     @property
-    def slice_polling(self) -> tuple[float, float]:
-        slice_polling = self.config.get("slice_polling", False)
+    def slice_polling(self) -> tuple[float, float] | tuple[None, None]:
+        """If slice polling is enabled, return tuple (interval, timeout) in seconds,
+        otherwise, return (None, None).
+        """
+        slice_polling = self._config.get("slice_polling", False)
         if slice_polling is False:
-            return 0, 0
+            return None, None
         if slice_polling is True:
             slice_polling = {}
         return (
             slice_polling.get("interval", DEFAULT_SLICE_POLLING_INTERVAL),
             slice_polling.get("timeout", DEFAULT_SLICE_POLLING_TIMEOUT)
         )
+
+    @property
+    def slice_access_mode(self) -> str:
+        return self._config.get("slice_access_mode", DEFAULT_SLICE_ACCESS_MODE)
 
     @property
     def temp_fs(self) -> fsspec.AbstractFileSystem:

@@ -1,3 +1,7 @@
+# Copyright © 2023 Norman Fomferra
+# Permissions are hereby granted under the terms of the MIT License:
+# https://opensource.org/licenses/MIT.
+
 import time
 import uuid
 from abc import abstractmethod, ABC
@@ -5,6 +9,8 @@ from abc import abstractmethod, ABC
 import fsspec
 import xarray as xr
 from .context import Context
+from .config import SLICE_ACCESS_MODE_SOURCE_SAFE
+from .config import SLICE_ACCESS_MODE_SOURCE
 
 
 def open_slice_zarr(ctx: Context, slice_obj: str | xr.Dataset) -> "SliceZarr":
@@ -65,7 +71,7 @@ class PersistentSliceZarr(SliceZarr):
 
     def prepare(self):
         interval, timeout = self.ctx.slice_polling
-        if timeout:
+        if timeout is not None:
             t0 = time.monotonic()
             while (time.monotonic() - t0) < timeout:
                 try:
@@ -75,14 +81,16 @@ class PersistentSliceZarr(SliceZarr):
         else:
             self.slice_ds = self.open_dataset()
 
-        if self.is_valid_zarr():
+        slice_access_mode = self.ctx.slice_access_mode
+        if (slice_access_mode == SLICE_ACCESS_MODE_SOURCE
+                or (slice_access_mode == SLICE_ACCESS_MODE_SOURCE_SAFE
+                    and self.is_compatible_slice())):
             return self.slice_fs, self.slice_fs_path
-        else:
-            self.slice_zarr = InMemorySliceZarr(self.ctx, self.slice_ds)
-            return self.slice_zarr.prepare()
+
+        self.slice_zarr = InMemorySliceZarr(self.ctx, self.slice_ds)
+        return self.slice_zarr.prepare()
 
     def dispose(self):
-        """Dispose"""
         if hasattr(self, "slice_zarr") and self.slice_zarr is not None:
             self.slice_zarr.dispose()
             self.slice_zarr = None
@@ -93,21 +101,17 @@ class PersistentSliceZarr(SliceZarr):
             del self.slice_ds
         super().dispose()
 
-    def is_valid_zarr(self):
-        pass
+    def is_compatible_slice(self) -> bool:
+        return False
 
     def open_dataset(self) -> xr.Dataset:
         return xr.open_dataset(self.slice_path,
                                storage_options=self.ctx.slice_fs_options,
                                decode_cf=False)
 
-    def wait_for_arrival(self):
-        pass
-
 
 class InMemorySliceZarr(SliceZarr):
-    """
-    A slice Zarr that is available in-memory only as a xarray dataset.
+    """A slice Zarr that is available in-memory only as a xarray dataset.
 
     :param ctx: Processing context
     :param slice_ds: The in-memory dataset
@@ -124,7 +128,6 @@ class InMemorySliceZarr(SliceZarr):
         return self.ctx.temp_fs, self.temp_path
 
     def dispose(self):
-        """Dispose"""
         if hasattr(self, "temp_path") and self.temp_path is not None:
             self.remove_temp_files()
             self.temp_path = None
@@ -138,12 +141,10 @@ class InMemorySliceZarr(SliceZarr):
 
 
 def to_zarr(ctx: Context, ds: xr.Dataset, path: str):
-    zarr_version = ctx.config.get("zarr_version", 2)
-    variables = ctx.config.get("variables", {})
     encoding = {var_name: var_info["encoding"]
-                for var_name, var_info in variables.items()
+                for var_name, var_info in ctx.variables.items()
                 if "encoding" in var_info}
     ds.to_zarr(ctx.temp_fs.get_mapper(root=path, create=True),
                write_empty_chunks=False,
                encoding=encoding,
-               zarr_version=zarr_version)
+               zarr_version=ctx.zarr_version)

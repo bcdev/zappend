@@ -10,6 +10,7 @@ from zappend.cli import zappend
 class CliTest(unittest.TestCase):
     def test_help(self):
         runner = CliRunner()
+        # noinspection PyTypeChecker
         result = runner.invoke(zappend, ['--help'])
         self.assertEqual(0, result.exit_code)
         self.assertEqual(

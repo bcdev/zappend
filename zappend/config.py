@@ -12,8 +12,26 @@ import jsonschema
 
 from .log import LOG
 
+DEFAULT_ZARR_VERSION = 2
+
 DEFAULT_SLICE_POLLING_INTERVAL = 2
 DEFAULT_SLICE_POLLING_TIMEOUT = 60
+
+# Write slice to temp, then read from temp (default).
+SLICE_ACCESS_MODE_TEMP = "temp"
+# Read directly from slice source, skip compatibility check.
+SLICE_ACCESS_MODE_SOURCE = "source"
+# Read directly from slice source if slice is compatible,
+# otherwise fallback to "temp".
+SLICE_ACCESS_MODE_SOURCE_SAFE = "source_safe"
+
+# Access modes if slice is persistent and given as path
+SLICE_ACCESS_MODES = [
+    SLICE_ACCESS_MODE_TEMP,
+    SLICE_ACCESS_MODE_SOURCE,
+    SLICE_ACCESS_MODE_SOURCE_SAFE
+]
+DEFAULT_SLICE_ACCESS_MODE = SLICE_ACCESS_MODE_TEMP
 
 _NON_EMPTY_STRING_SCHEMA = {"type": "string", "minLength": 1}
 _ORDINAL_SCHEMA = {"type": "integer", "minimum": 1}
@@ -40,52 +58,74 @@ _SLICE_POLLING_SCHEMA = {
     ]
 }
 
-_ENCODING_SCHEMA = {
-    "type": "object",
-    "properties": dict(
-        chunks={
-            "type": "array",
-            "items": _ORDINAL_SCHEMA
-        },
-        fill_value={"oneOf": [
-            {"type": "number"},
-            {"const": "NaN"},
-        ]},
-        dtype={"enum": ["int8", "uint8",
-                        "int16", "uint16",
-                        "int32", "uint32",
-                        "int64", "uint64",
-                        "float32", "float64"]},
-        compressor=_ANY_OBJECT_SCHEMA,
-        filters={"type": "array", "items": _ANY_OBJECT_SCHEMA},
-    ),
-    "additionalProperties": False,
-}
-
 _CONFIG_V1_SCHEMA = {
     "type": "object",
     "properties": dict(
         version={"const": 1},
+        zarr_version={"const": DEFAULT_ZARR_VERSION},
         fixed_dims={
             "type": "object",
             "additionalProperties": _ORDINAL_SCHEMA
         },
         append_dim=_NON_EMPTY_STRING_SCHEMA,
+        # Define layout and encoding for variables.
+        # Object property names refer to variable names.
+        # Special name "*" refers to all variables, useful
+        # to define default values.
         variables={
             "type": "object",
             "additionalProperties": {
                 "type": "object",
                 "properties": dict(
-                    dims={"type": "array", "items": _NON_EMPTY_STRING_SCHEMA},
+                    dtype={
+                        "enum": ["int8", "uint8",
+                                 "int16", "uint16",
+                                 "int32", "uint32",
+                                 "int64", "uint64",
+                                 "float32", "float64"]
+                    },
+                    dims={
+                        "type": "array",
+                        "items": _NON_EMPTY_STRING_SCHEMA
+                    },
+                    shape={
+                        "type": "array",
+                        "items": _ORDINAL_SCHEMA
+                    },
+                    chunks={
+                        "type": "array",
+                        "items": _ORDINAL_SCHEMA
+                    },
+                    fill_value={
+                        "type": ["number", "null"]
+                    },
+                    scale_factor={
+                        "type": "number"
+                    },
+                    add_offset={
+                        "type": "number"
+                    },
+                    compressor=_ANY_OBJECT_SCHEMA,
+                    filters={
+                        "type": "array",
+                        "items": _ANY_OBJECT_SCHEMA
+                    },
                     attrs=_ANY_OBJECT_SCHEMA,
-                    encoding=_ENCODING_SCHEMA,
+                    encoding=_ANY_OBJECT_SCHEMA,
                 ),
                 "additionalProperties": False,
             },
         },
+
         target_fs_options={"type": "object", "additionalProperties": True},
+
         slice_fs_options={"type": "object", "additionalProperties": True},
         slice_polling=_SLICE_POLLING_SCHEMA,
+        slice_access_mode={
+            "enum": SLICE_ACCESS_MODES,
+            "default": DEFAULT_SLICE_ACCESS_MODE
+        },
+
         temp_path={"type": "string", "minLength": 1},
         temp_fs_options={"type": "object", "additionalProperties": True},
     ),
@@ -97,6 +137,7 @@ _CONFIG_V1_SCHEMA = {
 def normalize_config(
         config: tuple[str, ...] | str | dict[str, Any] | None
 ) -> dict[str, Any]:
+    """Normalizes and validates configuration."""
     if config is None:
         config = {}
     elif isinstance(config, dict):

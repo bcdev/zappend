@@ -21,20 +21,24 @@ class Processor:
             self.process_slice(slice_path)
 
     def process_slice(self, slice_obj: str | xr.Dataset):
+
+        try:
+            target_ds = xr.open_zarr(self.ctx.target_path,
+                                     storage_option=self.ctx.target_fs_options,
+                                     decode_cf=False)
+        except FileNotFoundError:
+            target_ds = None
+
         with open_slice_zarr(self.ctx, slice_obj) as (slice_fs, slice_path):
             target_fs = self.ctx.target_fs
             if not target_fs.exists(self.ctx.target_path):
-                self.create_target(slice_fs, slice_path)
+                self.write_slice(slice_fs, slice_path)
             else:
-                self.open_target()
                 self.append_slice(slice_fs, slice_path)
 
-    def create_target(self, slice_fs: fsspec.AbstractFileSystem, slice_path: str):
+    def write_slice(self, slice_fs: fsspec.AbstractFileSystem, slice_path: str):
         copy_dir(self.ctx.target_fs, self.ctx.target_path,
                  slice_fs, slice_path)
-
-    def open_target(self):
-        pass
 
     def append_slice(self, slice_fs: fsspec.AbstractFileSystem, slice_path: str):
         pass
