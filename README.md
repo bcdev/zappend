@@ -19,7 +19,7 @@ data cube.
 * The target and slice datasets may also be xcube multi-level datasets. 
 * The tool takes care of modifying the target dataset using the slices,
   but doesn't care how the slice datasets are created.
-* Slice datasets may be given as URIs with optional storage options or as 
+* Slice datasets may be given as URIs with storage options or as 
   in-memory datasets of type 
   [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html)
   or 
