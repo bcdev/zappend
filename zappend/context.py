@@ -6,11 +6,14 @@ import tempfile
 from typing import Any, Dict
 
 import fsspec
+import xarray as xr
 
 from .config import DEFAULT_SLICE_POLLING_INTERVAL
 from .config import DEFAULT_SLICE_POLLING_TIMEOUT
 from .config import DEFAULT_SLICE_ACCESS_MODE
 from .config import DEFAULT_ZARR_VERSION
+from .outline import DatasetOutline
+from .log import logger
 
 
 class Context:
@@ -24,6 +27,22 @@ class Context:
             target_path,
             **target_fs_options
         )
+
+        try:
+            with xr.open_zarr(
+                    target_path,
+                    storage_option=target_fs_options,
+                    decode_cf=False
+            ) as target_ds:
+                logger.info(f"Target dataset f{target_path} found,"
+                         " using its outline")
+                self._target_outline = DatasetOutline.from_dataset(
+                    target_ds
+                )
+        except FileNotFoundError:
+            logger.info(f"Target dataset {target_path} not found,"
+                     " using outline from configuration")
+            self._target_outline = DatasetOutline.from_config(self._config)
 
         temp_path = config.get("temp_path", tempfile.gettempdir())
         temp_fs_options = config.get("temp_fs_options", {})
@@ -39,6 +58,10 @@ class Context:
     @property
     def variables(self) -> dict[str, dict[str, Any]]:
         return self._config.get("variables", {})
+
+    @property
+    def target_outline(self) -> DatasetOutline:
+        return self._target_outline
 
     @property
     def target_fs(self) -> fsspec.AbstractFileSystem:
@@ -79,7 +102,8 @@ class Context:
 
     @property
     def slice_access_mode(self) -> str:
-        return self._config.get("slice_access_mode", DEFAULT_SLICE_ACCESS_MODE)
+        return self._config.get("slice_access_mode",
+                                DEFAULT_SLICE_ACCESS_MODE)
 
     @property
     def temp_fs(self) -> fsspec.AbstractFileSystem:

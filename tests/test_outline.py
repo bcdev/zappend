@@ -9,26 +9,26 @@ import fsspec
 import numpy as np
 import xarray as xr
 
-from zappend.datasetschema import DatasetSchema
-from zappend.datasetschema import VariableSchema
-from zappend.datasetschema import ZARR_V2_DEFAULT_COMPRESSOR
+from zappend.config import ZARR_V2_DEFAULT_COMPRESSOR
+from zappend.outline import DatasetOutline
+from zappend.outline import VariableOutline
 # noinspection PyProtectedMember
-from zappend.datasetschema import _to_comparable_value
+from zappend.outline._helpers import to_comparable_value
 
 
 class DatasetSchemaTest(unittest.TestCase):
     def test_from_config(self):
         config = make_test_config()
-        schema = DatasetSchema.from_config(config)
+        schema = DatasetOutline.from_config(config)
         self.assertDatasetSchemaOk(schema)
 
     def test_from_dataset(self):
         ds = make_test_dataset()
-        schema = DatasetSchema.from_dataset(ds)
+        schema = DatasetOutline.from_dataset(ds)
         self.assertDatasetSchemaOk(schema)
 
-    def assertDatasetSchemaOk(self, schema: DatasetSchema):
-        self.assertIsInstance(schema, DatasetSchema)
+    def assertDatasetSchemaOk(self, schema: DatasetOutline):
+        self.assertIsInstance(schema, DatasetOutline)
         dims = dict(schema.dims)
         self.assertIn("time", dims)
         del dims["time"]
@@ -36,56 +36,56 @@ class DatasetSchemaTest(unittest.TestCase):
         self.assertEqual({'chl', 'tsm', 'time', 'y', 'x'},
                          set(schema.variables.keys()))
         self.assertEqualVariableSchema(
-            VariableSchema(dtype="uint16",
-                           dims=("time", "y", "x"),
-                           shape=(50, 100, 200),
-                           chunks=(1, 30, 40),
-                           fill_value=9999,
-                           scale_factor=0.2,
-                           add_offset=0,
-                           compressor=ZARR_V2_DEFAULT_COMPRESSOR,
-                           filters=None),
+            VariableOutline(dtype="uint16",
+                            dims=("time", "y", "x"),
+                            shape=(50, 100, 200),
+                            chunks=(1, 30, 40),
+                            fill_value=9999,
+                            scale_factor=0.2,
+                            add_offset=0,
+                            compressor=ZARR_V2_DEFAULT_COMPRESSOR,
+                            filters=None),
             schema.variables['chl']
         )
         self.assertEqualVariableSchema(
-            VariableSchema(dtype="int16",
-                           dims=("time", "y", "x"),
-                           shape=(50, 100, 200),
-                           chunks=(1, 30, 40),
-                           fill_value=-9999,
-                           scale_factor=0.01,
-                           add_offset=-200,
-                           compressor=ZARR_V2_DEFAULT_COMPRESSOR,
-                           filters=None),
+            VariableOutline(dtype="int16",
+                            dims=("time", "y", "x"),
+                            shape=(50, 100, 200),
+                            chunks=(1, 30, 40),
+                            fill_value=-9999,
+                            scale_factor=0.01,
+                            add_offset=-200,
+                            compressor=ZARR_V2_DEFAULT_COMPRESSOR,
+                            filters=None),
             schema.variables['tsm']
         )
         self.assertEqualVariableSchema(
-            VariableSchema(dtype="float64",
-                           dims=("x",),
-                           shape=(200,),
-                           chunks=(200,),
-                           fill_value=float("NaN"),
-                           scale_factor=None,
-                           add_offset=None,
-                           compressor=ZARR_V2_DEFAULT_COMPRESSOR,
-                           filters=None),
+            VariableOutline(dtype="float64",
+                            dims=("x",),
+                            shape=(200,),
+                            chunks=(200,),
+                            fill_value=float("NaN"),
+                            scale_factor=None,
+                            add_offset=None,
+                            compressor=ZARR_V2_DEFAULT_COMPRESSOR,
+                            filters=None),
             schema.variables['x']
         )
 
     def assertEqualVariableSchema(self,
-                                  expected_schema: VariableSchema,
-                                  actual_schema: VariableSchema):
+                                  expected_schema: VariableOutline,
+                                  actual_schema: VariableOutline):
         for attr_name, expected_value in expected_schema.__dict__.items():
-            expected_value = _to_comparable_value(expected_value)
-            actual_value = _to_comparable_value(
+            expected_value = to_comparable_value(expected_value)
+            actual_value = to_comparable_value(
                 getattr(actual_schema, attr_name)
             )
             self.assertEqual(expected_value, actual_value, msg=attr_name)
 
     def test_get_noncompliance(self):
-        schema_1 = DatasetSchema.from_dataset(make_test_dataset())
+        schema_1 = DatasetOutline.from_dataset(make_test_dataset())
         self.assertEqual([], schema_1.get_noncompliance(schema_1))
-        schema_2 = DatasetSchema.from_config(make_test_config())
+        schema_2 = DatasetOutline.from_config(make_test_config())
         self.assertEqual([], schema_2.get_noncompliance(schema_1))
 
 

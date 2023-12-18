@@ -10,7 +10,7 @@ import fsspec
 import yaml
 import jsonschema
 
-from .log import LOG
+from .log import logger
 
 
 DEFAULT_ZARR_VERSION = 2
@@ -175,7 +175,7 @@ def load_configs(config_paths: tuple[str, ...] | list[str, ...]) \
 
 
 def load_config(config_path: str) -> dict[str, Any]:
-    LOG.info(f"Reading configuration {config_path}")
+    logger.info(f"Reading configuration {config_path}")
     _, ext = os.path.splitext(config_path)
     with fsspec.open(config_path) as f:
         if ext in (".json", ".JSON"):
@@ -215,3 +215,12 @@ def merge_values(value_1: Any, value_2: Any) -> Any:
     if isinstance(value_1, list) and isinstance(value_2, list):
         return merge_lists(value_1, value_2)
     return value_1
+
+
+ZARR_V2_DEFAULT_COMPRESSOR = {
+    "id": "blosc",
+    "cname": "lz4",
+    "clevel": 5,
+    "shuffle": 1,
+    "blocksize": 0,
+}
