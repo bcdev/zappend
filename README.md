@@ -2,14 +2,22 @@
 
 Tool to create and update a Zarr dataset from smaller slices
 
+The objective of **zappend** is to address recurring memory issues when 
+generating large geospatial data cubes using the 
+[Zarr format](https://zarr.readthedocs.io/) by subsequently concatenating data
+slices along an append dimension, usually `time`. Each append step is atomic, 
+that is, the append operation is a transaction that can be rolled back, 
+in case the append operation fails. This ensures integrity of the target 
+data cube. 
+
 ## Requirements
 
 ### Core
 
 * Create a target Zarr dataset by appending Zarr dataset slices along a 
-  given *append dimension*, usually `time`. This includes persisting a lazy cube
-  existing only in memory sequentially along the *append dimension* (useful, when the 
-  source has performance constraints).  
+  given *append dimension*, usually `time`. This includes persisting a lazy 
+  cube existing only in memory sequentially along the *append dimension* 
+  (useful, when the source has performance constraints).  
 * The target and slice datasets may also be xcube multi-level datasets. 
 * The tool takes care of modifying the target dataset using the slices,
   but doesn't care how the slice datasets are created.
@@ -32,8 +40,9 @@ Tool to create and update a Zarr dataset from smaller slices
 * If the target does not exist, it will be created from a copy of the first 
   slice. This first slice will specify any not-yet-configured properties
   of the target dataset, e.g., the append dimension chunking.
-* If the target exists, the slice will be appended. Check if the slice to be appended is last.
-  If not, refuse to append (alternative: insert but this is probably difficult or error prone)
+* If the target exists, the slice will be appended. Check if the slice to be 
+  appended is last. If not, refuse to append (alternative: insert but this is 
+  probably difficult or error prone).
 * Slices are appended in the order they are provided.
 * If a slice is not yet available, wait until it 
   - exists, and
@@ -79,9 +88,9 @@ Tool to create and update a Zarr dataset from smaller slices
 * Try getting along without using `xarray`, use `zarr` only,
   but honor the xarray `__ARRAY_DIMENSIONS__` attribute. 
   This avoids extra magic and complexity.
-* use it in xcube data stores for the write_data, as a parameter to
-  enforce sequential writing of zarrs as a robust option when a plain
-  write fails.   
+* Use it in xcube data stores for the `write_data()` method, as a parameter 
+  to enforce sequential writing of Zarrs as a robust option when a plain
+  write fails.
 
 ## How it works
 
