@@ -44,10 +44,9 @@ data cube.
   appended is last. If not, refuse to append (alternative: insert but this is 
   probably difficult or error prone).
 * Slices are appended in the order they are provided.
-* If a slice is not yet available, wait until it 
+* If a slice is not yet available, wait and retry until it 
   - exists, and
-  - is complete,
-  - or retry in case i failed. 
+  - is complete.
 * Check for each slice that it is valid. A valid slice
   - is self-consistent, 
   - has the same structure as target, and
@@ -74,11 +73,11 @@ data cube.
     specifying a function that generates the slice datasets and an
     iterable providing the arguments for the function.
     This is similar how the Python `map()` built-in works.
-* xcube server API?
-  - API to append to an existing zarr by submitting a slice to the API.
 
 ### To be considered
 
+* Add xcube server API: Add endpoint to xcube server that works similar 
+  to the CLI and also uses a similar request parameters.
 * Allow for **inserting and deleting** slices.
 * Allow the slice to have an append dimension size > 1. 
 * Allow specifying a constant delta between coordinates of the
@@ -86,11 +85,11 @@ data cube.
 * Verify append dimension coordinates increase or decrease monotonically. 
 * Verify coordinate deltas of append dimension to be constant. 
 * Try getting along without using `xarray`, use `zarr` only,
-  but honor the xarray `__ARRAY_DIMENSIONS__` attribute. 
+  but honor the xarray `_ARRAY_DIMENSIONS` attribute. 
   This avoids extra magic and complexity.
 * Use it in xcube data stores for the `write_data()` method, as a parameter 
-  to enforce sequential writing of Zarrs as a robust option when a plain
-  write fails.
+  to enforce sequential writing of Zarr datasets as a robust option when a 
+  plain write fails.
 
 ## How it works
 
