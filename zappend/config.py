@@ -6,10 +6,10 @@ import json
 import os.path
 from typing import Any
 
-import fsspec
 import yaml
 import jsonschema
 
+from .fileobj import FileObj
 from .log import logger
 
 DEFAULT_ZARR_VERSION = 2
@@ -146,80 +146,79 @@ _CONFIG_V1_SCHEMA = {
     "additionalProperties": False,
 }
 
-
-def normalize_config(
-        config: tuple[str, ...] | str | dict[str, Any] | None
-) -> dict[str, Any]:
-    """Normalize and validate configuration dictionary."""
-    if config is None:
-        config = {}
-    elif isinstance(config, dict):
-        validate_config(config)
-    elif isinstance(config, str):
-        config = load_configs([config])
-    elif isinstance(config, (list, tuple)):
-        config = load_configs(config)
-    else:
-        raise TypeError("config must be a dict, a str, or a list of str")
-    return config
+Config = dict[str, Any]
+ConfigLikeOne = FileObj | str | Config
+ConfigLikeMany = list[ConfigLikeOne] | tuple[ConfigLikeOne]
+ConfigLike = ConfigLikeMany | ConfigLikeOne | None
 
 
-def validate_config(config: dict[str, Any]):
+def validate_config(config_like: ConfigLike) -> Config:
+    """Validate configuration and return normalized form."""
+    config = normalize_config(config_like)
     jsonschema.validate(config, _CONFIG_V1_SCHEMA)
-
-
-def load_configs(config_paths: tuple[str, ...] | list[str, ...]) \
-        -> dict[str, Any]:
-    config = {}
-    if not config_paths:
-        return config
-    if len(config_paths) == 1:
-        config = load_config(config_paths[0])
-    for config_path in config_paths:
-        config = merge_dicts(config, load_config(config_path))
-    validate_config(config)
     return config
 
 
-def load_config(config_path: str) -> dict[str, Any]:
+def normalize_config(config_like: ConfigLike) -> Config:
+    """Normalize configuration."""
+    if isinstance(config_like, dict):
+        return config_like
+    if config_like is None:
+        return {}
+    if isinstance(config_like, FileObj):
+        return load_config(config_like)
+    if isinstance(config_like, str):
+        return load_config(FileObj(config_like))
+    if isinstance(config_like, (list, tuple)):
+        return _merge_configs([normalize_config(c) for c in config_like])
+    raise TypeError("config_like must of type NoneType, FileObj, dict,"
+                    " str, or a sequence of such values")
+
+
+def load_config(config_fo: FileObj) -> Config:
     yaml_extensions = {".yml", ".yaml", ".YML", ".YAML"}
-    logger.info(f"Reading configuration {config_path}")
-    _, ext = os.path.splitext(config_path)
-    # TODO: allow opening config from FileObj so we can test loading
-    with fsspec.open(config_path) as f:
+    logger.info(f"Reading configuration {config_fo.uri}")
+    _, ext = os.path.splitext(config_fo.path)
+    with config_fo.filesystem.open(config_fo.path) as f:
         if ext in yaml_extensions:
             config = yaml.safe_load(f)
         else:
             config = json.load(f)
     if not isinstance(config, dict):
-        raise ValueError(f"Invalid configuration:"
-                         f" {config_path}: object expected")
+        raise TypeError(f"Invalid configuration:"
+                        f" {config_fo.uri}: object expected")
     return config
 
 
-def merge_dicts(dict_1: dict[str, Any], dict_2: dict[str, Any]) \
+def _merge_configs(configs: list[Config]) -> Config:
+    merged_config = dict(configs[0])
+    for config in configs[1:]:
+        merged_config = _merge_dicts(merged_config, config)
+    return merged_config
+
+
+def _merge_dicts(dict_1: dict[str, Any], dict_2: dict[str, Any]) \
         -> dict[str, Any]:
     merged = dict(dict_1)
     for key in dict_2.keys():
         if key in merged:
-            merged[key] = merge_values(merged[key],
-                                       dict_2[key])
+            merged[key] = _merge_values(merged[key], dict_2[key])
         else:
             merged[key] = dict_2[key]
     return merged
 
 
-def merge_lists(list_1: list[Any], list_2: list[Any]) -> list[Any]:
+def _merge_lists(list_1: list[Any], list_2: list[Any]) -> list[Any]:
     return list_1 + list_2
 
 
-def merge_values(value_1: Any, value_2: Any) -> Any:
+def _merge_values(value_1: Any, value_2: Any) -> Any:
     if value_1 is None:
         return value_2
     if value_2 is None:
         return value_1
     if isinstance(value_1, dict) and isinstance(value_2, dict):
-        return merge_dicts(value_1, value_2)
+        return _merge_dicts(value_1, value_2)
     if isinstance(value_1, list) and isinstance(value_2, list):
-        return merge_lists(value_1, value_2)
+        return _merge_lists(value_1, value_2)
     return value_1

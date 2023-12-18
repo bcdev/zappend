@@ -16,7 +16,7 @@ from zappend.outline import VariableOutline
 from zappend.outline._helpers import to_comparable_value
 
 
-class DatasetSchemaTest(unittest.TestCase):
+class DatasetOutlineTest(unittest.TestCase):
     def test_from_config(self):
         config = make_test_config()
         schema = DatasetOutline.from_config(config)
@@ -114,8 +114,6 @@ def make_test_dataset(shape=(50, 100, 200), raw=False):
     )
 
     ds = ds.chunk(dict(time=1, y=30, x=40))
-    # ds.chl.encoding.update(fill_value=9999)
-    # ds.tsm.encoding.update(fill_value=-9999)
 
     if raw:
         return ds
