@@ -12,7 +12,9 @@ import jsonschema
 
 from .log import LOG
 
+
 DEFAULT_ZARR_VERSION = 2
+DEFAULT_APPEND_DIM = "time"
 
 DEFAULT_SLICE_POLLING_INTERVAL = 2
 DEFAULT_SLICE_POLLING_TIMEOUT = 60
@@ -67,7 +69,11 @@ _CONFIG_V1_SCHEMA = {
             "type": "object",
             "additionalProperties": _ORDINAL_SCHEMA
         },
-        append_dim=_NON_EMPTY_STRING_SCHEMA,
+        append_dim={
+            "type": "string",
+            "default": DEFAULT_APPEND_DIM,
+            "minLength": 1
+        },
         # Define layout and encoding for variables.
         # Object property names refer to variable names.
         # Special name "*" refers to all variables, useful
