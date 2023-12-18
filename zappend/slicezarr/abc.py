@@ -4,9 +4,8 @@
 
 from abc import abstractmethod, ABC
 
-import fsspec
-
 from ..context import Context
+from ..fileobj import FileObj
 
 
 class SliceZarr(ABC):
@@ -17,24 +16,38 @@ class SliceZarr(ABC):
     """
 
     def __init__(self, ctx: Context):
-        self.ctx = ctx
+        self._ctx = ctx
 
     def __del__(self):
         """Overridden to call ``dispose()``."""
         self.dispose()
 
-    def __enter__(self):
+    def __enter__(self) -> FileObj:
         return self.prepare()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.dispose()
 
     @abstractmethod
-    def prepare(self) -> tuple[fsspec.AbstractFileSystem, str]:
+    def prepare(self) -> FileObj:
         """Prepare this slice Zarr so it can be used.
 
-        :return: a tuple (filesystem, path) that are used to
-            access the Zarr.
+        Returns a file object that points to slice Zarr dataset
+        whose chunk files can be used to update the target dataset.
+
+        An implementation must ensure that the returned file object
+        points to a slice Zarr dataset that is fully compatible with
+        target dataset outline:
+
+        * slice must have same fixed dimensions
+        * append dimension must exist in slice
+        * slice variable outlines are equal to target variable outlines
+          which includes strict equality of the following properties:
+          dtype, dims, shape, chunks, fill_value,
+          scale_factor, add_offset, compressor, filters.
+
+        :return: a file object that can be safely used to
+            update the target dataset.
         """
 
     def dispose(self):
@@ -42,5 +55,5 @@ class SliceZarr(ABC):
         This should include cleaning up of used resources.
         """
         if hasattr(self, "ctx"):
-            self.ctx = None
-            del self.ctx
+            self._ctx = None
+            del self._ctx

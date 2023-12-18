@@ -12,7 +12,6 @@ import jsonschema
 
 from .log import logger
 
-
 DEFAULT_ZARR_VERSION = 2
 DEFAULT_APPEND_DIM = "time"
 
@@ -34,6 +33,14 @@ SLICE_ACCESS_MODES = [
     SLICE_ACCESS_MODE_SOURCE_SAFE
 ]
 DEFAULT_SLICE_ACCESS_MODE = SLICE_ACCESS_MODE_TEMP
+
+ZARR_V2_DEFAULT_COMPRESSOR = {
+    "id": "blosc",
+    "cname": "lz4",
+    "clevel": 5,
+    "shuffle": 1,
+    "blocksize": 0,
+}
 
 _NON_EMPTY_STRING_SCHEMA = {"type": "string", "minLength": 1}
 _ORDINAL_SCHEMA = {"type": "integer", "minimum": 1}
@@ -143,7 +150,7 @@ _CONFIG_V1_SCHEMA = {
 def normalize_config(
         config: tuple[str, ...] | str | dict[str, Any] | None
 ) -> dict[str, Any]:
-    """Normalizes and validates configuration."""
+    """Normalize and validate configuration dictionary."""
     if config is None:
         config = {}
     elif isinstance(config, dict):
@@ -175,17 +182,18 @@ def load_configs(config_paths: tuple[str, ...] | list[str, ...]) \
 
 
 def load_config(config_path: str) -> dict[str, Any]:
+    yaml_extensions = {".yml", ".yaml", ".YML", ".YAML"}
     logger.info(f"Reading configuration {config_path}")
     _, ext = os.path.splitext(config_path)
+    # TODO: allow opening config from FileObj so we can test loading
     with fsspec.open(config_path) as f:
-        if ext in (".json", ".JSON"):
-            config = json.load(f)
-        else:
+        if ext in yaml_extensions:
             config = yaml.safe_load(f)
+        else:
+            config = json.load(f)
     if not isinstance(config, dict):
         raise ValueError(f"Invalid configuration:"
-                         f" {config_path}:"
-                         f" object expected")
+                         f" {config_path}: object expected")
     return config
 
 
@@ -215,12 +223,3 @@ def merge_values(value_1: Any, value_2: Any) -> Any:
     if isinstance(value_1, list) and isinstance(value_2, list):
         return merge_lists(value_1, value_2)
     return value_1
-
-
-ZARR_V2_DEFAULT_COMPRESSOR = {
-    "id": "blosc",
-    "cname": "lz4",
-    "clevel": 5,
-    "shuffle": 1,
-    "blocksize": 0,
-}

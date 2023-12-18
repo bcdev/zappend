@@ -7,6 +7,7 @@ import uuid
 import xarray as xr
 
 from ..context import Context
+from ..fileobj import FileObj
 from .abc import SliceZarr
 
 
@@ -20,32 +21,36 @@ class InMemorySliceZarr(SliceZarr):
     def __init__(self, ctx: Context, slice_ds: xr.Dataset):
         super().__init__(ctx)
         self.slice_ds = slice_ds
-        self.temp_path = None
+        self.temp_fo: FileObj | None = None
 
-    def prepare(self):
-        self.temp_path = self.write_temp(self.slice_ds)
-        return self.ctx.temp_fs, self.temp_path
+    def prepare(self) -> FileObj:
+        self.temp_fo = self.write_temp(self.slice_ds)
+        # TODO: open_zarr() from temp and verify
+        #   by using check_compliance()
+        return self.temp_fo
 
     def dispose(self):
-        if hasattr(self, "temp_path") and self.temp_path is not None:
+        self.slice_ds = None
+        if self.temp_fo is not None:
             self.delete_temp()
-            self.temp_path = None
-            del self.temp_path
+        self.temp_fo = None
         super().dispose()
 
-    def write_temp(self, dataset: xr.Dataset) -> str:
-        temp_path = f"{self.ctx.temp_path}/{uuid.uuid4()}.zarr"
+    def write_temp(self, dataset: xr.Dataset) -> FileObj:
+        temp_fo = self._ctx.temp_fo.for_suffix(f"{uuid.uuid4()}.zarr")
         encoding = {var_name: var_info["encoding"]
-                    for var_name, var_info in self.ctx.variables.items()
+                    for var_name, var_info in self._ctx.variables.items()
                     if "encoding" in var_info}
-        store = self.ctx.temp_fs.get_mapper(root=temp_path, create=True)
+        store = temp_fo.filesystem.get_mapper(root=temp_fo.path, create=True)
         dataset.to_zarr(store,
                         write_empty_chunks=False,
                         encoding=encoding,
-                        zarr_version=self.ctx.zarr_version)
-        return temp_path
+                        zarr_version=self._ctx.zarr_version)
+        return temp_fo
 
     def delete_temp(self):
-        if self.temp_path is not None \
-                and self.ctx.temp_fs.isdir(self.temp_path):
-            self.ctx.temp_fs.rm(self.temp_path, recursive=True)
+        if self.temp_fo is not None:
+            fs = self._ctx.temp_fo.filesystem
+            path = self.temp_fo.path
+            if fs.isdir(path):
+                fs.rm(path, recursive=True)

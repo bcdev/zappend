@@ -11,19 +11,19 @@ import click
 @click.argument('slices',
                 metavar='<slice-paths>',
                 nargs=-1)
-@click.option('--config', '-c', 'config_paths',
+@click.option('--config', '-c',
               metavar='<config-path>',
               multiple=True, help='Configuration file.')
-def zappend(target_path: str,
-            slice_paths: tuple[str, ...],
-            config_paths: tuple[str, ...]):
+def zappend(target: str,
+            slices: tuple[str, ...],
+            config: tuple[str, ...]):
     """Tool to create or update a Zarr dataset from slices."""
     from zappend.api import zappend as zappend_api
 
-    if not slice_paths:
+    if not slices:
         raise click.ClickException("No slice paths given.")
 
-    zappend_api(target_path, slice_paths, config=config_paths)
+    zappend_api(target, slices, config=config)
 
 
 if __name__ == '__main__':

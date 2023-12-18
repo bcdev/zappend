@@ -15,19 +15,22 @@ data cube.
 ### Core
 
 * Create a target Zarr dataset by appending Zarr dataset slices along a 
-  given *append dimension*, usually `time`. This includes persisting a lazy 
-  cube existing only in memory sequentially along the *append dimension* 
-  (useful, when the source has performance constraints).  
+  given *append dimension*, usually `time`.   
 * The target and slice datasets may also be xcube multi-level datasets. 
 * The tool takes care of modifying the target dataset using the slices,
   but doesn't care how the slice datasets are created.
+* Slice datasets may be given as URIs with optional storage options or as 
+  in-memory datasets of type 
+  [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html)
+  or 
+  [xcube.core.mldataset.MultiLevelDataset](https://xcube.readthedocs.io/en/latest/mldatasets.html).
 * Target and slices are allowed to live in different filesystems.
 * The tool is configurable. The configuration defines 
   - the append dimension;
   - optional target encoding for all or individual target variables;
   - the target path into the target filesystem;
-  - optional target filesystem options;
-  - optional slice filesystem options.
+  - optional target storage options;
+  - optional slice storage options.
 * The target chunking of the append dimension equals the size of the append 
   dimension in each slice and vice versa. 
 * The target encoding should allow for specifying the target storage chunking, 
