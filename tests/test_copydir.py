@@ -4,6 +4,7 @@
 
 import unittest
 
+import fsspec
 import xarray as xr
 
 from zappend.copydir import copy_dir
@@ -99,16 +100,27 @@ class CopyDirTest(unittest.TestCase):
         def callback(op: str, path: str):
             ops.append((op, path))
 
-        source_dataset = make_test_dataset(uri="memory://source.zarr")
+        source_dataset = make_test_dataset(uri="file://source.zarr")
         self.assertIsInstance(source_dataset, xr.Dataset)
 
-        fs = get_memory_fs()
+        # fs = get_memory_fs()
+        fs = fsspec.filesystem("file")
         copy_dir(fs, "source.zarr",
                  fs, "target.zarr",
                  file_op_cb=callback)
 
-        self.assertEqual([], ops)
+        self.assertEqual(
+            [('create_file', 'target.zarr/.zattrs'),
+             ('create_file', 'target.zarr/.zgroup'),
+             ('create_file', 'target.zarr/.zmetadata'),
+             ('create_dir', 'target.zarr/chl'),
+             ('create_dir', 'target.zarr/time'),
+             ('create_dir', 'target.zarr/tsm'),
+             ('create_dir', 'target.zarr/x'),
+             ('create_dir', 'target.zarr/y')],
+            ops
+        )
 
-        target_dataset = xr.open_zarr("memory://target.zarr",
+        target_dataset = xr.open_zarr("file://target.zarr",
                                       decode_cf=False)
         self.assertIsInstance(target_dataset, xr.Dataset)

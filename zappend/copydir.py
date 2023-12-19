@@ -46,8 +46,10 @@ def copy_dir(source_fs: fsspec.AbstractFileSystem,
         file_op_cb = None  # No need to notify for nested items
 
     for source_file_info in source_fs.ls(source_path, detail=True):
-        source_file_name = source_file_info["name"]
-        source_file_type = source_file_info["type"]
+        source_file_path: str = source_file_info["name"]
+        source_file_type: str = source_file_info["type"]
+
+        _, source_file_name = source_file_path.rsplit("/", maxsplit=1)
 
         if file_filter is not None:
             target_file_name = file_filter(source_path,
