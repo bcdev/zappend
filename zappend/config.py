@@ -6,8 +6,9 @@ import json
 import os.path
 from typing import Any
 
-import yaml
 import jsonschema
+import jsonschema.exceptions
+import yaml
 
 from .fileobj import FileObj
 from .log import logger
@@ -72,7 +73,7 @@ _CONFIG_V1_SCHEMA = {
     "properties": dict(
         version={"const": 1},
         zarr_version={"const": DEFAULT_ZARR_VERSION},
-        fixed_dims={
+        dims={
             "type": "object",
             "additionalProperties": _ORDINAL_SCHEMA
         },
@@ -153,14 +154,40 @@ ConfigLike = ConfigLikeMany | ConfigLikeOne | None
 
 
 def validate_config(config_like: ConfigLike) -> Config:
-    """Validate configuration and return normalized form."""
+    """Validate configuration and return normalized form.
+
+    First normalizes the configuration-like value *config_like*
+    using ``normalize_config()``, then validates and returns the result.
+
+    :param config_like: A configuration-like value.
+    :return: The normalized and validated configuration dictionary.
+    """
     config = normalize_config(config_like)
-    jsonschema.validate(config, _CONFIG_V1_SCHEMA)
+    try:
+        jsonschema.validate(config, _CONFIG_V1_SCHEMA)
+    except jsonschema.exceptions.ValidationError as e:
+        raise ValueError(f"Invalid configuration: {e.message}"
+                         f" for {'.'.join(map(str, e.path))}")
     return config
 
 
 def normalize_config(config_like: ConfigLike) -> Config:
-    """Normalize configuration."""
+    """Normalize the configuration-like value *config_like*
+    into a configuration dictionary.
+
+    The configuration-like value *config_like*
+
+    * can be a dict (the configuration itself),
+    * a str or a FileObj (configuration loaded from URI),
+    * a sequence of configuration-like values.
+    * or None.
+
+    The values of a sequence will be normalized first, then all
+    resulting configuration dictionaries will be merged in to one.
+
+    :param config_like: A configuration-like value.
+    :return: The normalized configuration dictionary.
+    """
     if isinstance(config_like, dict):
         return config_like
     if config_like is None:
@@ -209,7 +236,11 @@ def _merge_dicts(dict_1: dict[str, Any], dict_2: dict[str, Any]) \
 
 
 def _merge_lists(list_1: list[Any], list_2: list[Any]) -> list[Any]:
-    return list_1 + list_2
+    # alternative strategies:
+    # return list(set(list_1) + set(list_2))  # unite
+    # return list_1 + list_2  # concat
+    # return list_1  # keep
+    return list_2  # replace
 
 
 def _merge_values(value_1: Any, value_2: Any) -> Any:
@@ -217,8 +248,10 @@ def _merge_values(value_1: Any, value_2: Any) -> Any:
         return value_2
     if value_2 is None:
         return value_1
-    if isinstance(value_1, dict) and isinstance(value_2, dict):
+    if isinstance(value_1, dict) \
+            and isinstance(value_2, dict):
         return _merge_dicts(value_1, value_2)
-    if isinstance(value_1, list) and isinstance(value_2, list):
+    if isinstance(value_1, (list, tuple)) \
+            and isinstance(value_2, (list, tuple)):
         return _merge_lists(value_1, value_2)
     return value_1

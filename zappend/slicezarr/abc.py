@@ -57,3 +57,4 @@ class SliceZarr(ABC):
         if hasattr(self, "ctx"):
             self._ctx = None
             del self._ctx
+

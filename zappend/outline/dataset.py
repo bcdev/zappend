@@ -8,6 +8,7 @@ import xarray as xr
 
 from ..config import DEFAULT_APPEND_DIM
 from .variable import VariableOutline
+from ..fileobj import FileObj
 
 
 class DatasetOutline:
@@ -16,6 +17,17 @@ class DatasetOutline:
                  variables: dict[str, "VariableOutline"]):
         self.dims = dims
         self.variables = variables
+
+    @classmethod
+    def from_zarr(cls, zarr_fo: FileObj) -> "DatasetOutline":
+        # Check: Because we expect a Zarr directory structure, we can
+        #   directly load dataset Zarr metadata files to construct
+        #   the dataset outline. This potentially be faster.
+        #   For time being we hope, xr.open_zarr() is equally fast.
+        with xr.open_zarr(zarr_fo.uri,
+                          storage_options=zarr_fo.storage_options,
+                          decode_cf=False) as dataset:
+            return DatasetOutline.from_dataset(dataset)
 
     @classmethod
     def from_dataset(cls, ds: xr.Dataset) -> "DatasetOutline":

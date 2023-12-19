@@ -49,5 +49,7 @@ class Processor:
                  self.ctx.target_fo.path)
 
     def append_slice(self, slice_fo: FileObj):
-        # TODO: implement append_slice()
-        pass
+        copy_dir(slice_fo.filesystem,
+                 slice_fo.path,
+                 self.ctx.target_fo.filesystem,
+                 self.ctx.target_fo.path)

@@ -8,11 +8,46 @@ import fsspec
 import pytest
 import yaml
 
+
 from zappend.config import normalize_config
+from zappend.config import validate_config
 from zappend.fileobj import FileObj
 
 
-class ConfigTest(unittest.TestCase):
+class ConfigValidateTest(unittest.TestCase):
+    def test_validate_empty_ok(self):
+        config = {}
+        self.assertIs(config, validate_config(config))
+
+    def test_validate_versions_ok(self):
+        config = {"version": 1, "zarr_version": 2}
+        self.assertIs(config, validate_config(config))
+
+    # noinspection PyMethodMayBeStatic
+    def test_validate_versions_fail(self):
+        config = {"zarr_version": 1}
+        with pytest.raises(ValueError,
+                           match="Invalid configuration:"
+                                 " 2 was expected for zarr_version"):
+            validate_config(config)
+
+    # noinspection PyMethodMayBeStatic
+    def test_validate_variable_fail(self):
+        config = {"zarr_version": 2,
+                  "variables": {
+                      "chl": {
+                        "dtype": "int32",
+                        "dims": [10, 20, 30],
+                      }
+                  }}
+        with pytest.raises(ValueError,
+                           match="Invalid configuration:"
+                                 " 10 is not of type 'string'"
+                                 " for variables.chl.dims.0"):
+            validate_config(config)
+
+
+class ConfigNormalizeTest(unittest.TestCase):
     def test_normalize_dict(self):
         config = {"version": 1, "zarr_version": 2}
         self.assertIs(config, normalize_config(config))
