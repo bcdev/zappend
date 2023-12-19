@@ -63,64 +63,115 @@ class MakeDirsTest(unittest.TestCase):
         fs.rm("/c", recursive=True)
 
     def test_make_dirs_with_cb(self):
-        ops = []
-
-        def cb(op: str, path: str):
-            ops.append((op, path))
 
         fs = get_memory_fs()
 
-        make_dirs(fs, "a", file_op_cb=cb)
-        self.assertEquals([('create_dir', 'a')], ops)
+        undo_manager = UndoManager()
+        make_dirs(fs, "a", undo_op_cb=undo_manager.add_undo_op)
+        self.assertEquals([('delete_dir', 'a')], undo_manager.ops)
 
-        ops = []
-        make_dirs(fs, "a/b", file_op_cb=cb)
-        self.assertEquals([('create_dir', 'a/b')], ops)
+        undo_manager.reset()
+        make_dirs(fs, "a/b", undo_op_cb=undo_manager.add_undo_op)
+        self.assertEquals([('delete_dir', 'a/b')], undo_manager.ops)
 
-        ops = []
-        make_dirs(fs, "a/b/c", file_op_cb=cb)
-        self.assertEquals([('create_dir', 'a/b/c')], ops)
+        undo_manager.reset()
+        make_dirs(fs, "a/b/c", undo_op_cb=undo_manager.add_undo_op)
+        self.assertEquals([('delete_dir', 'a/b/c')], undo_manager.ops)
 
-        ops = []
-        make_dirs(fs, "a/b/c", file_op_cb=cb)
-        self.assertEquals([], ops)
+        undo_manager.reset()
+        make_dirs(fs, "a/b/c", undo_op_cb=undo_manager.add_undo_op)
+        self.assertEquals([], undo_manager.ops)
 
-        ops = []
-        make_dirs(fs, "c/a/b", file_op_cb=cb)
-        self.assertEquals([('create_dir', 'c')], ops)
+        undo_manager.reset()
+        make_dirs(fs, "c/a/b", undo_op_cb=undo_manager.add_undo_op)
+        self.assertEquals([('delete_dir', 'c')], undo_manager.ops)
 
         fs.rm("/a", recursive=True)
         fs.rm("/c", recursive=True)
 
 
 class CopyDirTest(unittest.TestCase):
+
     def test_copy_dir(self):
-        ops = []
+        undo_manager = UndoManager()
 
-        def callback(op: str, path: str):
-            ops.append((op, path))
+        protocol = "memory"
+        fs: fsspec.AbstractFileSystem = fsspec.filesystem(protocol)
 
-        source_dataset = make_test_dataset(uri="file://source.zarr")
-        self.assertIsInstance(source_dataset, xr.Dataset)
+        source_path = "source.zarr"
+        target_path = "target.zarr"
+        if fs.exists(source_path):
+            fs.rm(source_path, recursive=True)
+        if fs.exists(target_path):
+            fs.rm(target_path, recursive=True)
 
-        # fs = get_memory_fs()
-        fs = fsspec.filesystem("file")
-        copy_dir(fs, "source.zarr",
-                 fs, "target.zarr",
-                 file_op_cb=callback)
+        source_ds = make_test_dataset(uri=f"{protocol}://{source_path}")
+
+        copy_dir(fs, source_path,
+                 fs, target_path,
+                 undo_op_cb=undo_manager.add_undo_op)
+
+        self.assertEqual([('delete_dir', 'target.zarr')],
+                         undo_manager.ops)
+
+        fs.rm(target_path, recursive=True)
+        fs.mkdir(target_path)
+        undo_manager.reset()
+        copy_dir(fs, source_path,
+                 fs, target_path,
+                 undo_op_cb=undo_manager.add_undo_op)
 
         self.assertEqual(
-            [('create_file', 'target.zarr/.zattrs'),
-             ('create_file', 'target.zarr/.zgroup'),
-             ('create_file', 'target.zarr/.zmetadata'),
-             ('create_dir', 'target.zarr/chl'),
-             ('create_dir', 'target.zarr/time'),
-             ('create_dir', 'target.zarr/tsm'),
-             ('create_dir', 'target.zarr/x'),
-             ('create_dir', 'target.zarr/y')],
-            ops
+            {
+                ('delete_file', 'target.zarr/.zmetadata'),
+                ('delete_file', 'target.zarr/.zgroup'),
+                ('delete_file', 'target.zarr/.zattrs'),
+                ('delete_dir', 'target.zarr/chl'),
+                ('delete_dir', 'target.zarr/tsm'),
+                ('delete_dir', 'target.zarr/x'),
+                ('delete_dir', 'target.zarr/y'),
+                ('delete_dir', 'target.zarr/time'),
+            },
+            set(undo_manager.ops)
         )
 
-        target_dataset = xr.open_zarr("file://target.zarr",
-                                      decode_cf=False)
-        self.assertIsInstance(target_dataset, xr.Dataset)
+        undo_manager.reset()
+        copy_dir(fs, source_path,
+                 fs, target_path,
+                 undo_op_cb=undo_manager.add_undo_op)
+
+        self.assertNotIn(('delete_dir', 'target.zarr'), undo_manager.ops)
+        self.assertIn(('replace_file', 'target.zarr/.zmetadata'),
+                      undo_manager.ops)
+        self.assertIn(('replace_file', 'target.zarr/.zgroup'),
+                      undo_manager.ops)
+        self.assertIn(('replace_file', 'target.zarr/.zattrs'),
+                      undo_manager.ops)
+        self.assertIn(('replace_file', 'target.zarr/y/.zarray'),
+                      undo_manager.ops)
+        self.assertIn(('replace_file', 'target.zarr/y/.zattrs'),
+                      undo_manager.ops)
+        self.assertIn(('replace_file', 'target.zarr/y/0'),
+                      undo_manager.ops)
+
+        target_ds = xr.open_zarr(f"{protocol}://{target_path}",
+                                 decode_cf=False)
+
+        self.assertEqual(source_ds.dims, target_ds.dims)
+        self.assertEqual(set(source_ds.variables.keys()),
+                         set(target_ds.variables.keys()))
+
+        fs.rm(source_path, recursive=True)
+        fs.rm(target_path, recursive=True)
+
+
+class UndoManager:
+    def __init__(self):
+        self.ops = []
+
+    # noinspection PyUnusedLocal
+    def add_undo_op(self, op: str, path: str, data: bytes | None):
+        self.ops.append((op, path))
+
+    def reset(self):
+        self.ops = []

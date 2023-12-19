@@ -16,14 +16,15 @@ FileFilter = Callable[
     str | None  # old/new target file name | skip file?
 ]
 
-FileOp = (Literal["create_dir"]
-          | Literal["create_file"]
+UndoOp = (Literal["delete_dir"]
+          | Literal["delete_file"]
           | Literal["replace_file"])
 
-FileOpCallback = Callable[
+UndoOpCallback = Callable[
     [
-        FileOp,  # file operation
-        str,  # target file or dir path
+        UndoOp,  # undo operation
+        str,     # path
+        bytes | None  # data, if operation is "replace_file"
     ],
     None
 ]
@@ -34,16 +35,16 @@ def copy_dir(source_fs: fsspec.AbstractFileSystem,
              target_fs: fsspec.AbstractFileSystem,
              target_path: str,
              file_filter: FileFilter | None = None,
-             file_op_cb: FileOpCallback | None = None):
+             undo_op_cb: UndoOpCallback | None = None):
     """Deeply copy *source_path* from filesystem *source_fs* to
     *target_path* in filesystem *target_fs*. Filter function *filter_file*,
     if given, is used to exclude source files and directories for which
     it returns a falsy value.
     """
 
-    num_created = make_dirs(target_fs, target_path, file_op_cb=file_op_cb)
+    num_created = make_dirs(target_fs, target_path, undo_op_cb=undo_op_cb)
     if num_created:
-        file_op_cb = None  # No need to notify for nested items
+        undo_op_cb = None  # No need to notify for nested items
 
     for source_file_info in source_fs.ls(source_path, detail=True):
         source_file_path: str = source_file_info["name"]
@@ -68,24 +69,25 @@ def copy_dir(source_fs: fsspec.AbstractFileSystem,
             copy_dir(source_fs, source_file_path,
                      target_fs, target_file_path,
                      file_filter=file_filter,
-                     file_op_cb=file_op_cb)
+                     undo_op_cb=undo_op_cb)
         elif source_file_type == "file":
             target_exists = target_fs.exists(target_file_path)
             with source_fs.open(source_file_path, "rb") as sf:
                 with target_fs.open(target_file_path, "wb") as tf:
-                    if target_exists:
-                        _maybe_notify(file_op_cb, "replace_file",
-                                      target_file_path)
-                    else:
-                        _maybe_notify(file_op_cb, "create_file",
-                                      target_file_path)
                     # TODO: read/write block-wise
-                    tf.write(sf.read())
+                    data = sf.read()
+                    if target_exists:
+                        _maybe_notify(undo_op_cb, "replace_file",
+                                      target_file_path, data)
+                    else:
+                        _maybe_notify(undo_op_cb, "delete_file",
+                                      target_file_path)
+                    tf.write(data)
 
 
 def make_dirs(fs: fsspec.AbstractFileSystem,
               path: str,
-              file_op_cb: FileOpCallback | None = None) -> int:
+              undo_op_cb: UndoOpCallback | None = None) -> int:
     num_created = 0
     _path = None
     for path_component in split_path(path):
@@ -96,9 +98,9 @@ def make_dirs(fs: fsspec.AbstractFileSystem,
         if not fs.exists(_path):
             fs.mkdir(_path)
             num_created += 1
-            _maybe_notify(file_op_cb, "create_dir", _path)
+            _maybe_notify(undo_op_cb, "delete_dir", _path)
             # No need to notify for nested dirs
-            file_op_cb = None
+            undo_op_cb = None
     return num_created
 
 
@@ -121,8 +123,9 @@ def split_path(path: str) -> list[str]:
     return path_components
 
 
-def _maybe_notify(callback: FileOpCallback | None,
-                  op: FileOp,
-                  path: str):
+def _maybe_notify(callback: UndoOpCallback | None,
+                  op: UndoOp,
+                  path: str,
+                  data: bytes | None = None):
     if callback is not None:
-        callback(op, path)
+        callback(op, path, data)
