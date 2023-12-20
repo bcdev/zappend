@@ -150,7 +150,3 @@ def delete_tree(fs: fsspec.AbstractFileSystem,
             delete_tree(fs, v, root=path)
         elif fs.exists(path):
             fs.rm(path)
-
-
-def get_memory_fs() -> fsspec.AbstractFileSystem:
-    return fsspec.filesystem("memory")

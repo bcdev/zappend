@@ -6,6 +6,8 @@ from typing import Callable, Literal
 
 import fsspec
 
+from .fileobj import FileObj
+
 FileFilter = Callable[
     [
         str,  # source path
@@ -29,19 +31,34 @@ RollbackCallback = Callable[
 ]
 
 
-def transmit(source_fs: fsspec.AbstractFileSystem,
-             source_path: str,
-             target_fs: fsspec.AbstractFileSystem,
-             target_path: str,
+def transmit(source_dir: FileObj,
+             target_dir: FileObj,
              file_filter: FileFilter | None = None,
              rollback_cb: RollbackCallback | None = None):
-    """Deeply copy *source_path* from filesystem *source_fs* to
-    *target_path* in filesystem *target_fs*. Filter function *filter_file*,
-    if given, is used to exclude source files and directories for which
-    it returns a falsy value.
+    """Deeply transmit *source_dir* to *target_dir*.
+    A filter function *filter_file* can be provided to
+    transform a source file. If it returns a falsy value,
+    the file will not be transmitted at all.
+    TODO: Wait. What about a target file exists and the filter function
+        returns a falsy value. Should it be deleted then?
     """
+    _transmit(source_dir.fs,
+              source_dir.path,
+              target_dir.fs,
+              target_dir.path,
+              file_filter=file_filter,
+              rollback_cb=rollback_cb)
 
-    num_created = make_dirs(target_fs, target_path, rollback_cb=rollback_cb)
+
+def _transmit(source_fs: fsspec.AbstractFileSystem,
+              source_path: str,
+              target_fs: fsspec.AbstractFileSystem,
+              target_path: str,
+              file_filter: FileFilter | None = None,
+              rollback_cb: RollbackCallback | None = None):
+    num_created = _make_dirs(target_fs,
+                             target_path,
+                             rollback_cb=rollback_cb)
     if num_created:
         rollback_cb = None  # No need to notify for nested items
 
@@ -55,10 +72,10 @@ def transmit(source_fs: fsspec.AbstractFileSystem,
 
         if source_file_type == "directory":
             target_file_path = f"{target_path}/{source_file_name}"
-            transmit(source_fs, source_file_path,
-                     target_fs, target_file_path,
-                     file_filter=file_filter,
-                     rollback_cb=rollback_cb)
+            _transmit(source_fs, source_file_path,
+                      target_fs, target_file_path,
+                      file_filter=file_filter,
+                      rollback_cb=rollback_cb)
         elif source_file_type == "file":
             # Note, we could also consider reading/writing block-wise,
             # given that rollback_cb is None and source data
@@ -98,9 +115,16 @@ def transmit(source_fs: fsspec.AbstractFileSystem,
                         tf.write(target_data)
 
 
-def make_dirs(fs: fsspec.AbstractFileSystem,
-              path: str,
+def make_dirs(target_dir: FileObj,
               rollback_cb: RollbackCallback | None = None) -> int:
+    return _make_dirs(target_dir.fs,
+                      target_dir.path,
+                      rollback_cb=rollback_cb)
+
+
+def _make_dirs(fs: fsspec.AbstractFileSystem,
+               path: str,
+               rollback_cb: RollbackCallback | None = None) -> int:
     num_created = 0
     _path = None
     for path_component in split_path(path):
