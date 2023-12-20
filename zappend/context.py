@@ -11,6 +11,7 @@ from .config import DEFAULT_SLICE_POLLING_INTERVAL
 from .config import DEFAULT_SLICE_POLLING_TIMEOUT
 from .config import DEFAULT_SLICE_ACCESS_MODE
 from .config import DEFAULT_ZARR_VERSION
+from .config import DEFAULT_APPEND_DIM
 from .outline import DatasetOutline
 from .fileobj import FileObj
 from .log import logger
@@ -48,8 +49,12 @@ class Context:
                                  storage_options=temp_storage_options)
 
     @property
-    def zarr_version(self):
+    def zarr_version(self) -> int:
         return self._config.get("zarr_version", DEFAULT_ZARR_VERSION)
+
+    @property
+    def append_dim(self) -> str:
+        return self._config.get("append_dim", DEFAULT_APPEND_DIM)
 
     @property
     def variables(self) -> dict[str, dict[str, Any]]:
