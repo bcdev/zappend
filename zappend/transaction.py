@@ -11,6 +11,8 @@ from .transmit import RollbackOp
 LOCK_FILE = "__rollback__.lock"
 ROLLBACK_FILE = "__rollback__.txt"
 
+ROLLBACK_OPS = {"delete_dir", "delete_file", "replace_file"}
+
 
 class Transaction:
     def __init__(self,
@@ -28,13 +30,13 @@ class Transaction:
         self._rollback_file = rollback_dir / ROLLBACK_FILE
         self._target_dir = target_dir
         self._lock_file = lock_file
-        self._in_use = False
+        self._entered_ctx = False
 
     def __enter__(self):
-        if self._in_use:
-            raise ValueError("a Transaction instance can only be used once")
-
-        self._in_use = True
+        if self._entered_ctx:
+            raise ValueError("Transaction instance cannot be used"
+                             " with nested 'with' statements")
+        self._entered_ctx = True
 
         lock_file = self._lock_file
         if lock_file.exists():
@@ -43,13 +45,12 @@ class Transaction:
 
         if not self._rollback_dir.exists():
             self._rollback_dir.mkdir()
-
         self._rollback_file.write("")
 
         return self._add_rollback_op
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._assert_ctx_mgt()
+        self._assert_entered_ctx()
 
         if exc_type is not None and self._rollback_file.exists():
             rollback_txt = self._rollback_file.read(mode="r")
@@ -60,15 +61,13 @@ class Transaction:
                                 ] if record]
 
             for record in rollback_records:
-                if record:
-                    logger.debug(f"Rolling back: {record}")
-                    op = record[0]
-                    args = record[1:]
-                    # print(f"Rolling back: {op} with args {args}")
-                    op_method_name = "_" + op
-                    assert hasattr(self, op_method_name)
-                    op_method = getattr(self, op_method_name)
-                    op_method(*args)
+                logger.debug(f"Running rollback {record}")
+                op = record[0]
+                args = record[1:]
+                # print(f"Rolling back: {op} with args {args}")
+                op_method_name = "_" + op
+                op_method = getattr(self, op_method_name)
+                op_method(*args)
 
         self._rollback_dir.delete(recursive=True)
 
@@ -79,6 +78,12 @@ class Transaction:
             logger.warning(f"Failed to remove target lock: {lock_file.uri}")
             logger.warning("Note, it should be save to delete it manually.")
 
+    def _delete_dir(self, target_path):
+        self._target_dir.fs.rm(target_path, recursive=True)
+
+    def _delete_file(self, target_path):
+        self._target_dir.fs.rm(target_path)
+
     def _replace_file(self, target_path, rollback_filename):
         data = (self._rollback_dir / rollback_filename).read()
         with self._target_dir.fs.open(target_path, "wb") as f:
@@ -86,19 +91,32 @@ class Transaction:
 
     def _add_rollback_op(self,
                          op: RollbackOp,
-                         target_path: str,
-                         source_data: bytes | None):
-        self._assert_ctx_mgt()
-        if source_data is not None:
+                         path: str,
+                         data: bytes | None):
+        self._assert_entered_ctx()
+        if not isinstance(op, str):
+            raise TypeError(f"op must of type str, but was {type(op)}")
+        if not isinstance(path, str):
+            raise TypeError(f"path must of type str, but was {type(path)}")
+        if not isinstance(data, (bytes, type(None))):
+            raise TypeError(f"data must be None or of type bytes,"
+                             f" but was {type(data)}")
+        if op not in ROLLBACK_OPS:
+            raise ValueError(f"op must be one of"
+                             f" {', '.join(ROLLBACK_OPS)}, but was {op}")
+
+        assert hasattr(self, "_" + op)
+        if data is not None:
             backup_id = str(uuid.uuid4())
             backup_file = self._rollback_dir.for_path(backup_id)
-            backup_file.write(source_data)
-            rollback_entry = f"{op} {target_path} {backup_id}"
+            backup_file.write(data)
+            rollback_entry = f"{op} {path} {backup_id}"
         else:
-            rollback_entry = f"{op} {target_path}"
+            rollback_entry = f"{op} {path}"
+
         self._rollback_file.write(rollback_entry + "\n", mode="a")
 
-    def _assert_ctx_mgt(self):
-        if not self._in_use:
+    def _assert_entered_ctx(self):
+        if not self._entered_ctx:
             raise ValueError("Transaction instance"
-                             " must be used as context manager")
+                             " must be used with the 'with' statement")
