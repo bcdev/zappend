@@ -34,7 +34,7 @@ class FileObj:
         return self._storage_options
 
     @property
-    def filesystem(self) -> fsspec.AbstractFileSystem:
+    def fs(self) -> fsspec.AbstractFileSystem:
         """The filesystem."""
         self._resolve()
         return self._filesystem

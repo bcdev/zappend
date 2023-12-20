@@ -17,16 +17,16 @@ class FileObjTest(unittest.TestCase):
         zarr_dir = FileObj("memory://test.zarr")
         self.assertEqual("memory://test.zarr", zarr_dir.uri)
         self.assertEqual({}, zarr_dir.storage_options)
-        self.assertIsInstance(zarr_dir.filesystem, fsspec.AbstractFileSystem)
-        self.assertEqual("memory", to_protocol(zarr_dir.filesystem))
+        self.assertIsInstance(zarr_dir.fs, fsspec.AbstractFileSystem)
+        self.assertEqual("memory", to_protocol(zarr_dir.fs))
         self.assertEqual("/test.zarr", zarr_dir.path)
 
     def test_file_protocol(self):
         zarr_dir = FileObj("file://test.zarr")
         self.assertEqual("file://test.zarr", zarr_dir.uri)
         self.assertEqual({}, zarr_dir.storage_options)
-        self.assertIsInstance(zarr_dir.filesystem, fsspec.AbstractFileSystem)
-        self.assertEqual("file", to_protocol(zarr_dir.filesystem))
+        self.assertIsInstance(zarr_dir.fs, fsspec.AbstractFileSystem)
+        self.assertEqual("file", to_protocol(zarr_dir.fs))
         self.assertEqual(os.path.abspath("test.zarr").replace("\\", "/"),
                          zarr_dir.path)
 
@@ -34,8 +34,8 @@ class FileObjTest(unittest.TestCase):
         zarr_dir = FileObj("test.zarr")
         self.assertEqual("test.zarr", zarr_dir.uri)
         self.assertEqual({}, zarr_dir.storage_options)
-        self.assertIsInstance(zarr_dir.filesystem, fsspec.AbstractFileSystem)
-        self.assertEqual("file", to_protocol(zarr_dir.filesystem))
+        self.assertIsInstance(zarr_dir.fs, fsspec.AbstractFileSystem)
+        self.assertEqual("file", to_protocol(zarr_dir.fs))
         self.assertEqual(os.path.abspath("test.zarr").replace("\\", "/"),
                          zarr_dir.path)
 
@@ -43,15 +43,15 @@ class FileObjTest(unittest.TestCase):
         zarr_dir = FileObj("s3://eo-data/test.zarr")
         self.assertEqual("s3://eo-data/test.zarr", zarr_dir.uri)
         self.assertEqual({}, zarr_dir.storage_options)
-        self.assertIsInstance(zarr_dir.filesystem, fsspec.AbstractFileSystem)
-        self.assertEqual("s3", to_protocol(zarr_dir.filesystem))
+        self.assertIsInstance(zarr_dir.fs, fsspec.AbstractFileSystem)
+        self.assertEqual("s3", to_protocol(zarr_dir.fs))
         self.assertEqual("eo-data/test.zarr", zarr_dir.path)
 
     def test_close(self):
         zarr_dir = FileObj("s3://eo-data/test.zarr")
         self.assertIsNone(zarr_dir._filesystem)
         self.assertIsNone(zarr_dir._path)
-        fs = zarr_dir.filesystem
+        fs = zarr_dir.fs
         self.assertIsInstance(fs, fsspec.AbstractFileSystem)
         self.assertIsNotNone(zarr_dir._filesystem)
         zarr_dir.close()
@@ -92,7 +92,7 @@ class FileObjTest(unittest.TestCase):
                           expected_path: str):
         self.assertEqual(expected_uri, derived.uri)
         self.assertEqual(expected_path, derived.path)
-        self.assertIs(root.filesystem, derived.filesystem)
+        self.assertIs(root.fs, derived.fs)
         self.assertIs(root.storage_options, derived.storage_options)
 
     # noinspection PyMethodMayBeStatic

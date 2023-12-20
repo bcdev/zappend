@@ -19,13 +19,13 @@ class DatasetOutline:
         self.variables = variables
 
     @classmethod
-    def from_zarr(cls, zarr_fo: FileObj) -> "DatasetOutline":
+    def from_zarr(cls, zarr_file: FileObj) -> "DatasetOutline":
         # Check: Because we expect a Zarr directory structure, we can
         #   directly load dataset Zarr metadata files to construct
         #   the dataset outline. This potentially be faster.
         #   For time being we hope, xr.open_zarr() is equally fast.
-        with xr.open_zarr(zarr_fo.uri,
-                          storage_options=zarr_fo.storage_options,
+        with xr.open_zarr(zarr_file.uri,
+                          storage_options=zarr_file.storage_options,
                           decode_cf=False) as dataset:
             return DatasetOutline.from_dataset(dataset)
 

@@ -21,17 +21,14 @@ DEFAULT_SLICE_POLLING_TIMEOUT = 60
 
 # Write slice to temp, then read from temp (default).
 SLICE_ACCESS_MODE_TEMP = "temp"
-# Read directly from slice source, skip compatibility check.
-SLICE_ACCESS_MODE_SOURCE = "source"
 # Read directly from slice source if slice is compatible,
 # otherwise fallback to "temp".
-SLICE_ACCESS_MODE_SOURCE_SAFE = "source_safe"
+SLICE_ACCESS_MODE_SOURCE = "source"
 
 # Access modes if slice is persistent and given as path
 SLICE_ACCESS_MODES = [
     SLICE_ACCESS_MODE_TEMP,
     SLICE_ACCESS_MODE_SOURCE,
-    SLICE_ACCESS_MODE_SOURCE_SAFE
 ]
 DEFAULT_SLICE_ACCESS_MODE = SLICE_ACCESS_MODE_TEMP
 
@@ -131,17 +128,23 @@ _CONFIG_V1_SCHEMA = {
             },
         },
 
-        target_fs_options={"type": "object", "additionalProperties": True},
+        target_storage_options={
+            "type": "object",
+            "additionalProperties": True
+        },
 
-        slice_fs_options={"type": "object", "additionalProperties": True},
+        slice_storage_options={
+            "type": "object",
+            "additionalProperties": True
+        },
         slice_polling=_SLICE_POLLING_SCHEMA,
         slice_access_mode={
             "enum": SLICE_ACCESS_MODES,
             "default": DEFAULT_SLICE_ACCESS_MODE
         },
 
-        temp_path={"type": "string", "minLength": 1},
-        temp_fs_options={"type": "object", "additionalProperties": True},
+        temp_dir={"type": "string", "minLength": 1},
+        temp_storage_options={"type": "object", "additionalProperties": True},
     ),
     # "required": ["version", "fixed_dims", "append_dim"],
     "additionalProperties": False,
@@ -202,18 +205,18 @@ def normalize_config(config_like: ConfigLike) -> Config:
                     " str, or a sequence of such values")
 
 
-def load_config(config_fo: FileObj) -> Config:
+def load_config(config_file: FileObj) -> Config:
     yaml_extensions = {".yml", ".yaml", ".YML", ".YAML"}
-    logger.info(f"Reading configuration {config_fo.uri}")
-    _, ext = os.path.splitext(config_fo.path)
-    with config_fo.filesystem.open(config_fo.path) as f:
+    logger.info(f"Reading configuration {config_file.uri}")
+    _, ext = os.path.splitext(config_file.path)
+    with config_file.fs.open(config_file.path, "rt") as f:
         if ext in yaml_extensions:
             config = yaml.safe_load(f)
         else:
             config = json.load(f)
     if not isinstance(config, dict):
         raise TypeError(f"Invalid configuration:"
-                        f" {config_fo.uri}: object expected")
+                        f" {config_file.uri}: object expected")
     return config
 
 

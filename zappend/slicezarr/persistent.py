@@ -21,18 +21,18 @@ class PersistentSliceZarr(SliceZarr):
     A slice Zarr that is persisted in some filesystem.
 
     :param ctx: Processing context
-    :param slice_fo: Slice file object
+    :param slice_file: Slice file object
     """
 
-    def __init__(self, ctx: Context, slice_fo: FileObj):
+    def __init__(self, ctx: Context, slice_file: FileObj):
         super().__init__(ctx)
-        self._slice_fo = slice_fo
+        self._slice_file = slice_file
         self._slice_ds: xr.Dataset | None = None
         self._slice_outline: DatasetOutline | None = None
-        self._slice_zarr: SliceZarr | None = None
+        self._mem_slice_zarr: InMemorySliceZarr | None = None
 
     def prepare(self) -> FileObj:
-        logger.info(f"Opening slice {self._slice_fo.uri}")
+        logger.info(f"Opening slice from {self._slice_file.uri}")
 
         slice_ds = self._wait_for_slice_dataset()
 
@@ -41,23 +41,23 @@ class PersistentSliceZarr(SliceZarr):
             slice_outline = DatasetOutline.from_dataset(slice_ds)
             compliant = check_compliance(self._ctx.target_outline,
                                          slice_outline,
-                                         self._slice_fo.uri,
+                                         self._slice_file.uri,
                                          error=False)
             if compliant:
                 logger.info("Using slice source directly")
                 # No longer the dataset
                 slice_ds.close()
-                return self._slice_fo
+                return self._slice_file
 
         self._slice_ds = slice_ds  # Save instance so we can close it later
-        self._slice_zarr = InMemorySliceZarr(self._ctx, slice_ds)
-        return self._slice_zarr.prepare()
+        self._mem_slice_zarr = InMemorySliceZarr(self._ctx, slice_ds)
+        return self._mem_slice_zarr.prepare()
 
     def dispose(self):
-        if hasattr(self, "slice_zarr") and self._slice_zarr is not None:
-            self._slice_zarr.dispose()
-            self._slice_zarr = None
-            del self._slice_zarr
+        if hasattr(self, "slice_zarr") and self._mem_slice_zarr is not None:
+            self._mem_slice_zarr.dispose()
+            self._mem_slice_zarr = None
+            del self._mem_slice_zarr
         if hasattr(self, "slice_ds") and self._slice_ds is not None:
             self._slice_ds.close()
             self._slice_ds = None
@@ -82,10 +82,10 @@ class PersistentSliceZarr(SliceZarr):
             slice_ds = self._open_slice_dataset()
 
         if not slice_ds:
-            raise FileNotFoundError(self._slice_fo.uri)
+            raise FileNotFoundError(self._slice_file.uri)
         return slice_ds
 
     def _open_slice_dataset(self) -> xr.Dataset:
-        return xr.open_dataset(self._slice_fo.uri,
-                               storage_options=self._ctx.slice_fs_options,
+        return xr.open_dataset(self._slice_file.uri,
+                               storage_options=self._ctx.slice_storage_options,
                                decode_cf=False)

@@ -81,7 +81,7 @@ class Transaction:
 
     def _replace_file(self, target_path, rollback_filename):
         data = (self._rollback_dir / rollback_filename).read()
-        with self._target_dir.filesystem.open(target_path, "wb") as f:
+        with self._target_dir.fs.open(target_path, "wb") as f:
             f.write(data)
 
     def _add_rollback_op(self,

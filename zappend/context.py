@@ -22,13 +22,14 @@ class Context:
     def __init__(self, target_uri: str, config: Dict[str, Any]):
         self._config = config
 
-        target_fs_options = config.get("target_fs_options")
-        self._target_fo = FileObj(target_uri, target_fs_options)
+        target_storage_options = config.get("target_storage_options")
+        self._target_dir = FileObj(target_uri,
+                                   storage_options=target_storage_options)
 
         try:
             with xr.open_zarr(
                     target_uri,
-                    storage_option=target_fs_options,
+                    storage_option=target_storage_options,
                     decode_cf=False
             ) as target_ds:
                 logger.info(f"Target dataset f{target_uri} found,"
@@ -41,9 +42,10 @@ class Context:
                         " using outline from configuration")
             self._target_outline = DatasetOutline.from_config(self._config)
 
-        temp_path = config.get("temp_path", tempfile.gettempdir())
-        temp_fs_options = config.get("temp_fs_options")
-        self._temp_fo = FileObj(temp_path, temp_fs_options)
+        temp_dir_uri = config.get("temp_dir", tempfile.gettempdir())
+        temp_storage_options = config.get("temp_storage_options")
+        self._temp_dir = FileObj(temp_dir_uri,
+                                 storage_options=temp_storage_options)
 
     @property
     def zarr_version(self):
@@ -58,12 +60,12 @@ class Context:
         return self._target_outline
 
     @property
-    def target_fo(self) -> FileObj:
-        return self._target_fo
+    def target_dir(self) -> FileObj:
+        return self._target_dir
 
     @property
-    def slice_fs_options(self) -> dict[str, Any] | None:
-        return self._config.get("slice_fs_options")
+    def slice_storage_options(self) -> dict[str, Any] | None:
+        return self._config.get("slice_storage_options")
 
     @property
     def slice_polling(self) -> tuple[float, float] | tuple[None, None]:
@@ -86,5 +88,5 @@ class Context:
                                 DEFAULT_SLICE_ACCESS_MODE)
 
     @property
-    def temp_fo(self) -> FileObj:
-        return self._temp_fo
+    def temp_dir(self) -> FileObj:
+        return self._temp_dir

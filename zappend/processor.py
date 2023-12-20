@@ -9,6 +9,8 @@ from .context import Context
 from .transmit import transmit
 from .fileobj import FileObj
 from .slicezarr import open_slice_zarr
+from .transaction import Transaction
+from .transmit import RollbackCallback
 
 
 class Processor:
@@ -21,35 +23,29 @@ class Processor:
             self.process_slice(slice_obj)
 
     def process_slice(self, slice_obj: str | xr.Dataset):
-        with open_slice_zarr(self.ctx, slice_obj) as slice_fo:
-            target_fs = self.ctx.target_fo.filesystem
-            # TODO: wrap the following code block so that it forms
-            #  a transaction.
-            #  on enter:
-            #    - check for existing lock
-            #    - lock the target
-            #  while:
-            #    - backup any changed target files
-            #    - remember new files
-            #  on error:
-            #    - restore changed files
-            #    - delete new files
-            #  finally:
-            #    - remove backup files
-            #    - remove lock
-            if not target_fs.exists(self.ctx.target_fo.path):
-                self.write_slice(slice_fo)
-            else:
-                self.append_slice(slice_fo)
+        with open_slice_zarr(self.ctx, slice_obj) as slice_dir:
+            target_dir = self.ctx.target_dir
+            with Transaction(target_dir, self.ctx.temp_dir) as rollback_cb:
+                if not target_dir.exists():
+                    self.write_slice(slice_dir, rollback_cb)
+                else:
+                    self.append_slice(slice_dir, rollback_cb)
 
-    def write_slice(self, slice_fo: FileObj):
-        transmit(slice_fo.filesystem,
-                 slice_fo.path,
-                 self.ctx.target_fo.filesystem,
-                 self.ctx.target_fo.path)
+    def write_slice(self, slice_dir: FileObj, rollback_cb: RollbackCallback):
+        transmit(slice_dir.fs,
+                 slice_dir.path,
+                 self.ctx.target_dir.fs,
+                 self.ctx.target_dir.path,
+                 rollback_cb=rollback_cb)
 
-    def append_slice(self, slice_fo: FileObj):
-        transmit(slice_fo.filesystem,
-                 slice_fo.path,
-                 self.ctx.target_fo.filesystem,
-                 self.ctx.target_fo.path)
+    def append_slice(self, slice_dir: FileObj, rollback_cb: RollbackCallback):
+        transmit(slice_dir.fs,
+                 slice_dir.path,
+                 self.ctx.target_dir.fs,
+                 self.ctx.target_dir.path,
+                 file_filter=self.filter_slice_component,
+                 rollback_cb=rollback_cb)
+
+    def filter_slice_component(self):
+        # TODO: implement file_filter
+        raise NotImplementedError()
