@@ -1,7 +1,7 @@
 # Copyright © 2023 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
-
+import json
 from typing import Iterable
 
 import xarray as xr
@@ -42,6 +42,27 @@ class Processor:
                  file_filter=self.filter_slice_component,
                  rollback_cb=rollback_cb)
 
-    def filter_slice_component(self):
+    def filter_slice_component(self,
+                               slice_comp_path: str,
+                               slice_comp_filename: str,
+                               slice_data: bytes) -> tuple[str, str] | None:
+        if slice_comp_filename == ".zattrs":
+            # don't transfer slice attributes
+            return None
+
+        if slice_comp_filename == ".zarray":
+            append_dim = self.ctx.append_dim
+            # TODO: load corresponding target ".zarray" JSON
+            # target_data = (self.ctx.target_dir / slice_comp_path).read("rt")
+            # target_json = json.loads(target_data)
+            # TODO: modify shape for append_dim in target_json.
+            #   Note, this requires identifying the append_dim_index!
+            # target_json["shape"] =
+            # TODO: convert JSON back to bytes --> target_data
+            # TODO: return slice_comp_filename, target_data
+            # from io import BytesIO
+            # array_metadata = json.load(BytesIO(slice_data))
+            return None
+
         # TODO: implement file_filter
         raise NotImplementedError()
