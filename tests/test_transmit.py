@@ -67,27 +67,27 @@ class MakeDirsTest(unittest.TestCase):
         undo_manager = UndoManager()
         make_dirs(root / "a",
                   rollback_cb=undo_manager.add_undo_op)
-        self.assertEqual([('delete_dir', '/a')], undo_manager.ops)
+        self.assertEqual([('delete_dir', '/a')], undo_manager.records)
 
         undo_manager.reset()
         make_dirs(root / "a" / "b",
                   rollback_cb=undo_manager.add_undo_op)
-        self.assertEqual([('delete_dir', '/a/b')], undo_manager.ops)
+        self.assertEqual([('delete_dir', '/a/b')], undo_manager.records)
 
         undo_manager.reset()
         make_dirs(root / "a" / "b" / "c",
                   rollback_cb=undo_manager.add_undo_op)
-        self.assertEqual([('delete_dir', '/a/b/c')], undo_manager.ops)
+        self.assertEqual([('delete_dir', '/a/b/c')], undo_manager.records)
 
         undo_manager.reset()
         make_dirs(root / "a" / "b" / "c",
                   rollback_cb=undo_manager.add_undo_op)
-        self.assertEqual([], undo_manager.ops)
+        self.assertEqual([], undo_manager.records)
 
         undo_manager.reset()
         make_dirs(root / "c" / "a" / "b",
                   rollback_cb=undo_manager.add_undo_op)
-        self.assertEqual([('delete_dir', '/c')], undo_manager.ops)
+        self.assertEqual([('delete_dir', '/c')], undo_manager.records)
 
         root.delete(recursive=True)
 
@@ -111,7 +111,7 @@ class TransmitTest(unittest.TestCase):
                  rollback_cb=undo_manager.add_undo_op)
 
         self.assertEqual([('delete_dir', '/target.zarr')],
-                         undo_manager.ops)
+                         undo_manager.records)
 
         target_dir.delete(recursive=True)
         target_dir.mkdir()
@@ -131,26 +131,26 @@ class TransmitTest(unittest.TestCase):
                 ('delete_dir', '/target.zarr/y'),
                 ('delete_dir', '/target.zarr/time'),
             },
-            set(undo_manager.ops)
+            set(undo_manager.records)
         )
 
         undo_manager.reset()
         transmit(source_dir, target_dir,
                  rollback_cb=undo_manager.add_undo_op)
 
-        self.assertNotIn(('delete_dir', '/target.zarr'), undo_manager.ops)
+        self.assertNotIn(('delete_dir', '/target.zarr'), undo_manager.records)
         self.assertIn(('replace_file', '/target.zarr/.zmetadata'),
-                      undo_manager.ops)
+                      undo_manager.records)
         self.assertIn(('replace_file', '/target.zarr/.zgroup'),
-                      undo_manager.ops)
+                      undo_manager.records)
         self.assertIn(('replace_file', '/target.zarr/.zattrs'),
-                      undo_manager.ops)
+                      undo_manager.records)
         self.assertIn(('replace_file', '/target.zarr/y/.zarray'),
-                      undo_manager.ops)
+                      undo_manager.records)
         self.assertIn(('replace_file', '/target.zarr/y/.zattrs'),
-                      undo_manager.ops)
+                      undo_manager.records)
         self.assertIn(('replace_file', '/target.zarr/y/0'),
-                      undo_manager.ops)
+                      undo_manager.records)
 
         target_ds = xr.open_zarr(target_dir.uri, decode_cf=False)
 
@@ -233,11 +233,11 @@ class TransmitTest(unittest.TestCase):
 
 class UndoManager:
     def __init__(self):
-        self.ops = []
+        self.records = []
 
     # noinspection PyUnusedLocal
-    def add_undo_op(self, op: str, path: str, data: bytes | None):
-        self.ops.append((op, path))
+    def add_undo_op(self, action: str, path: str, data: bytes | None):
+        self.records.append((action, path))
 
     def reset(self):
-        self.ops = []
+        self.records = []

@@ -17,13 +17,14 @@ FileFilter = Callable[
     tuple[str, bytes] | None  # (target filename, target data) | skip file
 ]
 
-RollbackOp = (Literal["delete_dir"]
-              | Literal["delete_file"]
-              | Literal["replace_file"])
+RollbackAction = (Literal["delete_dir"]
+                  | Literal["delete_file"]
+                  | Literal["replace_file"])
 
 RollbackCallback = Callable[
     [
-        RollbackOp,
+        RollbackAction,
+        # TODO: Check if we should use FileObj instead of path
         str,  # target path
         bytes | None  # original data, if operation is "replace_file"
     ],
@@ -179,8 +180,8 @@ def _maybe_apply_file_filter(
 
 
 def _maybe_emit_rollback_op(callback: RollbackCallback | None,
-                            op: RollbackOp,
+                            action: RollbackAction,
                             path: str,
                             data: bytes | None = None):
     if callback is not None:
-        callback(op, path, data)
+        callback(action, path, data)

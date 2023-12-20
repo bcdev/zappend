@@ -6,12 +6,12 @@ import uuid
 
 from .fileobj import FileObj
 from .log import logger
-from .transmit import RollbackOp
+from .transmit import RollbackAction
 
 LOCK_FILE = "__rollback__.lock"
 ROLLBACK_FILE = "__rollback__.txt"
 
-ROLLBACK_OPS = {"delete_dir", "delete_file", "replace_file"}
+ROLLBACK_ACTIONS = {"delete_dir", "delete_file", "replace_file"}
 
 
 class Transaction:
@@ -62,12 +62,10 @@ class Transaction:
 
             for record in rollback_records:
                 logger.debug(f"Running rollback {record}")
-                op = record[0]
+                action = record[0]
                 args = record[1:]
-                # print(f"Rolling back: {op} with args {args}")
-                op_method_name = "_" + op
-                op_method = getattr(self, op_method_name)
-                op_method(*args)
+                action_method = getattr(self, "_" + action)
+                action_method(*args)
 
         self._rollback_dir.delete(recursive=True)
 
@@ -90,29 +88,31 @@ class Transaction:
             f.write(data)
 
     def _add_rollback_op(self,
-                         op: RollbackOp,
+                         action: RollbackAction,
                          path: str,
                          data: bytes | None):
         self._assert_entered_ctx()
-        if not isinstance(op, str):
-            raise TypeError(f"op must of type str, but was {type(op)}")
+        if not isinstance(action, str):
+            raise TypeError(
+                f"action must of type str, but was {type(action)}")
         if not isinstance(path, str):
             raise TypeError(f"path must of type str, but was {type(path)}")
         if not isinstance(data, (bytes, type(None))):
             raise TypeError(f"data must be None or of type bytes,"
-                             f" but was {type(data)}")
-        if op not in ROLLBACK_OPS:
-            raise ValueError(f"op must be one of"
-                             f" {', '.join(ROLLBACK_OPS)}, but was {op}")
+                            f" but was {type(data)}")
+        if action not in ROLLBACK_ACTIONS:
+            raise ValueError(f"action must be one of"
+                             f" {', '.join(ROLLBACK_ACTIONS)},"
+                             f" but was {action}")
 
-        assert hasattr(self, "_" + op)
+        assert hasattr(self, "_" + action)
         if data is not None:
             backup_id = str(uuid.uuid4())
             backup_file = self._rollback_dir.for_path(backup_id)
             backup_file.write(data)
-            rollback_entry = f"{op} {path} {backup_id}"
+            rollback_entry = f"{action} {path} {backup_id}"
         else:
-            rollback_entry = f"{op} {path}"
+            rollback_entry = f"{action} {path}"
 
         self._rollback_file.write(rollback_entry + "\n", mode="a")
 
