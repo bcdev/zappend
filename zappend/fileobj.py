@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 import fsspec
 
@@ -48,9 +48,77 @@ class FileObj:
     def close(self):
         """Close the filesystem used by this file object."""
         if self._filesystem is not None:
-            if hasattr(self._filesystem, "close") and callable(self._filesystem.close):
+            if hasattr(self._filesystem, "close") and callable(
+                    self._filesystem.close):
                 self._filesystem.close()
             self._filesystem = None
+
+    def __truediv__(self, rel_path: str):
+        return self.for_path(rel_path)
+
+    def for_path(self, rel_path: str) -> "FileObj":
+        if not isinstance(rel_path, str):
+            raise TypeError("rel_path must have type str")
+        if rel_path.startswith("/"):
+            raise ValueError("rel_path must be relative")
+
+        old_uri = self.uri
+        if "::" in old_uri:
+            # If uri is a chained URL, add path to first component
+            first, rest = old_uri.split("::", maxsplit=1)
+            new_uri = f"{first.rstrip('/')}/{rel_path}::{rest}"
+        else:
+            new_uri = f"{old_uri.rstrip('/')}/{rel_path}"
+
+        old_path = self._path
+        if old_path is not None:
+            new_path = f"{old_path.rstrip('/')}/{rel_path}"
+        else:
+            new_path = old_path
+
+        fo = FileObj(new_uri)
+        # patch new fo
+        fo._storage_options = self._storage_options
+        fo._path = new_path
+        fo._filesystem = self._filesystem
+
+        return fo
+
+    ############################################################
+    # Basic filesystem operations
+
+    def exists(self) -> bool:
+        self._resolve()
+        return self._filesystem.exists(self._path)
+
+    def mkdir(self):
+        self._resolve()
+        self._filesystem.mkdir(self._path, create_parents=False)
+
+    def read(self, mode: Literal["rb"] | Literal["r"] = "rb") -> bytes | str:
+        self._resolve()
+        with self._filesystem.open(self._path, mode=mode) as f:
+            return f.read()
+
+    def write(self,
+              data: str | bytes,
+              mode: Literal["wb"]
+                    | Literal["w"]
+                    | Literal["ab"]
+                    | Literal["a"]
+                    | None = None) -> int:
+        self._resolve()
+        if mode is None:
+            mode = "w" if isinstance(data, str) else "wb"
+        with self._filesystem.open(self._path, mode=mode) as f:
+            return f.write(data)
+
+    def delete(self, recursive: bool = False) -> bool:
+        self._resolve()
+        return self._filesystem.rm(self._path, recursive=recursive)
+
+    ############################################################
+    # Internals
 
     def _resolve(self):
         if self._filesystem is None or self._path is None:
@@ -58,17 +126,3 @@ class FileObj:
                 self._uri, **(self._storage_options or {})
             )
 
-    def for_suffix(self, suffix: str) -> "FileObj":
-        suffix = "/" + suffix.strip("/")
-        # TODO: Fix adding suffixes for chained URLs.
-        #   Adding the suffix to a chained URL may create an invalid URI,
-        #   for example, adding suffix ".zarray" to chained URL
-        #   "zip://chl::/users/forman/test.zip" produces
-        #   "zip://chl::/users/forman/test.zip/.zarray" instead of
-        #   "zip://chl/.zarray::/users/forman/test.zip".
-        fo = FileObj(self.uri + suffix)
-        fo._filesystem = self._filesystem
-        fo._storage_options = self._storage_options
-        if fo._path is not None:
-            fo._path += suffix
-        return fo

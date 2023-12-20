@@ -63,7 +63,6 @@ class MakeDirsTest(unittest.TestCase):
         fs.rm("/c", recursive=True)
 
     def test_make_dirs_with_cb(self):
-
         fs = get_memory_fs()
 
         undo_manager = UndoManager()
@@ -92,7 +91,7 @@ class MakeDirsTest(unittest.TestCase):
 
 class TransmitTest(unittest.TestCase):
 
-    def test_transmit(self):
+    def test_transmit_with_rollback_cb(self):
         undo_manager = UndoManager()
 
         protocol = "memory"
@@ -163,6 +162,78 @@ class TransmitTest(unittest.TestCase):
 
         fs.rm(source_path, recursive=True)
         fs.rm(target_path, recursive=True)
+
+    def test_transmit_with_file_filter(self):
+        records = set()
+
+        def my_file_filter(path, filename, data):
+            self.assertIsInstance(path, str)
+            self.assertIsInstance(filename, str)
+            self.assertIsInstance(data, (bytes, type(None)))
+            records.add((path, filename, None if data is None else len(data)))
+            return filename, data
+
+        protocol = "memory"
+        fs: fsspec.AbstractFileSystem = fsspec.filesystem(protocol)
+
+        source_path = "source.zarr"
+        target_path = "target.zarr"
+        if fs.exists(source_path):
+            fs.rm(source_path, recursive=True)
+        if fs.exists(target_path):
+            fs.rm(target_path, recursive=True)
+
+        make_test_dataset(uri=f"{protocol}://{source_path}")
+
+        transmit(fs, source_path,
+                 fs, target_path,
+                 file_filter=my_file_filter)
+
+        self.assertEqual(
+            {
+                ('source.zarr', '.zattrs', 2),
+                ('source.zarr', '.zgroup', 24),
+                ('source.zarr', '.zmetadata', 3501),
+                ('source.zarr/chl', '.zarray', 361),
+                ('source.zarr/chl', '.zattrs', 123),
+                ('source.zarr/chl', '0.0.0', 60),
+                ('source.zarr/chl', '0.0.1', 60),
+                ('source.zarr/chl', '0.1.0', 68),
+                ('source.zarr/chl', '0.1.1', 68),
+                ('source.zarr/chl', '1.0.0', 60),
+                ('source.zarr/chl', '1.0.1', 60),
+                ('source.zarr/chl', '1.1.0', 68),
+                ('source.zarr/chl', '1.1.1', 68),
+                ('source.zarr/chl', '2.0.0', 60),
+                ('source.zarr/chl', '2.0.1', 60),
+                ('source.zarr/chl', '2.1.0', 68),
+                ('source.zarr/chl', '2.1.1', 68),
+                ('source.zarr/time', '.zarray', 312),
+                ('source.zarr/time', '.zattrs', 51),
+                ('source.zarr/time', '0', 40),
+                ('source.zarr/tsm', '.zarray', 362),
+                ('source.zarr/tsm', '.zattrs', 127),
+                ('source.zarr/tsm', '0.0.0', 60),
+                ('source.zarr/tsm', '0.0.1', 60),
+                ('source.zarr/tsm', '0.1.0', 68),
+                ('source.zarr/tsm', '0.1.1', 68),
+                ('source.zarr/tsm', '1.0.0', 60),
+                ('source.zarr/tsm', '1.0.1', 60),
+                ('source.zarr/tsm', '1.1.0', 68),
+                ('source.zarr/tsm', '1.1.1', 68),
+                ('source.zarr/tsm', '2.0.0', 60),
+                ('source.zarr/tsm', '2.0.1', 60),
+                ('source.zarr/tsm', '2.1.0', 68),
+                ('source.zarr/tsm', '2.1.1', 68),
+                ('source.zarr/x', '.zarray', 317),
+                ('source.zarr/x', '.zattrs', 48),
+                ('source.zarr/x', '0', 745),
+                ('source.zarr/y', '.zarray', 315),
+                ('source.zarr/y', '.zattrs', 48),
+                ('source.zarr/y', '0', 393),
+            },
+            records
+        )
 
 
 class UndoManager:

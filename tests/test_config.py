@@ -72,8 +72,7 @@ class ConfigNormalizeTest(unittest.TestCase):
     def test_normalize_file_obj(self):
         file_obj = FileObj("memory://config.yaml")
         config = {"version": 1, "zarr_version": 2}
-        with file_obj.filesystem.open(file_obj.path, "w") as f:
-            f.write(yaml.dump(config))
+        file_obj.write(yaml.dump(config))
         self.assertEqual(config, normalize_config(file_obj))
 
     def test_normalize_sequence(self):

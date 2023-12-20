@@ -67,6 +67,12 @@ def make_test_dataset(
         uri: str | None = None,
         storage_options: dict[str, Any] | None = None
 ) -> xr.Dataset:
+    """Make a test dataset and return a xarray.Dataset instance.
+
+    If *uri* is given, the dataset will be written to Zarr using optional
+    *storage_options* and the dataset returned is the one reopened from that
+    location using *storage_options* and ``decode_cf=False``.
+    """
     ds = xr.Dataset(
         data_vars=dict(
             chl=xr.DataArray(np.zeros(shape, dtype="uint16"),

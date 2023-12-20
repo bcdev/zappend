@@ -23,7 +23,7 @@ RollbackCallback = Callable[
     [
         RollbackOp,
         str,  # target path
-        bytes | None  # source data, if operation is "replace_file"
+        bytes | None  # original data, if operation is "replace_file"
     ],
     None  # void
 ]
@@ -77,13 +77,17 @@ def transmit(source_fs: fsspec.AbstractFileSystem,
                 if target_file_name and target_data is not None:
                     target_file_path = f"{target_path}/{target_file_name}"
                     target_exists = target_fs.exists(target_file_path)
+                    original_data = None
+                    if target_exists and rollback_cb is not None:
+                        with target_fs.open(target_file_path, "rb") as tf:
+                            original_data = tf.read()
                     with target_fs.open(target_file_path, "wb") as tf:
                         if target_exists:
                             _maybe_emit_rollback_op(
                                 rollback_cb,
                                 "replace_file",
                                 target_file_path,
-                                source_data
+                                original_data
                             )
                         else:
                             _maybe_emit_rollback_op(

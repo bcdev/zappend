@@ -49,7 +49,7 @@ class InMemorySliceZarr(SliceZarr):
         super().dispose()
 
     def _write_temp_zarr(self) -> FileObj:
-        temp_fo = self._ctx.temp_fo.for_suffix(f"{uuid.uuid4()}.zarr")
+        temp_fo = self._ctx.temp_fo.for_path(f"{uuid.uuid4()}.zarr")
 
         # Save reference early so dispose() can delete also
         # if the following code raises
