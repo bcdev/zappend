@@ -49,13 +49,13 @@ class FileObjTest(unittest.TestCase):
 
     def test_close(self):
         zarr_dir = FileObj("s3://eo-data/test.zarr")
-        self.assertIsNone(zarr_dir._filesystem)
+        self.assertIsNone(zarr_dir._fs)
         self.assertIsNone(zarr_dir._path)
         fs = zarr_dir.fs
         self.assertIsInstance(fs, fsspec.AbstractFileSystem)
-        self.assertIsNotNone(zarr_dir._filesystem)
+        self.assertIsNotNone(zarr_dir._fs)
         zarr_dir.close()
-        self.assertIsNone(zarr_dir._filesystem)
+        self.assertIsNone(zarr_dir._fs)
         # See if we can close once more w.o. error
         zarr_dir.close()
 
