@@ -32,17 +32,13 @@ class Processor:
                     self.append_slice(slice_dir, rollback_cb)
 
     def write_slice(self, slice_dir: FileObj, rollback_cb: RollbackCallback):
-        transmit(slice_dir.fs,
-                 slice_dir.path,
-                 self.ctx.target_dir.fs,
-                 self.ctx.target_dir.path,
+        transmit(slice_dir,
+                 self.ctx.target_dir,
                  rollback_cb=rollback_cb)
 
     def append_slice(self, slice_dir: FileObj, rollback_cb: RollbackCallback):
-        transmit(slice_dir.fs,
-                 slice_dir.path,
-                 self.ctx.target_dir.fs,
-                 self.ctx.target_dir.path,
+        transmit(slice_dir,
+                 self.ctx.target_dir,
                  file_filter=self.filter_slice_component,
                  rollback_cb=rollback_cb)
 
