@@ -60,6 +60,12 @@ class FileObj:
 
     def for_suffix(self, suffix: str) -> "FileObj":
         suffix = "/" + suffix.strip("/")
+        # TODO: Fix adding suffixes for chained URLs.
+        #   Adding the suffix to a chained URL may create an invalid URI,
+        #   for example, adding suffix ".zarray" to chained URL
+        #   "zip://chl::/users/forman/test.zip" produces
+        #   "zip://chl::/users/forman/test.zip/.zarray" instead of
+        #   "zip://chl/.zarray::/users/forman/test.zip".
         fo = FileObj(self.uri + suffix)
         fo._filesystem = self._filesystem
         fo._storage_options = self._storage_options

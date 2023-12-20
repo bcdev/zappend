@@ -9,11 +9,15 @@ import fsspec
 import numpy as np
 import xarray as xr
 
+default_dims = ("time", "y", "x")
+default_shape = (3, 50, 100)
+default_chunks = (1, 30, 50)
+
 
 def make_test_config(
-        dims: tuple[str, str, str] = ("time", "y", "x"),
-        shape: tuple[int, int, int] = (50, 100, 200),
-        chunks: tuple[int, int, int] = (1, 30, 40)
+        dims: tuple[str, str, str] = default_dims,
+        shape: tuple[int, int, int] = default_shape,
+        chunks: tuple[int, int, int] = default_chunks
 ) -> dict[str, Any]:
     return dict(
         fixed_dims={dims[1]: shape[1], dims[2]: shape[2]},
@@ -57,9 +61,9 @@ def make_test_config(
 
 
 def make_test_dataset(
-        dims: tuple[str, str, str] = ("time", "y", "x"),
-        shape: tuple[int, int, int] = (50, 100, 200),
-        chunks: tuple[int, int, int] = (1, 30, 40),
+        dims: tuple[str, str, str] = default_dims,
+        shape: tuple[int, int, int] = default_shape,
+        chunks: tuple[int, int, int] = default_chunks,
         uri: str | None = None,
         storage_options: dict[str, Any] | None = None
 ) -> xr.Dataset:

@@ -29,14 +29,14 @@ class DatasetOutlineTest(unittest.TestCase):
         dims = dict(schema.dims)
         self.assertIn("time", dims)
         del dims["time"]
-        self.assertEqual({'y': 100, 'x': 200}, dims)
+        self.assertEqual({'y': 50, 'x': 100}, dims)
         self.assertEqual({'chl', 'tsm', 'time', 'y', 'x'},
                          set(schema.variables.keys()))
         self.assertEqualVariableSchema(
             VariableOutline(dtype="uint16",
                             dims=("time", "y", "x"),
-                            shape=(50, 100, 200),
-                            chunks=(1, 30, 40),
+                            shape=(3, 50, 100),
+                            chunks=(1, 30, 50),
                             fill_value=9999,
                             scale_factor=0.2,
                             add_offset=0,
@@ -47,8 +47,8 @@ class DatasetOutlineTest(unittest.TestCase):
         self.assertEqualVariableSchema(
             VariableOutline(dtype="int16",
                             dims=("time", "y", "x"),
-                            shape=(50, 100, 200),
-                            chunks=(1, 30, 40),
+                            shape=(3, 50, 100),
+                            chunks=(1, 30, 50),
                             fill_value=-9999,
                             scale_factor=0.01,
                             add_offset=-200,
@@ -59,8 +59,8 @@ class DatasetOutlineTest(unittest.TestCase):
         self.assertEqualVariableSchema(
             VariableOutline(dtype="float64",
                             dims=("x",),
-                            shape=(200,),
-                            chunks=(200,),
+                            shape=(100,),
+                            chunks=(100,),
                             fill_value=float("NaN"),
                             scale_factor=None,
                             add_offset=None,

@@ -6,7 +6,7 @@ from typing import Iterable
 
 import xarray as xr
 from .context import Context
-from .copydir import copy_dir
+from .transmit import transmit
 from .fileobj import FileObj
 from .slicezarr import open_slice_zarr
 
@@ -43,13 +43,13 @@ class Processor:
                 self.append_slice(slice_fo)
 
     def write_slice(self, slice_fo: FileObj):
-        copy_dir(slice_fo.filesystem,
+        transmit(slice_fo.filesystem,
                  slice_fo.path,
                  self.ctx.target_fo.filesystem,
                  self.ctx.target_fo.path)
 
     def append_slice(self, slice_fo: FileObj):
-        copy_dir(slice_fo.filesystem,
+        transmit(slice_fo.filesystem,
                  slice_fo.path,
                  self.ctx.target_fo.filesystem,
                  self.ctx.target_fo.path)

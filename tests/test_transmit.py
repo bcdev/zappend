@@ -7,9 +7,9 @@ import unittest
 import fsspec
 import xarray as xr
 
-from zappend.copydir import copy_dir
-from zappend.copydir import split_path
-from zappend.copydir import make_dirs
+from zappend.transmit import transmit
+from zappend.transmit import split_path
+from zappend.transmit import make_dirs
 from .helpers import get_memory_fs
 from .helpers import make_test_dataset
 
@@ -44,19 +44,19 @@ class MakeDirsTest(unittest.TestCase):
     def test_make_dirs(self):
         fs = get_memory_fs()
 
-        self.assertEquals(1, make_dirs(fs, "a"))
+        self.assertEqual(1, make_dirs(fs, "a"))
         self.assertTrue(1, fs.isdir("a"))
 
-        self.assertEquals(1, make_dirs(fs, "a/b"))
+        self.assertEqual(1, make_dirs(fs, "a/b"))
         self.assertTrue(1, fs.isdir("a/b"))
 
-        self.assertEquals(1, make_dirs(fs, "a/b/c"))
+        self.assertEqual(1, make_dirs(fs, "a/b/c"))
         self.assertTrue(1, fs.isdir("a/b/c"))
 
-        self.assertEquals(0, make_dirs(fs, "a/b/c"))
+        self.assertEqual(0, make_dirs(fs, "a/b/c"))
         self.assertTrue(1, fs.isdir("a/b/c"))
 
-        self.assertEquals(3, make_dirs(fs, "c/a/b"))
+        self.assertEqual(3, make_dirs(fs, "c/a/b"))
         self.assertTrue(1, fs.isdir("c/a/b"))
 
         fs.rm("/a", recursive=True)
@@ -67,32 +67,32 @@ class MakeDirsTest(unittest.TestCase):
         fs = get_memory_fs()
 
         undo_manager = UndoManager()
-        make_dirs(fs, "a", undo_op_cb=undo_manager.add_undo_op)
-        self.assertEquals([('delete_dir', 'a')], undo_manager.ops)
+        make_dirs(fs, "a", rollback_cb=undo_manager.add_undo_op)
+        self.assertEqual([('delete_dir', 'a')], undo_manager.ops)
 
         undo_manager.reset()
-        make_dirs(fs, "a/b", undo_op_cb=undo_manager.add_undo_op)
-        self.assertEquals([('delete_dir', 'a/b')], undo_manager.ops)
+        make_dirs(fs, "a/b", rollback_cb=undo_manager.add_undo_op)
+        self.assertEqual([('delete_dir', 'a/b')], undo_manager.ops)
 
         undo_manager.reset()
-        make_dirs(fs, "a/b/c", undo_op_cb=undo_manager.add_undo_op)
-        self.assertEquals([('delete_dir', 'a/b/c')], undo_manager.ops)
+        make_dirs(fs, "a/b/c", rollback_cb=undo_manager.add_undo_op)
+        self.assertEqual([('delete_dir', 'a/b/c')], undo_manager.ops)
 
         undo_manager.reset()
-        make_dirs(fs, "a/b/c", undo_op_cb=undo_manager.add_undo_op)
-        self.assertEquals([], undo_manager.ops)
+        make_dirs(fs, "a/b/c", rollback_cb=undo_manager.add_undo_op)
+        self.assertEqual([], undo_manager.ops)
 
         undo_manager.reset()
-        make_dirs(fs, "c/a/b", undo_op_cb=undo_manager.add_undo_op)
-        self.assertEquals([('delete_dir', 'c')], undo_manager.ops)
+        make_dirs(fs, "c/a/b", rollback_cb=undo_manager.add_undo_op)
+        self.assertEqual([('delete_dir', 'c')], undo_manager.ops)
 
         fs.rm("/a", recursive=True)
         fs.rm("/c", recursive=True)
 
 
-class CopyDirTest(unittest.TestCase):
+class TransmitTest(unittest.TestCase):
 
-    def test_copy_dir(self):
+    def test_transmit(self):
         undo_manager = UndoManager()
 
         protocol = "memory"
@@ -107,9 +107,9 @@ class CopyDirTest(unittest.TestCase):
 
         source_ds = make_test_dataset(uri=f"{protocol}://{source_path}")
 
-        copy_dir(fs, source_path,
+        transmit(fs, source_path,
                  fs, target_path,
-                 undo_op_cb=undo_manager.add_undo_op)
+                 rollback_cb=undo_manager.add_undo_op)
 
         self.assertEqual([('delete_dir', 'target.zarr')],
                          undo_manager.ops)
@@ -117,9 +117,9 @@ class CopyDirTest(unittest.TestCase):
         fs.rm(target_path, recursive=True)
         fs.mkdir(target_path)
         undo_manager.reset()
-        copy_dir(fs, source_path,
+        transmit(fs, source_path,
                  fs, target_path,
-                 undo_op_cb=undo_manager.add_undo_op)
+                 rollback_cb=undo_manager.add_undo_op)
 
         self.assertEqual(
             {
@@ -136,9 +136,9 @@ class CopyDirTest(unittest.TestCase):
         )
 
         undo_manager.reset()
-        copy_dir(fs, source_path,
+        transmit(fs, source_path,
                  fs, target_path,
-                 undo_op_cb=undo_manager.add_undo_op)
+                 rollback_cb=undo_manager.add_undo_op)
 
         self.assertNotIn(('delete_dir', 'target.zarr'), undo_manager.ops)
         self.assertIn(('replace_file', 'target.zarr/.zmetadata'),
