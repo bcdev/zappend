@@ -9,7 +9,7 @@ import zarr
 from zappend.fileobj import FileObj
 from zappend.zgroup import get_zarr_updates
 from zappend.zgroup import open_zarr_group
-from zappend.zgroup import get_chunk_actions
+from zappend.zgroup import get_chunks_update_range
 from .helpers import make_test_dataset
 
 
@@ -49,80 +49,82 @@ class GenerateUpdateRecordsTest(unittest.TestCase):
 class GetChunkActionsTest(unittest.TestCase):
 
     def test_chunk_size_1(self):
-        def get_chunk_actions_cs1(size, append_size):
-            return get_chunk_actions(size, append_size, chunk_size=1)
+        def range_with_chunk_size_1(size, append_size):
+            return get_chunks_update_range(size, chunk_size=1,
+                                           append_size=append_size)
 
         self.assertEqual(
-            [('create', 0)],
-            get_chunk_actions_cs1(size=0, append_size=1)
+            (False, (0, 1)),
+            range_with_chunk_size_1(size=0, append_size=1)
         )
         self.assertEqual(
-            [('create', 1)],
-            get_chunk_actions_cs1(size=1, append_size=1)
+            (False, (1, 2)),
+            range_with_chunk_size_1(size=1, append_size=1)
         )
         self.assertEqual(
-            [('create', 2)],
-            get_chunk_actions_cs1(size=2, append_size=1)
+            (False, (2, 3)),
+            range_with_chunk_size_1(size=2, append_size=1)
         )
         self.assertEqual(
-            [('create', 3)],
-            get_chunk_actions_cs1(size=3, append_size=1)
+            (False, (3, 4)),
+            range_with_chunk_size_1(size=3, append_size=1)
         )
         self.assertEqual(
-            [('create', 1), ('create', 2)],
-            get_chunk_actions_cs1(size=1, append_size=2)
+            (False, (1, 3)),
+            range_with_chunk_size_1(size=1, append_size=2)
         )
         self.assertEqual(
-            [('create', 1), ('create', 2), ('create', 3)],
-            get_chunk_actions_cs1(size=1, append_size=3)
+            (False, (1, 4)),
+            range_with_chunk_size_1(size=1, append_size=3)
         )
 
     def test_chunk_size_3(self):
-        def get_chunk_actions_cs3(size, append_size):
-            return get_chunk_actions(size, append_size, chunk_size=3)
+        def range_with_chunk_size_3(size, append_size):
+            return get_chunks_update_range(size, chunk_size=3,
+                                           append_size=append_size)
 
         self.assertEqual(
-            [('update', 0)],
-            get_chunk_actions_cs3(size=1, append_size=1)
+            (True, (0, 1)),
+            range_with_chunk_size_3(size=1, append_size=1)
         )
         self.assertEqual(
-            [('update', 0)],
-            get_chunk_actions_cs3(size=1, append_size=1)
+            (True, (0, 1)),
+            range_with_chunk_size_3(size=1, append_size=1)
         )
         self.assertEqual(
-            [('update', 0)],
-            get_chunk_actions_cs3(size=2, append_size=1)
+            (True, (0, 1)),
+            range_with_chunk_size_3(size=2, append_size=1)
         )
         self.assertEqual(
-            [('create', 1)],
-            get_chunk_actions_cs3(size=3, append_size=1)
+            (False, (1, 2)),
+            range_with_chunk_size_3(size=3, append_size=1)
         )
         self.assertEqual(
-            [('update', 1)],
-            get_chunk_actions_cs3(size=4, append_size=1)
+            (True, (1, 2)),
+            range_with_chunk_size_3(size=4, append_size=1)
         )
         self.assertEqual(
-            [('update', 1)],
-            get_chunk_actions_cs3(size=4, append_size=2)
+            (True, (1, 2)),
+            range_with_chunk_size_3(size=4, append_size=2)
         )
         self.assertEqual(
-            [('update', 1), ('create', 2)],
-            get_chunk_actions_cs3(size=4, append_size=3)
+            (True, (1, 3)),
+            range_with_chunk_size_3(size=4, append_size=3)
         )
         self.assertEqual(
-            [('create', 4)],
-            get_chunk_actions_cs3(size=12, append_size=3)
+            (False, (4, 5)),
+            range_with_chunk_size_3(size=12, append_size=3)
         )
         self.assertEqual(
-            [('create', 4), ('create', 5)],
-            get_chunk_actions_cs3(size=12, append_size=4)
+            (False, (4, 6)),
+            range_with_chunk_size_3(size=12, append_size=4)
         )
         self.assertEqual(
-            [('update', 4), ('create', 5)],
-            get_chunk_actions_cs3(size=13, append_size=4)
+            (True, (4, 6)),
+            range_with_chunk_size_3(size=13, append_size=4)
         )
         self.assertEqual(
-            [('create', 4), ('create', 5), ('create', 6), ('create', 7)],
-            get_chunk_actions_cs3(size=12, append_size=12)
+            (False, (4, 8)),
+            range_with_chunk_size_3(size=12, append_size=12)
         )
 

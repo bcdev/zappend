@@ -62,15 +62,22 @@ def get_zarr_updates(target_group: zarr.Group,
     return updates
 
 
-def get_chunk_actions(size: int,
-                      append_size: int,
-                      chunk_size: int) -> list[tuple[str, int]]:
-    num_chunks = math.ceil((size + append_size) / chunk_size)
-    actions = []
-    for chunk_index in range(size // chunk_size, num_chunks):
-        pixel_index = chunk_index * chunk_size
-        if pixel_index < size <= pixel_index + chunk_size:
-            actions.append(("update", chunk_index))
-        else:
-            actions.append(("create", chunk_index))
-    return actions
+def get_chunks_update_range(size: int,
+                            chunk_size: int,
+                            append_size: int) -> tuple[bool, tuple[int, int]]:
+    """Return the range of indexes of affected chunks if a
+    given *size* with chunking *chunk_size* is extended by
+    *append_size*. The first chunk may be updated or created,
+    subsequent chunks would always need to be created.
+
+    :param size: the size of the append dimension
+    :param append_size: the size to be appended
+    :param chunk_size: the chunk size of the append dimension
+    :return: a tuple of the form
+        (*first_is_update*, *chunk_index_range*).
+    """
+    start = size // chunk_size
+    pixel = start * chunk_size
+    first_is_update = pixel < size <= pixel + chunk_size
+    end = math.ceil((size + append_size) / chunk_size)
+    return first_is_update, (start, end)
