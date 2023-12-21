@@ -30,7 +30,7 @@ class Context:
         try:
             with xr.open_zarr(
                     target_uri,
-                    storage_option=target_storage_options,
+                    storage_options=target_storage_options,
                     decode_cf=False
             ) as target_ds:
                 logger.info(f"Target dataset f{target_uri} found,"
