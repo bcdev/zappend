@@ -15,6 +15,12 @@ ROLLBACK_ACTIONS = {"delete_dir", "delete_file", "replace_file"}
 
 
 class Transaction:
+    """
+    A filesystem transaction.
+
+    See https://github.com/zarr-developers/zarr-python/issues/247
+    """
+
     def __init__(self,
                  target_dir: FileObj,
                  rollback_dir: FileObj,
@@ -45,7 +51,7 @@ class Transaction:
 
         if not self._rollback_dir.exists():
             self._rollback_dir.mkdir()
-        self._rollback_file.write("")
+        self._rollback_file.write("")  # touch
 
         return self._add_rollback_op
 
