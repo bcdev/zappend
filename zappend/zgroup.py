@@ -1,6 +1,7 @@
 # Copyright © 2023 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
+import math
 
 import zarr
 import zarr.convenience
@@ -59,3 +60,17 @@ def get_zarr_updates(target_group: zarr.Group,
         updates[var_name] = (append_axis, [])
 
     return updates
+
+
+def get_chunk_actions(size: int,
+                      append_size: int,
+                      chunk_size: int) -> list[tuple[str, int]]:
+    num_chunks = math.ceil((size + append_size) / chunk_size)
+    actions = []
+    for chunk_index in range(size // chunk_size, num_chunks):
+        pixel_index = chunk_index * chunk_size
+        if pixel_index < size <= pixel_index + chunk_size:
+            actions.append(("update", chunk_index))
+        else:
+            actions.append(("create", chunk_index))
+    return actions
