@@ -10,12 +10,15 @@ import zarr.convenience
 
 from .context import Context
 from .fileobj import FileObj
+from .log import logger
 from .slicezarr import open_slice_zarr
 from .transaction import Transaction
 from .transmit import RollbackCallback
 from .zgroup import get_zarr_updates
 from .zgroup import open_zarr_group
 from .zgroup import get_zarr_store
+from .zgroup import get_chunk_update_range
+from .zgroup import get_chunk_indices
 
 
 class Processor:
@@ -58,52 +61,34 @@ class Processor:
                                           slice_group,
                                           self.ctx.append_dim)
 
-        # TODO: notify rollback_cb
-
         for var_name, (append_axis, _) in update_records.items():
             target_array: zarr.Array = target_group[var_name]
             slice_array: zarr.Array = slice_group[var_name]
+
+            update, append_dim_range = \
+                get_chunk_update_range(target_array.shape[append_axis],
+                                       target_array.chunks[append_axis],
+                                       slice_array.shape[append_axis])
+
+            chunk_indexes = get_chunk_indices(target_array.shape,
+                                              target_array.chunks,
+                                              append_axis,
+                                              append_dim_range)
+
+            start, _ = append_dim_range
+
+            for chunk_index in chunk_indexes:
+                chunk_filename = ".".join(map(str, chunk_index))
+                # TODO: create full path and check, if chunk file exists
+                if update and chunk_index[append_axis] == start:
+                    # TODO: load chunk data
+                    chunk_data = bytes()
+                    rollback_cb("replace_file", chunk_filename, chunk_data)
+                else:
+                    rollback_cb("delete_file", chunk_filename, None)
+
             target_array.append(slice_array, axis=append_axis)
 
+        logger.info(f"Consolidating target dataset")
         target_store = get_zarr_store(self.ctx.target_dir)
         zarr.convenience.consolidate_metadata(target_store)
-
-    def generate_update_list(self,
-                             target_group: zarr.Group,
-                             slice_group: zarr.Group,
-                             append_dim: str) -> list:
-        append_dim = self.ctx.append_dim
-        append_list: list[tuple[
-            str,  # variable name
-            int,  # append_axis
-            list[tuple[int, ...]]  # chunks
-        ]] = []
-        for var_name, value in target_group.arrays():
-            target_array: zarr.Array = value
-
-            target_dims = target_array.attrs.get("_ARRAY_DIMENSIONS")
-            if target_dims is None:
-                # Should actually not come here
-                raise ValueError("Missing array dimensions"
-                                 " for variable {var_name!r}")
-
-            try:
-                append_axis = target_dims.index(append_dim)
-            except ValueError:
-                # append dimension does not exist in variable,
-                # so we cannot append data
-                continue
-
-            if var_name not in slice_group or not hasattr(value, "shape"):
-                raise ValueError(f"Variable {var_name!r} not found in slice")
-            slice_array: zarr.Array = slice_group[var_name]
-
-            slice_dims = slice_array.attrs.get("_ARRAY_DIMENSIONS")
-            if target_dims != slice_dims:
-                raise ValueError(f"Variable dimensions"
-                                 f" for {var_name!r} do not match:"
-                                 f" expected {target_dims},"
-                                 f" but got {slice_dims}")
-
-            append_list.append((var_name, append_axis, []))
-        return append_list
