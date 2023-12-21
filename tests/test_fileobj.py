@@ -13,10 +13,34 @@ from zappend.fileobj import FileObj
 
 
 class FileObjTest(unittest.TestCase):
+
+    def test_str(self):
+        self.assertEqual(
+            "memory://test.zarr",
+            str(FileObj("memory://test.zarr"))
+        )
+        self.assertEqual(
+            "memory://test.zarr",
+            str(FileObj("memory://test.zarr",
+                        storage_options=dict(asynchronous=False)))
+        )
+
+    def test_repr(self):
+        self.assertEqual(
+            "FileObj('memory://test.zarr')",
+            repr(FileObj("memory://test.zarr"))
+        )
+        self.assertEqual(
+            "FileObj('memory://test.zarr',"
+            " storage_options={'asynchronous': False})",
+            repr(FileObj("memory://test.zarr",
+                         storage_options=dict(asynchronous=False)))
+        )
+
     def test_memory_protocol(self):
         zarr_dir = FileObj("memory://test.zarr")
         self.assertEqual("memory://test.zarr", zarr_dir.uri)
-        self.assertEqual({}, zarr_dir.storage_options)
+        self.assertEqual(None, zarr_dir.storage_options)
         self.assertIsInstance(zarr_dir.fs, fsspec.AbstractFileSystem)
         self.assertEqual("memory", to_protocol(zarr_dir.fs))
         self.assertEqual("/test.zarr", zarr_dir.path)
@@ -24,7 +48,7 @@ class FileObjTest(unittest.TestCase):
     def test_file_protocol(self):
         zarr_dir = FileObj("file://test.zarr")
         self.assertEqual("file://test.zarr", zarr_dir.uri)
-        self.assertEqual({}, zarr_dir.storage_options)
+        self.assertEqual(None, zarr_dir.storage_options)
         self.assertIsInstance(zarr_dir.fs, fsspec.AbstractFileSystem)
         self.assertEqual("file", to_protocol(zarr_dir.fs))
         self.assertEqual(os.path.abspath("test.zarr").replace("\\", "/"),
@@ -33,7 +57,7 @@ class FileObjTest(unittest.TestCase):
     def test_local_protocol(self):
         zarr_dir = FileObj("test.zarr")
         self.assertEqual("test.zarr", zarr_dir.uri)
-        self.assertEqual({}, zarr_dir.storage_options)
+        self.assertEqual(None, zarr_dir.storage_options)
         self.assertIsInstance(zarr_dir.fs, fsspec.AbstractFileSystem)
         self.assertEqual("file", to_protocol(zarr_dir.fs))
         self.assertEqual(os.path.abspath("test.zarr").replace("\\", "/"),
@@ -42,7 +66,7 @@ class FileObjTest(unittest.TestCase):
     def test_s3_protocol(self):
         zarr_dir = FileObj("s3://eo-data/test.zarr")
         self.assertEqual("s3://eo-data/test.zarr", zarr_dir.uri)
-        self.assertEqual({}, zarr_dir.storage_options)
+        self.assertEqual(None, zarr_dir.storage_options)
         self.assertIsInstance(zarr_dir.fs, fsspec.AbstractFileSystem)
         self.assertEqual("s3", to_protocol(zarr_dir.fs))
         self.assertEqual("eo-data/test.zarr", zarr_dir.path)
@@ -70,6 +94,33 @@ class FileObjTest(unittest.TestCase):
         self.assert_derived_ok(root, derived,
                                "s3://eo-data/test.zarr/chl/.zarray",
                                "eo-data/test.zarr/chl/.zarray")
+
+    def test_parent(self):
+        file = FileObj("s3://eo-data/test.zarr/.zmetadata")
+        fs = file.fs
+
+        parent = file.parent
+        self.assertIsInstance(parent, FileObj)
+        self.assertEqual("s3://eo-data/test.zarr", parent.uri)
+        self.assertEqual("eo-data/test.zarr", parent.path)
+        self.assertIs(fs, parent.fs)
+
+        parent = parent.parent
+        self.assertIsInstance(parent, FileObj)
+        self.assertEqual("s3://eo-data", parent.uri)
+        self.assertEqual("eo-data", parent.path)
+        self.assertIs(fs, parent.fs)
+
+        parent = parent.parent
+        self.assertIsInstance(parent, FileObj)
+        self.assertEqual("s3://", parent.uri)
+        self.assertEqual("", parent.path)
+        self.assertIs(fs, parent.fs)
+
+        with pytest.raises(ValueError,
+                           match="cannot get parent of empty path"):
+            # noinspection PyUnusedLocal
+            parent = parent.parent
 
     def test_for_path(self):
         root = FileObj("s3://eo-data/test.zarr")

@@ -25,7 +25,7 @@ class Transaction:
                  target_dir: FileObj,
                  rollback_dir: FileObj,
                  create_rollback_subdir: bool = True):
-        lock_file = target_dir / LOCK_FILE
+        lock_file = target_dir.parent / LOCK_FILE
         if lock_file.exists():
             raise IOError(f"Target is locked: {lock_file.uri}")
         transaction_id = str(uuid.uuid4())
@@ -44,14 +44,14 @@ class Transaction:
                              " with nested 'with' statements")
         self._entered_ctx = True
 
+        if not self._rollback_dir.exists():
+            self._rollback_dir.mkdir()
+        self._rollback_file.write("")  # touch
+
         lock_file = self._lock_file
         if lock_file.exists():
             raise IOError(f"Target is locked: {lock_file.uri}")
         lock_file.write(self._rollback_dir.uri)
-
-        if not self._rollback_dir.exists():
-            self._rollback_dir.mkdir()
-        self._rollback_file.write("")  # touch
 
         return self._add_rollback_op
 
