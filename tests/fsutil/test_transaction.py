@@ -8,11 +8,11 @@ from typing import Callable
 import pytest
 import xarray as xr
 
-from zappend.fileobj import FileObj
-from zappend.transaction import Transaction
-from zappend.transaction import LOCK_FILE
-from zappend.transaction import ROLLBACK_FILE
-from .helpers import make_test_dataset
+from zappend.fsutil.fileobj import FileObj
+from zappend.fsutil.transaction import Transaction
+from zappend.fsutil.transaction import LOCK_FILE
+from zappend.fsutil.transaction import ROLLBACK_FILE
+from ..helpers import make_test_dataset
 
 
 # TODO: test rollback actions "delete_dir" and "delete_file"

@@ -7,7 +7,7 @@ import uuid
 import xarray as xr
 
 from ..context import Context
-from ..fileobj import FileObj
+from ..fsutil.fileobj import FileObj
 from ..log import logger
 from ..outline import DatasetOutline
 from ..outline import check_compliance

@@ -1,7 +1,7 @@
 import xarray as xr
 
 from ..context import Context
-from ..fileobj import FileObj
+from ..fsutil.fileobj import FileObj
 from .abc import SliceZarr
 from .inmemory import InMemorySliceZarr
 from .persistent import PersistentSliceZarr

@@ -2,7 +2,7 @@ from typing import Any, Literal
 
 import fsspec
 
-from zappend.path import split_filename
+from .path import split_filename
 
 
 class FileObj:

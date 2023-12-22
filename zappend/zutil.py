@@ -10,7 +10,7 @@ import zarr
 import zarr.convenience
 import zarr.storage
 
-from .fileobj import FileObj
+from .fsutil.fileobj import FileObj
 
 
 def open_zarr_group(directory: FileObj) -> zarr.Group:

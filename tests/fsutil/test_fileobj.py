@@ -9,7 +9,7 @@ import uuid
 import fsspec
 import pytest
 
-from zappend.fileobj import FileObj
+from zappend.fsutil.fileobj import FileObj
 
 
 class FileObjTest(unittest.TestCase):

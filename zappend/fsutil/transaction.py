@@ -5,8 +5,8 @@
 import uuid
 from typing import Callable, Literal
 
-from .fileobj import FileObj
-from .log import logger
+from zappend.fsutil.fileobj import FileObj
+from zappend.log import logger
 
 RollbackAction = (Literal["delete_dir"]
                   | Literal["delete_file"]

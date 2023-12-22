@@ -12,9 +12,9 @@ from .config import DEFAULT_SLICE_POLLING_TIMEOUT
 from .config import DEFAULT_SLICE_ACCESS_MODE
 from .config import DEFAULT_ZARR_VERSION
 from .config import DEFAULT_APPEND_DIM
-from .outline import DatasetOutline
-from .fileobj import FileObj
+from .fsutil.fileobj import FileObj
 from .log import logger
+from .outline import DatasetOutline
 
 
 class Context:

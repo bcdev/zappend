@@ -5,7 +5,7 @@
 from abc import abstractmethod, ABC
 
 from ..context import Context
-from ..fileobj import FileObj
+from ..fsutil.fileobj import FileObj
 
 
 class SliceZarr(ABC):

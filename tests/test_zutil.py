@@ -6,7 +6,7 @@ import unittest
 
 import zarr
 
-from zappend.fileobj import FileObj
+from zappend.fsutil.fileobj import FileObj
 from zappend.zutil import get_zarr_arrays_for_dim
 from zappend.zutil import open_zarr_group
 from zappend.zutil import get_chunk_update_range

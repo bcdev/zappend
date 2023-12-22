@@ -8,7 +8,7 @@ import xarray as xr
 
 from ..config import SLICE_ACCESS_MODE_SOURCE
 from ..context import Context
-from ..fileobj import FileObj
+from ..fsutil.fileobj import FileObj
 from ..log import logger
 from ..outline import DatasetOutline
 from ..outline import check_compliance

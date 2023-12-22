@@ -11,7 +11,7 @@ import yaml
 
 from zappend.config import normalize_config
 from zappend.config import validate_config
-from zappend.fileobj import FileObj
+from zappend.fsutil.fileobj import FileObj
 
 
 class ConfigValidateTest(unittest.TestCase):

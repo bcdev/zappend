@@ -9,11 +9,11 @@ import zarr.storage
 import zarr.convenience
 
 from .context import Context
-from .fileobj import FileObj
+from .fsutil.fileobj import FileObj
+from .fsutil.transaction import Transaction
+from .fsutil.transaction import RollbackCallback
 from .log import logger
 from .slicezarr import open_slice_zarr
-from .transaction import Transaction
-from .transaction import RollbackCallback
 from .zutil import get_zarr_arrays_for_dim
 from .zutil import open_zarr_group
 from .zutil import get_zarr_store

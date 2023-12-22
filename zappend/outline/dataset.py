@@ -8,7 +8,7 @@ import xarray as xr
 
 from ..config import DEFAULT_APPEND_DIM
 from .variable import VariableOutline
-from ..fileobj import FileObj
+from zappend.fsutil.fileobj import FileObj
 
 
 class DatasetOutline:

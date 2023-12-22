@@ -10,7 +10,7 @@ import jsonschema
 import jsonschema.exceptions
 import yaml
 
-from .fileobj import FileObj
+from .fsutil.fileobj import FileObj
 from .log import logger
 
 DEFAULT_ZARR_VERSION = 2
