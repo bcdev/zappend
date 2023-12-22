@@ -4,6 +4,7 @@
 
 import unittest
 
+import pytest
 import zarr
 
 from zappend.fsutil.fileobj import FileObj
@@ -14,7 +15,7 @@ from zappend.zutil import get_chunk_indices
 from .helpers import make_test_dataset
 
 
-class ZUtilTest(unittest.TestCase):
+class OpenZarrGroupTest(unittest.TestCase):
 
     def test_open_zarr_group(self):
         make_test_dataset(uri="memory://test.zarr")
@@ -24,11 +25,15 @@ class ZUtilTest(unittest.TestCase):
                          set(k for k, v in group.arrays()))
         self.assertEqual({}, group.attrs)
 
+
+class GetZarrArraysForDimTest(unittest.TestCase):
+
     def test_get_zarr_arrays_for_dim(self):
-        make_test_dataset(uri="memory://target.zarr",
+        dataset_dir = FileObj("memory://test.zarr")
+        make_test_dataset(uri=dataset_dir.uri,
                           shape=(3, 10, 20),
                           chunks=(1, 5, 10))
-        group = open_zarr_group(FileObj("memory://target.zarr"))
+        group = open_zarr_group(dataset_dir)
         array_dict = get_zarr_arrays_for_dim(group, "time")
         self.assertIsInstance(array_dict, dict)
         self.assertEqual({'chl', 'tsm', 'time'}, set(array_dict.keys()))
@@ -38,6 +43,20 @@ class ZUtilTest(unittest.TestCase):
             array, dim_axis = array_item
             self.assertIsInstance(array, zarr.Array)
             self.assertEqual(0, dim_axis)
+
+    # noinspection PyMethodMayBeStatic
+    def test_get_zarr_arrays_for_dim_fails(self):
+        dataset_dir = FileObj("memory://test.zarr")
+        make_test_dataset(uri=dataset_dir.uri,
+                          shape=(3, 10, 20),
+                          chunks=(1, 5, 10))
+        chl_attrs_file = dataset_dir / "chl" / ".zattrs"
+        chl_attrs_file.write(b"{}")
+
+        group = open_zarr_group(dataset_dir)
+        with pytest.raises(ValueError,
+                           match="Missing dimension names for array 'chl'"):
+            get_zarr_arrays_for_dim(group, "time")
 
 
 class GetChunkIndicesTest(unittest.TestCase):

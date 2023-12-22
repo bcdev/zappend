@@ -41,3 +41,10 @@ class CliTest(unittest.TestCase):
         result = runner.invoke(zappend, ['--help-config'])
         self.assertEqual(0, result.exit_code)
         self.assertIn("Configuration JSON schema:", result.output)
+
+    def test_no_slices(self):
+        runner = CliRunner()
+        # noinspection PyTypeChecker
+        result = runner.invoke(zappend, [])
+        self.assertEqual(0, result.exit_code)
+        self.assertEqual("No slice datasets given.\n", result.output)

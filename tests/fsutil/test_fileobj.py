@@ -122,6 +122,15 @@ class FileObjTest(unittest.TestCase):
             # noinspection PyUnusedLocal
             parent = parent.parent
 
+    def test_parent_with_chained_uri(self):
+        file = FileObj("dir://chl/.zarray::file:/eo-data/test.zarr")
+        fs = file.fs
+        parent = file.parent
+        self.assertIsInstance(parent, FileObj)
+        self.assertEqual("dir://chl::file:/eo-data/test.zarr", parent.uri)
+        self.assertEqual("chl", parent.path)
+        self.assertIs(fs, parent.fs)
+
     def test_for_path(self):
         root = FileObj("s3://eo-data/test.zarr")
         derived = root.for_path(".zgroup")

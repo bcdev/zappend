@@ -31,8 +31,8 @@ def get_zarr_arrays_for_dim(target_group: zarr.Group,
         target_dims = target_array.attrs.get("_ARRAY_DIMENSIONS")
         if target_dims is None:
             # Should actually not come here
-            raise ValueError("Array array dimensions"
-                             " for variable {var_name!r}")
+            raise ValueError(f"Missing dimension names"
+                             f" for array {array_name!r}")
 
         try:
             append_axis = target_dims.index(append_dim)
