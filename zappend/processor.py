@@ -13,7 +13,7 @@ from .fileobj import FileObj
 from .log import logger
 from .slicezarr import open_slice_zarr
 from .transaction import Transaction
-from .transmit import RollbackCallback
+from .transaction import RollbackCallback
 from .zutil import get_zarr_arrays_for_dim
 from .zutil import open_zarr_group
 from .zutil import get_zarr_store

@@ -3,10 +3,24 @@
 # https://opensource.org/licenses/MIT.
 
 import uuid
+from typing import Callable, Literal
 
 from .fileobj import FileObj
 from .log import logger
-from .transmit import RollbackAction
+
+RollbackAction = (Literal["delete_dir"]
+                  | Literal["delete_file"]
+                  | Literal["replace_file"])
+
+RollbackCallback = Callable[
+    [
+        RollbackAction,
+        # TODO: Check if we should use FileObj instead of path
+        str,  # target path
+        bytes | None  # original data, if operation is "replace_file"
+    ],
+    None  # void
+]
 
 LOCK_FILE = "__rollback__.lock"
 ROLLBACK_FILE = "__rollback__.txt"
