@@ -72,6 +72,8 @@ CONFIG_V1_SCHEMA = {
 
         target_uri=_NON_EMPTY_STRING_SCHEMA,
 
+        slice_engine=_NON_EMPTY_STRING_SCHEMA,
+
         target_storage_options={
             "type": "object",
             "additionalProperties": True

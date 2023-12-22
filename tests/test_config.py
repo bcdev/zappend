@@ -8,8 +8,7 @@ import fsspec
 import pytest
 import yaml
 
-
-from zappend.config import normalize_config
+from zappend.config import normalize_config, CONFIG_V1_SCHEMA
 from zappend.config import validate_config
 from zappend.fsutil.fileobj import FileObj
 
@@ -36,8 +35,8 @@ class ConfigValidateTest(unittest.TestCase):
         config = {"zarr_version": 2,
                   "variables": {
                       "chl": {
-                        "dtype": "int32",
-                        "dims": [10, 20, 30],
+                          "dtype": "int32",
+                          "dims": [10, 20, 30],
                       }
                   }}
         with pytest.raises(ValueError,
@@ -168,3 +167,26 @@ class ConfigNormalizeTest(unittest.TestCase):
             normalize_config(True)
         with pytest.raises(TypeError):
             normalize_config(bytes())
+
+    def test_schema(self):
+        schema = CONFIG_V1_SCHEMA
+        self.assertIn("properties", schema)
+        self.assertIsInstance(schema["properties"], dict)
+        self.assertEqual(
+            {
+                'append_dim',
+                'dims',
+                'slice_access_mode',
+                'slice_engine',
+                'slice_polling',
+                'slice_storage_options',
+                'target_storage_options',
+                'target_uri',
+                'temp_dir',
+                'temp_storage_options',
+                'variables',
+                'version',
+                'zarr_version'
+            },
+            set(schema["properties"].keys())
+        )

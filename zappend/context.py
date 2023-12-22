@@ -73,6 +73,10 @@ class Context:
         return self._target_dir
 
     @property
+    def slice_engine(self) -> str | None:
+        return self._config.get("slice_engine")
+
+    @property
     def slice_storage_options(self) -> dict[str, Any] | None:
         return self._config.get("slice_storage_options")
 

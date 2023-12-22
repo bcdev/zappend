@@ -54,7 +54,5 @@ class SliceZarr(ABC):
         """Dispose this slice Zarr.
         This should include cleaning up of used resources.
         """
-        if hasattr(self, "ctx"):
-            self._ctx = None
-            del self._ctx
+        self._ctx = None
 

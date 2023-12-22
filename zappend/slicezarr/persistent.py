@@ -54,14 +54,12 @@ class PersistentSliceZarr(SliceZarr):
         return self._mem_slice_zarr.prepare()
 
     def dispose(self):
-        if hasattr(self, "slice_zarr") and self._mem_slice_zarr is not None:
+        if self._mem_slice_zarr is not None:
             self._mem_slice_zarr.dispose()
             self._mem_slice_zarr = None
-            del self._mem_slice_zarr
-        if hasattr(self, "slice_ds") and self._slice_ds is not None:
+        if self._slice_ds is not None:
             self._slice_ds.close()
             self._slice_ds = None
-            del self._slice_ds
         super().dispose()
 
     def _wait_for_slice_dataset(self) -> xr.Dataset:
@@ -86,6 +84,17 @@ class PersistentSliceZarr(SliceZarr):
         return slice_ds
 
     def _open_slice_dataset(self) -> xr.Dataset:
+        engine = self._ctx.slice_engine
+        if engine is None \
+            and (self._slice_file.path.endswith(".zarr")
+                 or self._slice_file.path.endswith(".zarr.zip")):
+            engine = "zarr"
+        if engine is "zarr":
+            storage_options = self._ctx.slice_storage_options
+            return xr.open_zarr(self._slice_file.uri,
+                                storage_options=storage_options,
+                                decode_cf=False)
+
         return xr.open_dataset(self._slice_file.uri,
-                               storage_options=self._ctx.slice_storage_options,
+                               engine=engine,
                                decode_cf=False)
