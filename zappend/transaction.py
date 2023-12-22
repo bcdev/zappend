@@ -120,6 +120,7 @@ class Transaction:
         else:
             rollback_entry = f"{action} {path}"
 
+        logger.debug(f"Recording rollback record: {rollback_entry!r}")
         self._rollback_file.write(rollback_entry + "\n", mode="a")
 
     def _assert_entered_ctx(self):
