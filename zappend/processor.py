@@ -36,59 +36,77 @@ class Processor:
             update_mode = target_dir.exists()
             with Transaction(target_dir, self.ctx.temp_dir) as rollback_cb:
                 if update_mode:
-                    self.update_target(slice_dir, rollback_cb)
+                    update_target_from_slice(self.ctx.target_dir,
+                                             self.ctx.append_dim,
+                                             slice_dir,
+                                             rollback_cb)
                 else:
-                    self.create_target(slice_dir, rollback_cb)
+                    create_target_from_slice(self.ctx.target_dir,
+                                             slice_dir,
+                                             rollback_cb)
 
-    def create_target(self,
-                      slice_dir: FileObj,
-                      rollback_cb: RollbackCallback):
-        target_dir = self.ctx.target_dir
-        try:
-            slice_dir.copy(target_dir)
-        finally:
-            if target_dir.exists():
-                rollback_cb("delete_dir", target_dir.path, None)
 
-    def update_target(self,
-                      slice_dir: FileObj,
-                      rollback_cb: RollbackCallback):
+def create_target_from_slice(target_dir, slice_dir, rollback_cb):
+    try:
+        slice_dir.copy(target_dir)
+    finally:
+        if target_dir.exists():
+            rollback_cb("delete_dir", target_dir.path, None)
 
-        target_group = open_zarr_group(self.ctx.target_dir)
-        slice_group = open_zarr_group(slice_dir)
 
-        update_records = get_zarr_updates(target_group,
-                                          slice_group,
-                                          self.ctx.append_dim)
+def update_target_from_slice(target_dir: FileObj,
+                             append_dim: str,
+                             slice_dir: FileObj,
+                             rollback_cb: RollbackCallback):
+    target_group = open_zarr_group(target_dir)
+    slice_group = open_zarr_group(slice_dir)
+    update_records = get_zarr_updates(target_group,
+                                      slice_group,
+                                      append_dim)
+    for array_name, (append_axis, _) in update_records.items():
+        target_array: zarr.Array = target_group[array_name]
+        slice_array: zarr.Array = slice_group[array_name]
 
-        for var_name, (append_axis, _) in update_records.items():
-            target_array: zarr.Array = target_group[var_name]
-            slice_array: zarr.Array = slice_group[var_name]
+        array_dir = target_dir / array_name
 
-            update, append_dim_range = \
-                get_chunk_update_range(target_array.shape[append_axis],
-                                       target_array.chunks[append_axis],
-                                       slice_array.shape[append_axis])
+        array_metadata_file = array_dir / ".zarray"
+        array_metadata = array_metadata_file.read()
+        rollback_cb("replace_file",
+                    array_metadata_file.path, array_metadata)
 
-            chunk_indexes = get_chunk_indices(target_array.shape,
-                                              target_array.chunks,
-                                              append_axis,
-                                              append_dim_range)
+        update, append_dim_range = \
+            get_chunk_update_range(target_array.shape[append_axis],
+                                   target_array.chunks[append_axis],
+                                   slice_array.shape[append_axis])
 
-            start, _ = append_dim_range
+        chunk_indexes = get_chunk_indices(target_array.shape,
+                                          target_array.chunks,
+                                          append_axis,
+                                          append_dim_range)
 
-            for chunk_index in chunk_indexes:
-                chunk_filename = ".".join(map(str, chunk_index))
-                # TODO: create full path and check, if chunk file exists
-                if update and chunk_index[append_axis] == start:
-                    # TODO: load chunk data
-                    chunk_data = bytes()
-                    rollback_cb("replace_file", chunk_filename, chunk_data)
-                else:
-                    rollback_cb("delete_file", chunk_filename, None)
+        start, _ = append_dim_range
 
-            target_array.append(slice_array, axis=append_axis)
+        for chunk_index in chunk_indexes:
+            chunk_filename = ".".join(map(str, chunk_index))
+            chunk_file = array_dir / chunk_filename
+            if update and chunk_index[append_axis] == start:
+                chunk_data = None
+                try:
+                    chunk_data = chunk_file.read()
+                except FileNotFoundError:
+                    # should be ok
+                    pass
+                if chunk_data:
+                    rollback_cb("replace_file",
+                                chunk_file.path, chunk_data)
+            else:
+                rollback_cb("delete_file",
+                            chunk_file.path, None)
 
-        logger.info(f"Consolidating target dataset")
-        target_store = get_zarr_store(self.ctx.target_dir)
-        zarr.convenience.consolidate_metadata(target_store)
+        target_array.append(slice_array, axis=append_axis)
+    logger.info(f"Consolidating target dataset")
+    metadata_file = target_dir / ".zmetadata"
+    metadata_data = metadata_file.read()
+    rollback_cb("replace_file", metadata_file.path, metadata_data)
+    target_store = get_zarr_store(target_dir)
+    zarr.convenience.consolidate_metadata(target_store)
