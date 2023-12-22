@@ -65,20 +65,43 @@ _SLICE_POLLING_SCHEMA = {
     ]
 }
 
-_CONFIG_V1_SCHEMA = {
+CONFIG_V1_SCHEMA = {
     "type": "object",
     "properties": dict(
         version={"const": 1},
+
+        target_uri=_NON_EMPTY_STRING_SCHEMA,
+
+        target_storage_options={
+            "type": "object",
+            "additionalProperties": True
+        },
+
+        slice_storage_options={
+            "type": "object",
+            "additionalProperties": True
+        },
+        slice_polling=_SLICE_POLLING_SCHEMA,
+        slice_access_mode={
+            "enum": SLICE_ACCESS_MODES,
+            "default": DEFAULT_SLICE_ACCESS_MODE
+        },
+
+        temp_dir=_NON_EMPTY_STRING_SCHEMA,
+        temp_storage_options={"type": "object", "additionalProperties": True},
+
         zarr_version={"const": DEFAULT_ZARR_VERSION},
+
         dims={
             "type": "object",
             "additionalProperties": _ORDINAL_SCHEMA
         },
+
         append_dim={
-            "type": "string",
-            "default": DEFAULT_APPEND_DIM,
-            "minLength": 1
+            **_NON_EMPTY_STRING_SCHEMA,
+            "default": DEFAULT_APPEND_DIM
         },
+
         # Define layout and encoding for variables.
         # Object property names refer to variable names.
         # Special name "*" refers to all variables, useful
@@ -128,23 +151,6 @@ _CONFIG_V1_SCHEMA = {
             },
         },
 
-        target_storage_options={
-            "type": "object",
-            "additionalProperties": True
-        },
-
-        slice_storage_options={
-            "type": "object",
-            "additionalProperties": True
-        },
-        slice_polling=_SLICE_POLLING_SCHEMA,
-        slice_access_mode={
-            "enum": SLICE_ACCESS_MODES,
-            "default": DEFAULT_SLICE_ACCESS_MODE
-        },
-
-        temp_dir={"type": "string", "minLength": 1},
-        temp_storage_options={"type": "object", "additionalProperties": True},
     ),
     # "required": ["version", "fixed_dims", "append_dim"],
     "additionalProperties": False,
@@ -167,7 +173,7 @@ def validate_config(config_like: ConfigLike) -> Config:
     """
     config = normalize_config(config_like)
     try:
-        jsonschema.validate(config, _CONFIG_V1_SCHEMA)
+        jsonschema.validate(config, CONFIG_V1_SCHEMA)
     except jsonschema.exceptions.ValidationError as e:
         raise ValueError(f"Invalid configuration: {e.message}"
                          f" for {'.'.join(map(str, e.path))}")

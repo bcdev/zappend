@@ -13,9 +13,9 @@ from .helpers import make_test_dataset
 class TestProcessor(unittest.TestCase):
     def test_process_one_slice(self):
         test_ds_kwargs = dict(shape=(1, 10, 20), chunks=(1, 5, 10))
-        config = {}
+        config = dict(target_uri="memory://target.zarr")
 
-        ctx = Context("memory://target.zarr", config=config)
+        ctx = Context(config)
         if ctx.target_dir.exists():
             ctx.target_dir.delete(recursive=True)
         self.assertFalse(ctx.target_dir.exists())
@@ -35,9 +35,9 @@ class TestProcessor(unittest.TestCase):
     def test_process_two_slices(self):
         test_ds_kwargs = dict(shape=(1, 10, 20), chunks=(1, 5, 10))
 
-        config = {}
+        config = dict(target_uri="memory://target.zarr")
 
-        ctx = Context("memory://target.zarr", config=config)
+        ctx = Context(config)
         if ctx.target_dir.exists():
             ctx.target_dir.delete(recursive=True)
         self.assertFalse(ctx.target_dir.exists())

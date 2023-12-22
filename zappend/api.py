@@ -6,19 +6,23 @@ import xarray as xr
 from typing import Any, Iterable
 
 from .config import normalize_config
+from .config import validate_config
 from .context import Context
 from .processor import Processor
 
 
-def zappend(target_path: str,
-            slice_paths: Iterable[str | xr.Dataset],
-            config: tuple[str, ...] | str | dict[str, Any] | None = None):
-    """Tool to create or update a Zarr dataset from slices."""
-    if not slice_paths:
-        raise ValueError("slice_paths must be given")
+def zappend(slice_uris: Iterable[str | xr.Dataset],
+            config: tuple[str, ...] | str | dict[str, Any] | None = None,
+            **kwargs):
+    """Create or update a Zarr dataset from slices."""
+
+    if not slice_uris:
+        return
 
     config = normalize_config(config)
+    config.update({k: v for k, v in kwargs if v is not None})
+    validate_config(config)
 
-    ctx = Context(target_path, config)
+    ctx = Context(config)
     processor = Processor(ctx)
-    processor.process_slices(slice_paths)
+    processor.process_slices(slice_uris)

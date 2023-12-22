@@ -20,8 +20,12 @@ from .outline import DatasetOutline
 class Context:
     """Provides access to configuration values and values derived from it."""
 
-    def __init__(self, target_uri: str, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any]):
         self._config = config
+
+        target_uri = config.get("target_uri")
+        if not target_uri:
+            raise ValueError("Missing 'target_uri' in configuration")
 
         target_storage_options = config.get("target_storage_options")
         self._target_dir = FileObj(target_uri,
