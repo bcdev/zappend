@@ -2,6 +2,8 @@ from typing import Any, Literal
 
 import fsspec
 
+from zappend.path import split_filename
+
 
 class FileObj:
     """An object that represents a file or directory in some filesystem.
@@ -9,19 +11,37 @@ class FileObj:
     :param uri: The file or directory URI
     :param storage_options: Optional storage options specific to
         the protocol of the URI
+    :param fs: Optional fsspec filesystem instance.
+        Use with care, the filesystem must be consistent with *uri*
+        and *storage_options*. For internal use only.
+    :param path: The path info the filesystem *fs*.
+        Use with care, the path must be consistent with *uri*.
+        For internal use only.
     """
 
     def __init__(self,
                  uri: str,
-                 storage_options: dict[str, Any] | None = None):
+                 storage_options: dict[str, Any] | None = None,
+                 fs: fsspec.AbstractFileSystem | None = None,
+                 path: str | None = None):
         self._uri = uri
-        self._storage_options = dict(storage_options or {})
-        self._fs: fsspec.AbstractFileSystem | None = None
-        self._path: str | None = None
+        self._storage_options = storage_options
+        self._fs = fs
+        self._path = path
 
     def __del__(self):
         """Call ``close()``."""
         self.close()
+
+    def __str__(self):
+        return self._uri
+
+    def __repr__(self):
+        if self._storage_options is None:
+            return f"FileObj({self.uri!r})"
+        else:
+            return f"FileObj({self.uri!r}," \
+                   f" storage_options={self._storage_options!r})"
 
     @property
     def uri(self) -> str:
@@ -56,33 +76,60 @@ class FileObj:
     def __truediv__(self, rel_path: str):
         return self.for_path(rel_path)
 
+    @property
+    def parent(self) -> "FileObj":
+
+        if "::" in self.uri:
+            # If uri is a chained URL, use path of first component
+            first_uri, rest = self.uri.split("::", maxsplit=1)
+            protocol, path = fsspec.core.split_protocol(first_uri)
+            parent_path, _ = split_filename(path)
+            if protocol:
+                new_uri = f"{protocol}://{parent_path}::{rest}"
+            else:
+                new_uri = f"{parent_path}::{rest}"
+        else:
+            protocol, path = fsspec.core.split_protocol(self.uri)
+            parent_path, _ = split_filename(path)
+            if protocol:
+                new_uri = f"{protocol}://{parent_path}"
+            else:
+                new_uri = parent_path
+
+        if self._path is not None:
+            new_path, _ = split_filename(self._path)
+        else:
+            # it is ok, we are still unresolved
+            new_path = None
+
+        return FileObj(uri=new_uri,
+                       path=new_path,
+                       storage_options=self._storage_options,
+                       fs=self.fs)
+
     def for_path(self, rel_path: str) -> "FileObj":
         if not isinstance(rel_path, str):
             raise TypeError("rel_path must have type str")
         if rel_path.startswith("/"):
             raise ValueError("rel_path must be relative")
 
-        old_uri = self.uri
-        if "::" in old_uri:
+        if "::" in self.uri:
             # If uri is a chained URL, add path to first component
-            first, rest = old_uri.split("::", maxsplit=1)
-            new_uri = f"{first}/{rel_path}::{rest}"
+            first_uri, rest = self.uri.split("::", maxsplit=1)
+            new_uri = f"{first_uri}/{rel_path}::{rest}"
         else:
-            new_uri = f"{old_uri}/{rel_path}"
+            new_uri = f"{self.uri}/{rel_path}"
 
-        old_path = self._path
-        if old_path is not None:
-            new_path = f"{old_path.rstrip('/')}/{rel_path}"
+        if self._path is not None:
+            new_path = f"{self._path.rstrip('/')}/{rel_path}"
         else:
-            new_path = old_path
+            # it is ok, we are still unresolved
+            new_path = None
 
-        fo = FileObj(new_uri)
-        # patch new fo
-        fo._storage_options = self._storage_options
-        fo._path = new_path
-        fo._fs = self._fs
-
-        return fo
+        return FileObj(uri=new_uri,
+                       path=new_path,
+                       storage_options=self._storage_options,
+                       fs=self.fs)
 
     ############################################################
     # Basic filesystem operations
@@ -112,6 +159,11 @@ class FileObj:
             mode = "w" if isinstance(data, str) else "wb"
         with self._fs.open(self._path, mode=mode) as f:
             return f.write(data)
+
+    def copy(self, target: "FileObj"):
+        source_map = self.fs.get_mapper(self.path)
+        target_map = target.fs.get_mapper(target.path, create=True)
+        target_map.update(source_map)
 
     def delete(self, recursive: bool = False) -> bool:
         self._resolve()

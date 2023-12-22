@@ -43,7 +43,7 @@ class TransactionTest(unittest.TestCase):
             -> xr.Dataset:
         rollback_dir = FileObj("memory://rollback")
         rollback_file = rollback_dir / ROLLBACK_FILE
-        lock_file = target_dir / LOCK_FILE
+        lock_file = target_dir.parent / LOCK_FILE
 
         original_ds = make_test_dataset(uri=target_dir.uri)
         (target_dir / ".zmetadata").delete()

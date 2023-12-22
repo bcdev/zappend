@@ -7,6 +7,7 @@ from typing import Callable, Literal
 import fsspec
 
 from .fileobj import FileObj
+from .path import split_components, split_filename
 
 FileFilter = Callable[
     [
@@ -68,7 +69,7 @@ def _transmit(source_fs: fsspec.AbstractFileSystem,
         source_file_path: str = source_file_info["name"]
         source_file_type: str = source_file_info["type"]
 
-        _, source_file_name = source_file_path.rsplit("/", maxsplit=1)
+        _, source_file_name = split_filename(source_file_path)
         source_file_path = f"{source_path}/{source_file_name}"
 
         if source_file_type == "directory":
@@ -128,7 +129,7 @@ def _make_dirs(fs: fsspec.AbstractFileSystem,
                rollback_cb: RollbackCallback | None = None) -> int:
     num_created = 0
     _path = None
-    for path_component in split_path(path):
+    for path_component in split_components(path):
         if _path is None:
             _path = path_component
         else:
@@ -140,25 +141,6 @@ def _make_dirs(fs: fsspec.AbstractFileSystem,
             # No need to notify for nested dirs
             rollback_cb = None
     return num_created
-
-
-def split_path(path: str, sep: str = "/") -> list[str]:
-    leading_sep = path.startswith(sep)
-    if leading_sep:
-        path = path[1:]
-
-    trailing_sep = path.endswith(sep)
-    if trailing_sep:
-        path = path[:-1]
-
-    path_components = path.split(sep)
-
-    if leading_sep:
-        path_components[0] = sep + path_components[0]
-    if trailing_sep:
-        path_components[-1] = path_components[-1] + sep
-
-    return path_components
 
 
 def _maybe_apply_file_filter(

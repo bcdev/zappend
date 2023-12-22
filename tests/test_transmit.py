@@ -7,7 +7,7 @@ import unittest
 import xarray as xr
 
 from zappend.transmit import transmit
-from zappend.transmit import split_path
+from zappend.path import split_components
 from zappend.transmit import make_dirs
 from zappend.fileobj import FileObj
 from .helpers import make_test_dataset
@@ -15,27 +15,27 @@ from .helpers import make_test_dataset
 
 class SplitPathTest(unittest.TestCase):
     def test_split_path_0c(self):
-        self.assertEqual([""], split_path(""))
+        self.assertEqual([""], split_components(""))
 
     def test_split_path_1c(self):
-        self.assertEqual(["/"], split_path("/"))
+        self.assertEqual(["/"], split_components("/"))
 
-        self.assertEqual(["a"], split_path("a"))
-        self.assertEqual(["/a"], split_path("/a"))
-        self.assertEqual(["a/"], split_path("a/"))
-        self.assertEqual(["/a/"], split_path("/a/"))
+        self.assertEqual(["a"], split_components("a"))
+        self.assertEqual(["/a"], split_components("/a"))
+        self.assertEqual(["a/"], split_components("a/"))
+        self.assertEqual(["/a/"], split_components("/a/"))
 
     def test_split_path_2c(self):
-        self.assertEqual(["a", "b"], split_path("a/b"))
-        self.assertEqual(["/a", "b"], split_path("/a/b"))
-        self.assertEqual(["a", "b/"], split_path("a/b/"))
-        self.assertEqual(["/a", "b/"], split_path("/a/b/"))
+        self.assertEqual(["a", "b"], split_components("a/b"))
+        self.assertEqual(["/a", "b"], split_components("/a/b"))
+        self.assertEqual(["a", "b/"], split_components("a/b/"))
+        self.assertEqual(["/a", "b/"], split_components("/a/b/"))
 
     def test_split_path_3c(self):
-        self.assertEqual(["a", "b", "c"], split_path("a/b/c"))
-        self.assertEqual(["/a", "b", "c"], split_path("/a/b/c"))
-        self.assertEqual(["a", "b", "c/"], split_path("a/b/c/"))
-        self.assertEqual(["/a", "b", "c/"], split_path("/a/b/c/"))
+        self.assertEqual(["a", "b", "c"], split_components("a/b/c"))
+        self.assertEqual(["/a", "b", "c"], split_components("/a/b/c"))
+        self.assertEqual(["a", "b", "c/"], split_components("a/b/c/"))
+        self.assertEqual(["/a", "b", "c/"], split_components("/a/b/c/"))
 
 
 class MakeDirsTest(unittest.TestCase):
