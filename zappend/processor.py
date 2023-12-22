@@ -14,11 +14,11 @@ from .log import logger
 from .slicezarr import open_slice_zarr
 from .transaction import Transaction
 from .transmit import RollbackCallback
-from .zgroup import get_zarr_updates
-from .zgroup import open_zarr_group
-from .zgroup import get_zarr_store
-from .zgroup import get_chunk_update_range
-from .zgroup import get_chunk_indices
+from .zutil import get_zarr_arrays_for_dim
+from .zutil import open_zarr_group
+from .zutil import get_zarr_store
+from .zutil import get_chunk_update_range
+from .zutil import get_chunk_indices
 
 
 class Processor:
@@ -60,12 +60,20 @@ def update_target_from_slice(target_dir: FileObj,
                              rollback_cb: RollbackCallback):
     target_group = open_zarr_group(target_dir)
     slice_group = open_zarr_group(slice_dir)
-    update_records = get_zarr_updates(target_group,
-                                      slice_group,
-                                      append_dim)
-    for array_name, (append_axis, _) in update_records.items():
-        target_array: zarr.Array = target_group[array_name]
-        slice_array: zarr.Array = slice_group[array_name]
+    target_arrays = get_zarr_arrays_for_dim(target_group, append_dim)
+    for array_name, (target_array, append_axis) in target_arrays.items():
+        try:
+            slice_array: zarr.Array = slice_group[array_name]
+        except KeyError:
+            raise ValueError(f"Array {array_name!r} not found in slice")
+
+        target_dims = target_array.attrs.get("_ARRAY_DIMENSIONS")
+        slice_dims = slice_array.attrs.get("_ARRAY_DIMENSIONS")
+        if target_dims != slice_dims:
+            raise ValueError(f"Array dimensions"
+                             f" for {array_name!r} do not match:"
+                             f" expected {target_dims},"
+                             f" but got {slice_dims}")
 
         array_dir = target_dir / array_name
 
@@ -74,7 +82,7 @@ def update_target_from_slice(target_dir: FileObj,
         rollback_cb("replace_file",
                     array_metadata_file.path, array_metadata)
 
-        update, append_dim_range = \
+        chunk_update, append_dim_range = \
             get_chunk_update_range(target_array.shape[append_axis],
                                    target_array.chunks[append_axis],
                                    slice_array.shape[append_axis])
@@ -89,21 +97,24 @@ def update_target_from_slice(target_dir: FileObj,
         for chunk_index in chunk_indexes:
             chunk_filename = ".".join(map(str, chunk_index))
             chunk_file = array_dir / chunk_filename
-            if update and chunk_index[append_axis] == start:
-                chunk_data = None
+            if chunk_update and chunk_index[append_axis] == start:
                 try:
                     chunk_data = chunk_file.read()
                 except FileNotFoundError:
-                    # should be ok
-                    pass
+                    # missing chunk files are ok, fill_value!
+                    chunk_data = None
                 if chunk_data:
                     rollback_cb("replace_file",
                                 chunk_file.path, chunk_data)
+                else:
+                    rollback_cb("delete_file",
+                                chunk_file.path, None)
             else:
                 rollback_cb("delete_file",
                             chunk_file.path, None)
 
         target_array.append(slice_array, axis=append_axis)
+
     logger.info(f"Consolidating target dataset")
     metadata_file = target_dir / ".zmetadata"
     metadata_data = metadata_file.read()

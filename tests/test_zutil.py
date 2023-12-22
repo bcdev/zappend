@@ -1,20 +1,20 @@
 # Copyright © 2023 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
-import math
+
 import unittest
 
 import zarr
 
 from zappend.fileobj import FileObj
-from zappend.zgroup import get_zarr_updates
-from zappend.zgroup import open_zarr_group
-from zappend.zgroup import get_chunk_update_range
-from zappend.zgroup import get_chunk_indices
+from zappend.zutil import get_zarr_arrays_for_dim
+from zappend.zutil import open_zarr_group
+from zappend.zutil import get_chunk_update_range
+from zappend.zutil import get_chunk_indices
 from .helpers import make_test_dataset
 
 
-class OpenZarrGroupTest(unittest.TestCase):
+class ZUtilTest(unittest.TestCase):
 
     def test_open_zarr_group(self):
         make_test_dataset(uri="memory://test.zarr")
@@ -24,27 +24,20 @@ class OpenZarrGroupTest(unittest.TestCase):
                          set(k for k, v in group.arrays()))
         self.assertEqual({}, group.attrs)
 
-
-class GenerateUpdateRecordsTest(unittest.TestCase):
-    def test_generate_update_records(self):
+    def test_get_zarr_arrays_for_dim(self):
         make_test_dataset(uri="memory://target.zarr",
                           shape=(3, 10, 20),
                           chunks=(1, 5, 10))
-        make_test_dataset(uri="memory://slice.zarr",
-                          shape=(1, 10, 20),
-                          chunks=(1, 5, 10))
-        target_group = open_zarr_group(FileObj("memory://target.zarr"))
-        slice_group = open_zarr_group(FileObj("memory://slice.zarr"))
-        updates = get_zarr_updates(target_group, slice_group, "time")
-        self.assertIsInstance(updates, dict)
-        self.assertEqual(
-            {
-                "chl": (0, []),
-                "tsm": (0, []),
-                "time": (0, []),
-            },
-            updates
-        )
+        group = open_zarr_group(FileObj("memory://target.zarr"))
+        array_dict = get_zarr_arrays_for_dim(group, "time")
+        self.assertIsInstance(array_dict, dict)
+        self.assertEqual({'chl', 'tsm', 'time'}, set(array_dict.keys()))
+        for array_item in array_dict.values():
+            self.assertIsInstance(array_item, tuple)
+            self.assertEqual(2, len(array_item))
+            array, dim_axis = array_item
+            self.assertIsInstance(array, zarr.Array)
+            self.assertEqual(0, dim_axis)
 
 
 class GetChunkIndicesTest(unittest.TestCase):
