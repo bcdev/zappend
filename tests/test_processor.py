@@ -7,10 +7,15 @@ import xarray as xr
 
 from zappend.context import Context
 from zappend.processor import Processor
+from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
 
 class TestProcessor(unittest.TestCase):
+
+    def setUp(self):
+        clear_memory_fs()
+
     def test_process_one_slice(self):
         test_ds_kwargs = dict(shape=(1, 10, 20), chunks=(1, 5, 10))
         config = dict(target_uri="memory://target.zarr")

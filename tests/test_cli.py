@@ -4,7 +4,9 @@
 
 import unittest
 from click.testing import CliRunner
+
 from zappend.cli import zappend
+from .helpers import clear_memory_fs
 
 expected_help_text = \
     """
@@ -28,6 +30,10 @@ expected_help_text = expected_help_text.replace("\n    ", "\n").lstrip("\n")
 
 
 class CliTest(unittest.TestCase):
+
+    def setUp(self):
+        clear_memory_fs()
+
     def test_help(self):
         runner = CliRunner()
         # noinspection PyTypeChecker

@@ -11,18 +11,18 @@ from .context import Context
 from .processor import Processor
 
 
-def zappend(slice_uris: Iterable[str | xr.Dataset],
+def zappend(slices: Iterable[str | xr.Dataset],
             config: tuple[str, ...] | str | dict[str, Any] | None = None,
             **kwargs):
     """Create or update a Zarr dataset from slices."""
 
-    if not slice_uris:
+    if not slices:
         return
 
     config = normalize_config(config)
-    config.update({k: v for k, v in kwargs if v is not None})
+    config.update({k: v for k, v in kwargs.items() if v is not None})
     validate_config(config)
 
     ctx = Context(config)
     processor = Processor(ctx)
-    processor.process_slices(slice_uris)
+    processor.process_slices(slices)

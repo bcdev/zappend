@@ -11,6 +11,7 @@ import yaml
 from zappend.config import normalize_config, CONFIG_V1_SCHEMA
 from zappend.config import validate_config
 from zappend.fsutil.fileobj import FileObj
+from .helpers import clear_memory_fs
 
 
 class ConfigValidateTest(unittest.TestCase):
@@ -47,6 +48,9 @@ class ConfigValidateTest(unittest.TestCase):
 
 
 class ConfigNormalizeTest(unittest.TestCase):
+    def setUp(self):
+        clear_memory_fs()
+
     def test_normalize_dict(self):
         config = {"version": 1, "zarr_version": 2}
         self.assertIs(config, normalize_config(config))

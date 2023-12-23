@@ -41,8 +41,8 @@ class PersistentSliceZarr(SliceZarr):
             slice_outline = DatasetOutline.from_dataset(slice_ds)
             compliant = check_compliance(self._ctx.target_outline,
                                          slice_outline,
-                                         self._slice_file.uri,
-                                         error=False)
+                                         slice_name=self._slice_file.uri,
+                                         on_error="warn")
             if compliant:
                 logger.info("Using slice source directly")
                 # No longer the dataset
@@ -89,7 +89,7 @@ class PersistentSliceZarr(SliceZarr):
             and (self._slice_file.path.endswith(".zarr")
                  or self._slice_file.path.endswith(".zarr.zip")):
             engine = "zarr"
-        if engine is "zarr":
+        if engine == "zarr":
             storage_options = self._ctx.slice_storage_options
             return xr.open_zarr(self._slice_file.uri,
                                 storage_options=storage_options,

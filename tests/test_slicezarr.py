@@ -4,17 +4,21 @@
 
 import unittest
 
+import pytest
+
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.slicezarr.common import open_slice_zarr
 from zappend.slicezarr.inmemory import InMemorySliceZarr
 from zappend.slicezarr.persistent import PersistentSliceZarr
+from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
 
 class ZarrSliceTest(unittest.TestCase):
-    def setUp(self) -> None:
-        FileObj("memory:///").delete(recursive=True)
+
+    def setUp(self):
+        clear_memory_fs()
 
     def test_in_memory(self):
         dataset_dir = FileObj("memory://slice.zarr")
@@ -52,3 +56,14 @@ class ZarrSliceTest(unittest.TestCase):
             self.assertIsInstance(slice_fo, FileObj)
             self.assertEqual(dataset_dir.uri, slice_fo.uri)
 
+    # noinspection PyMethodMayBeStatic
+    def test_invalid_type(self):
+        dataset_dir = FileObj("memory://slice.zarr")
+        make_test_dataset(uri=dataset_dir.uri)
+        ctx = Context(dict(target_uri="memory://target.zarr",
+                           slice_access_mode="source",
+                           temp_dir="memory://temp"))
+        with pytest.raises(TypeError,
+                           match="slice_obj must be a str or xarray.Dataset"):
+            # noinspection PyTypeChecker
+            open_slice_zarr(ctx, dataset_dir)

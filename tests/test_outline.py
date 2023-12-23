@@ -4,16 +4,24 @@
 
 import unittest
 
+import pytest
+
 from zappend.config import ZARR_V2_DEFAULT_COMPRESSOR
 from zappend.outline import DatasetOutline
 from zappend.outline import VariableOutline
+from zappend.outline import check_compliance
 # noinspection PyProtectedMember
 from zappend.outline._helpers import to_comparable_value
+from .helpers import clear_memory_fs
 from .helpers import make_test_config
 from .helpers import make_test_dataset
 
 
 class DatasetOutlineTest(unittest.TestCase):
+
+    def setUp(self):
+        clear_memory_fs()
+
     def test_from_config(self):
         config = make_test_config()
         schema = DatasetOutline.from_config(config)
@@ -89,3 +97,43 @@ class DatasetOutlineTest(unittest.TestCase):
             make_test_config()
         )
         self.assertEqual([], schema_2.get_noncompliance(schema_1))
+
+
+class CheckComplianceTest(unittest.TestCase):
+    def test_is_compliant(self):
+        ds1 = make_test_dataset()
+        ds2 = make_test_dataset()
+        self.assertTrue(
+            check_compliance(DatasetOutline.from_dataset(ds1),
+                             DatasetOutline.from_dataset(ds2))
+        )
+
+    def test_is_not_compliant_warn(self):
+        ds1 = make_test_dataset()
+        ds2 = make_test_dataset(shape=(1, 80, 160))
+        self.assertFalse(
+            check_compliance(DatasetOutline.from_dataset(ds1),
+                             DatasetOutline.from_dataset(ds2),
+                             on_error="warn")
+        )
+
+    def test_is_not_compliant_raise(self):
+        ds1 = make_test_dataset()
+        ds2 = make_test_dataset(shape=(1, 80, 160))
+        with pytest.raises(ValueError,
+                           match="Incompatible slice dataset,"
+                                 " see logs for details"):
+            check_compliance(DatasetOutline.from_dataset(ds1),
+                             DatasetOutline.from_dataset(ds2))
+        with pytest.raises(ValueError,
+                           match="Incompatible slice dataset #4,"
+                                 " see logs for details"):
+            check_compliance(DatasetOutline.from_dataset(ds1),
+                             DatasetOutline.from_dataset(ds2),
+                             slice_name="#4")
+        with pytest.raises(ValueError,
+                           match="Incompatible slice dataset,"
+                                 " see logs for details"):
+            check_compliance(DatasetOutline.from_dataset(ds1),
+                             DatasetOutline.from_dataset(ds2),
+                             on_error="raise")

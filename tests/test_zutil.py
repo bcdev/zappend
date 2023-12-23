@@ -12,10 +12,14 @@ from zappend.zutil import get_zarr_arrays_for_dim
 from zappend.zutil import open_zarr_group
 from zappend.zutil import get_chunk_update_range
 from zappend.zutil import get_chunk_indices
+from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
 
 class OpenZarrGroupTest(unittest.TestCase):
+
+    def setUp(self):
+        clear_memory_fs()
 
     def test_open_zarr_group(self):
         make_test_dataset(uri="memory://test.zarr")
@@ -27,6 +31,9 @@ class OpenZarrGroupTest(unittest.TestCase):
 
 
 class GetZarrArraysForDimTest(unittest.TestCase):
+
+    def setUp(self):
+        clear_memory_fs()
 
     def test_get_zarr_arrays_for_dim(self):
         dataset_dir = FileObj("memory://test.zarr")

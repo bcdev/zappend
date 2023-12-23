@@ -14,10 +14,15 @@ default_shape = (3, 50, 100)
 default_chunks = (1, 30, 50)
 
 
+def clear_memory_fs():
+    fs = fsspec.filesystem("memory")
+    fs.rm("/", recursive=True)
+
+
 def make_test_config(
-        dims: tuple[str, str, str] = default_dims,
-        shape: tuple[int, int, int] = default_shape,
-        chunks: tuple[int, int, int] = default_chunks
+    dims: tuple[str, str, str] = default_dims,
+    shape: tuple[int, int, int] = default_shape,
+    chunks: tuple[int, int, int] = default_chunks
 ) -> dict[str, Any]:
     return dict(
         fixed_dims={dims[1]: shape[1], dims[2]: shape[2]},
@@ -61,11 +66,11 @@ def make_test_config(
 
 
 def make_test_dataset(
-        dims: tuple[str, str, str] = default_dims,
-        shape: tuple[int, int, int] = default_shape,
-        chunks: tuple[int, int, int] = default_chunks,
-        uri: str | None = None,
-        storage_options: dict[str, Any] | None = None
+    dims: tuple[str, str, str] = default_dims,
+    shape: tuple[int, int, int] = default_shape,
+    chunks: tuple[int, int, int] = default_chunks,
+    uri: str | None = None,
+    storage_options: dict[str, Any] | None = None
 ) -> xr.Dataset:
     """Make a test dataset and return a xarray.Dataset instance.
 

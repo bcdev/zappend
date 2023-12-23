@@ -32,12 +32,10 @@ class InMemorySliceZarr(SliceZarr):
         self._write_temp_zarr()
 
         slice_outline = DatasetOutline.from_zarr(self._temp_zarr_dir)
-        compliant = check_compliance(self._ctx.target_outline,
-                                     slice_outline,
-                                     self._temp_zarr_dir.uri,
-                                     error=True)
-        if not compliant:
-            raise ValueError("Invalid slice dataset")
+        check_compliance(self._ctx.target_outline,
+                         slice_outline,
+                         self._temp_zarr_dir.uri,
+                         on_error="raise")
 
         return self._temp_zarr_dir
 
@@ -60,6 +58,7 @@ class InMemorySliceZarr(SliceZarr):
                     if "encoding" in var_info}
         store = temp_zarr.fs.get_mapper(root=temp_zarr.path, create=True)
 
+        logger.info(f"Writing temporary Zarr slice {temp_zarr}")
         self._slice_ds.to_zarr(store,
                                write_empty_chunks=False,
                                encoding=encoding,
