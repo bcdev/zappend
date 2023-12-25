@@ -3,26 +3,20 @@
 # https://opensource.org/licenses/MIT.
 
 import logging
-from typing import Literal
 
 from ..log import logger
 from ..outline import DatasetOutline
 
 
-def check_compliance(
-    target_outline: DatasetOutline,
-    slice_outline: DatasetOutline,
-    slice_name: str = "",
-    on_error: Literal["warn"] | Literal["raise"] = "raise"
-) -> bool:
+def assert_compliance(target_outline: DatasetOutline,
+                      slice_outline: DatasetOutline,
+                      slice_name: str = ""):
+    """Assert that the given *slice_outline* is compatible with
+    given *target_outline*."""
     messages = target_outline.get_noncompliance(slice_outline)
-    if not messages:
-        return True
-    log_level = logging.ERROR if on_error == "raise" else logging.WARNING
-    start_message = f"Incompatible slice dataset {slice_name}"
-    logger.log(log_level, start_message)
-    for message in messages:
-        logger.info(message)
-    if on_error == "raise":
+    if messages:
+        start_message = f"Incompatible slice dataset {slice_name}"
+        logger.log(logging.ERROR, start_message)
+        for message in messages:
+            logger.info(message)
         raise ValueError(start_message.rstrip() + ", see logs for details")
-    return False

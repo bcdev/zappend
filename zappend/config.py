@@ -19,27 +19,6 @@ DEFAULT_APPEND_DIM = "time"
 DEFAULT_SLICE_POLLING_INTERVAL = 2
 DEFAULT_SLICE_POLLING_TIMEOUT = 60
 
-# Write slice to temp, then read from temp (default).
-SLICE_ACCESS_MODE_TEMP = "temp"
-# Read directly from slice source if slice is compatible,
-# otherwise fallback to "temp".
-SLICE_ACCESS_MODE_SOURCE = "source"
-
-# Access modes if slice is persistent and given as path
-SLICE_ACCESS_MODES = [
-    SLICE_ACCESS_MODE_TEMP,
-    SLICE_ACCESS_MODE_SOURCE,
-]
-DEFAULT_SLICE_ACCESS_MODE = SLICE_ACCESS_MODE_TEMP
-
-ZARR_V2_DEFAULT_COMPRESSOR = {
-    "id": "blosc",
-    "cname": "lz4",
-    "clevel": 5,
-    "shuffle": 1,
-    "blocksize": 0,
-}
-
 _NON_EMPTY_STRING_SCHEMA = {"type": "string", "minLength": 1}
 _ORDINAL_SCHEMA = {"type": "integer", "minimum": 1}
 _ANY_OBJECT_SCHEMA = {"type": "object", "additionalProperties": True}
@@ -84,17 +63,13 @@ CONFIG_V1_SCHEMA = {
             "additionalProperties": True
         },
         slice_polling=_SLICE_POLLING_SCHEMA,
-        slice_access_mode={
-            "enum": SLICE_ACCESS_MODES,
-            "default": DEFAULT_SLICE_ACCESS_MODE
-        },
 
         temp_dir=_NON_EMPTY_STRING_SCHEMA,
         temp_storage_options={"type": "object", "additionalProperties": True},
 
         zarr_version={"const": DEFAULT_ZARR_VERSION},
 
-        dims={
+        fixed_dims={
             "type": "object",
             "additionalProperties": _ORDINAL_SCHEMA
         },
@@ -235,8 +210,8 @@ def _merge_configs(configs: list[Config]) -> Config:
     return merged_config
 
 
-def _merge_dicts(dict_1: dict[str, Any], dict_2: dict[str, Any]) \
-        -> dict[str, Any]:
+def _merge_dicts(dict_1: dict[str, Any],
+                 dict_2: dict[str, Any]) -> dict[str, Any]:
     merged = dict(dict_1)
     for key in dict_2.keys():
         if key in merged:
@@ -246,6 +221,7 @@ def _merge_dicts(dict_1: dict[str, Any], dict_2: dict[str, Any]) \
     return merged
 
 
+# noinspection PyUnusedLocal
 def _merge_lists(list_1: list[Any], list_2: list[Any]) -> list[Any]:
     # alternative strategies:
     # return list(set(list_1) + set(list_2))  # unite
@@ -259,10 +235,9 @@ def _merge_values(value_1: Any, value_2: Any) -> Any:
         return value_2
     if value_2 is None:
         return value_1
-    if isinstance(value_1, dict) \
-            and isinstance(value_2, dict):
+    if isinstance(value_1, dict) and isinstance(value_2, dict):
         return _merge_dicts(value_1, value_2)
-    if isinstance(value_1, (list, tuple)) \
-            and isinstance(value_2, (list, tuple)):
+    if (isinstance(value_1, (list, tuple)) and isinstance(value_2,
+                                                          (list, tuple))):
         return _merge_lists(value_1, value_2)
     return value_1

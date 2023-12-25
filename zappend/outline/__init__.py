@@ -4,4 +4,4 @@
 
 from .dataset import DatasetOutline
 from .variable import VariableOutline
-from .compliance import check_compliance
+from .compliance import assert_compliance

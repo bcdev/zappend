@@ -6,12 +6,10 @@ import unittest
 
 import pytest
 
-from zappend.config import ZARR_V2_DEFAULT_COMPRESSOR
 from zappend.outline import DatasetOutline
 from zappend.outline import VariableOutline
-from zappend.outline import check_compliance
+from zappend.outline import assert_compliance
 # noinspection PyProtectedMember
-from zappend.outline._helpers import to_comparable_value
 from .helpers import clear_memory_fs
 from .helpers import make_test_config
 from .helpers import make_test_dataset
@@ -43,37 +41,19 @@ class DatasetOutlineTest(unittest.TestCase):
         self.assertEqualVariableSchema(
             VariableOutline(dtype="uint16",
                             dims=("time", "y", "x"),
-                            shape=(3, 50, 100),
-                            chunks=(1, 30, 50),
-                            fill_value=9999,
-                            scale_factor=0.2,
-                            add_offset=0,
-                            compressor=ZARR_V2_DEFAULT_COMPRESSOR,
-                            filters=None),
+                            shape=(3, 50, 100)),
             schema.variables['chl']
         )
         self.assertEqualVariableSchema(
             VariableOutline(dtype="int16",
                             dims=("time", "y", "x"),
-                            shape=(3, 50, 100),
-                            chunks=(1, 30, 50),
-                            fill_value=-9999,
-                            scale_factor=0.01,
-                            add_offset=-200,
-                            compressor=ZARR_V2_DEFAULT_COMPRESSOR,
-                            filters=None),
+                            shape=(3, 50, 100)),
             schema.variables['tsm']
         )
         self.assertEqualVariableSchema(
             VariableOutline(dtype="float64",
                             dims=("x",),
-                            shape=(100,),
-                            chunks=(100,),
-                            fill_value=float("NaN"),
-                            scale_factor=None,
-                            add_offset=None,
-                            compressor=ZARR_V2_DEFAULT_COMPRESSOR,
-                            filters=None),
+                            shape=(100,)),
             schema.variables['x']
         )
 
@@ -81,10 +61,8 @@ class DatasetOutlineTest(unittest.TestCase):
                                   expected_schema: VariableOutline,
                                   actual_schema: VariableOutline):
         for attr_name, expected_value in expected_schema.__dict__.items():
-            expected_value = to_comparable_value(expected_value)
-            actual_value = to_comparable_value(
-                getattr(actual_schema, attr_name)
-            )
+            expected_value = expected_value
+            actual_value = getattr(actual_schema, attr_name)
             self.assertEqual(expected_value, actual_value, msg=attr_name)
 
     def test_get_noncompliance(self):
@@ -103,37 +81,23 @@ class CheckComplianceTest(unittest.TestCase):
     def test_is_compliant(self):
         ds1 = make_test_dataset()
         ds2 = make_test_dataset()
-        self.assertTrue(
-            check_compliance(DatasetOutline.from_dataset(ds1),
-                             DatasetOutline.from_dataset(ds2))
+        self.assertIsNone(
+            assert_compliance(DatasetOutline.from_dataset(ds1),
+                              DatasetOutline.from_dataset(ds2))
         )
 
-    def test_is_not_compliant_warn(self):
-        ds1 = make_test_dataset()
-        ds2 = make_test_dataset(shape=(1, 80, 160))
-        self.assertFalse(
-            check_compliance(DatasetOutline.from_dataset(ds1),
-                             DatasetOutline.from_dataset(ds2),
-                             on_error="warn")
-        )
-
-    def test_is_not_compliant_raise(self):
+    # noinspection PyMethodMayBeStatic
+    def test_is_not_compliant(self):
         ds1 = make_test_dataset()
         ds2 = make_test_dataset(shape=(1, 80, 160))
         with pytest.raises(ValueError,
                            match="Incompatible slice dataset,"
                                  " see logs for details"):
-            check_compliance(DatasetOutline.from_dataset(ds1),
-                             DatasetOutline.from_dataset(ds2))
+            assert_compliance(DatasetOutline.from_dataset(ds1),
+                              DatasetOutline.from_dataset(ds2))
         with pytest.raises(ValueError,
                            match="Incompatible slice dataset #4,"
                                  " see logs for details"):
-            check_compliance(DatasetOutline.from_dataset(ds1),
-                             DatasetOutline.from_dataset(ds2),
-                             slice_name="#4")
-        with pytest.raises(ValueError,
-                           match="Incompatible slice dataset,"
-                                 " see logs for details"):
-            check_compliance(DatasetOutline.from_dataset(ds1),
-                             DatasetOutline.from_dataset(ds2),
-                             on_error="raise")
+            assert_compliance(DatasetOutline.from_dataset(ds1),
+                              DatasetOutline.from_dataset(ds2),
+                              slice_name="#4")

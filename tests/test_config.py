@@ -1,6 +1,7 @@
 # Copyright © 2023 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
+
 import json
 import unittest
 
@@ -83,12 +84,12 @@ class ConfigNormalizeTest(unittest.TestCase):
             {
                 "version": 1,
                 "zarr_version": 2,
-                "dims": {
+                "fixed_dims": {
                     "time": None
                 },
             },
             {
-                "dims": {
+                "fixed_dims": {
                     "x": 200,
                     "y": 100,
                 },
@@ -128,7 +129,7 @@ class ConfigNormalizeTest(unittest.TestCase):
             {
                 "version": 1,
                 "zarr_version": 2,
-                "dims": {
+                "fixed_dims": {
                     "x": 200,
                     "y": 100,
                     "time": None
@@ -179,8 +180,7 @@ class ConfigNormalizeTest(unittest.TestCase):
         self.assertEqual(
             {
                 'append_dim',
-                'dims',
-                'slice_access_mode',
+                'fixed_dims',
                 'slice_engine',
                 'slice_polling',
                 'slice_storage_options',

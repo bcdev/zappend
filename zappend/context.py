@@ -9,7 +9,6 @@ import xarray as xr
 
 from .config import DEFAULT_SLICE_POLLING_INTERVAL
 from .config import DEFAULT_SLICE_POLLING_TIMEOUT
-from .config import DEFAULT_SLICE_ACCESS_MODE
 from .config import DEFAULT_ZARR_VERSION
 from .config import DEFAULT_APPEND_DIM
 from .fsutil.fileobj import FileObj

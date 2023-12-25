@@ -6,19 +6,17 @@ import time
 
 import xarray as xr
 
-from ..config import SLICE_ACCESS_MODE_SOURCE
 from ..context import Context
 from ..fsutil.fileobj import FileObj
 from ..log import logger
 from ..outline import DatasetOutline
-from ..outline import check_compliance
-from .abc import SliceZarr
-from .inmemory import InMemorySliceZarr
+from ..outline import assert_compliance
+from .abc import SliceSource
 
 
-class PersistentSliceZarr(SliceZarr):
+class PersistentSliceSource(SliceSource):
     """
-    A slice Zarr that is persisted in some filesystem.
+    A slice source that is persisted in some filesystem.
 
     :param ctx: Processing context
     :param slice_file: Slice file object
@@ -29,45 +27,36 @@ class PersistentSliceZarr(SliceZarr):
         self._slice_file = slice_file
         self._slice_ds: xr.Dataset | None = None
         self._slice_outline: DatasetOutline | None = None
-        self._mem_slice_zarr: InMemorySliceZarr | None = None
 
-    def prepare(self) -> FileObj:
+    def open(self) -> xr.Dataset:
         logger.info(f"Opening slice from {self._slice_file.uri}")
 
         slice_ds = self._wait_for_slice_dataset()
 
-        slice_access_mode = self._ctx.slice_access_mode
-        if slice_access_mode == SLICE_ACCESS_MODE_SOURCE:
-            slice_outline = DatasetOutline.from_dataset(slice_ds)
-            compliant = check_compliance(self._ctx.target_outline,
-                                         slice_outline,
-                                         slice_name=self._slice_file.uri,
-                                         on_error="warn")
-            if compliant:
-                logger.info("Using slice source directly")
-                # No longer the dataset
-                slice_ds.close()
-                return self._slice_file
+        slice_outline = DatasetOutline.from_dataset(slice_ds)
+        assert_compliance(self._ctx.target_outline, slice_outline,
+                          slice_name=self._slice_file.uri)
 
         self._slice_ds = slice_ds  # Save instance so we can close it later
-        self._mem_slice_zarr = InMemorySliceZarr(self._ctx, slice_ds)
-        return self._mem_slice_zarr.prepare()
+        return self._slice_ds
 
-    def dispose(self):
-        if self._mem_slice_zarr is not None:
-            self._mem_slice_zarr.dispose()
-            self._mem_slice_zarr = None
+    def close(self):
         if self._slice_ds is not None:
             self._slice_ds.close()
             self._slice_ds = None
-        super().dispose()
+        super().close()
 
     def _wait_for_slice_dataset(self) -> xr.Dataset:
         slice_ds: xr.Dataset | None = None
         interval, timeout = self._ctx.slice_polling
         if timeout is not None:
+            # t0 = time.monotonic()
+            # while (time.monotonic() - t0) < timeout:
             t0 = time.monotonic()
-            while (time.monotonic() - t0) < timeout:
+            while True:
+                delta = time.monotonic() - t0
+                if delta >= timeout:
+                    break
                 try:
                     slice_ds = self._open_slice_dataset()
                 except OSError:
