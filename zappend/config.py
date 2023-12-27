@@ -183,7 +183,7 @@ def normalize_config(config_like: ConfigLike) -> Config:
     if isinstance(config_like, str):
         return load_config(FileObj(config_like))
     if isinstance(config_like, (list, tuple)):
-        return _merge_configs([normalize_config(c) for c in config_like])
+        return merge_configs([normalize_config(c) for c in config_like])
     raise TypeError("config_like must of type NoneType, FileObj, dict,"
                     " str, or a sequence of such values")
 
@@ -203,7 +203,7 @@ def load_config(config_file: FileObj) -> Config:
     return config
 
 
-def _merge_configs(configs: list[Config]) -> Config:
+def merge_configs(configs: list[Config]) -> Config:
     merged_config = dict(configs[0])
     for config in configs[1:]:
         merged_config = _merge_dicts(merged_config, config)

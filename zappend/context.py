@@ -7,10 +7,11 @@ from typing import Any, Dict
 
 import xarray as xr
 
+from .config import DEFAULT_APPEND_DIM
 from .config import DEFAULT_SLICE_POLLING_INTERVAL
 from .config import DEFAULT_SLICE_POLLING_TIMEOUT
 from .config import DEFAULT_ZARR_VERSION
-from .config import DEFAULT_APPEND_DIM
+from .config import merge_configs
 from .fsutil.fileobj import FileObj
 from .log import logger
 from .outline import DatasetOutline
@@ -60,6 +61,20 @@ class Context:
         return self._config.get("append_dim", DEFAULT_APPEND_DIM)
 
     @property
+    def included_var_names(self) -> set[str]:
+        return set(self._config.get("included_var_names", []))
+
+    @property
+    def excluded_var_names(self) -> set[str]:
+        return set(self._config.get("excluded_var_names", []))
+
+    def variable_config(self, var_name: str) -> dict[str, Any]:
+        variables = self.variables
+        default_var_config = variables.get("*", {})
+        var_config = variables.get(var_name, {})
+        return merge_configs([default_var_config, var_config])
+
+    @property
     def variables(self) -> dict[str, dict[str, Any]]:
         return self._config.get("variables", {})
 
@@ -93,11 +108,6 @@ class Context:
             slice_polling.get("interval", DEFAULT_SLICE_POLLING_INTERVAL),
             slice_polling.get("timeout", DEFAULT_SLICE_POLLING_TIMEOUT)
         )
-
-    @property
-    def slice_access_mode(self) -> str:
-        return self._config.get("slice_access_mode",
-                                DEFAULT_SLICE_ACCESS_MODE)
 
     @property
     def temp_dir(self) -> FileObj:
