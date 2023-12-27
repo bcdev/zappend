@@ -7,7 +7,6 @@ from typing import Iterable
 import xarray as xr
 
 from .context import Context
-from .fsutil.fileobj import FileObj
 from .fsutil.transaction import Transaction
 from .fsutil.transaction import RollbackCallback
 from .log import logger
@@ -30,36 +29,41 @@ class Processor:
     def process_slice(self, slice_obj: str | xr.Dataset):
         with open_slice_source(self.ctx, slice_obj) as slice_ds:
             target_dir = self.ctx.target_dir
-            update_mode = target_dir.exists()
+            create = not target_dir.exists()
             with Transaction(target_dir, self.ctx.temp_dir) as rollback_cb:
-                if update_mode:
-                    update_target_from_slice(self.ctx.target_dir,
-                                             self.ctx.append_dim,
+                if create:
+                    create_target_from_slice(self.ctx,
                                              slice_ds,
                                              rollback_cb)
                 else:
-                    create_target_from_slice(self.ctx.target_dir,
+                    update_target_from_slice(self.ctx,
                                              slice_ds,
                                              rollback_cb)
 
 
-def create_target_from_slice(target_dir: FileObj,
+def create_target_from_slice(ctx: Context,
                              slice_ds: xr.Dataset,
                              rollback_cb: RollbackCallback):
+    target_dir = ctx.target_dir
+
+    # TODO: set encoding from ctx config
+    # TODO: also create variables from config that are
+    #  not contained in slice
     try:
         slice_ds.to_zarr(target_dir.uri,
                          storage_options=target_dir.storage_options,
-                         zarr_version=2,
+                         zarr_version=ctx.zarr_version,
                          write_empty_chunks=False)
     finally:
         if target_dir.exists():
             rollback_cb("delete_dir", target_dir.path, None)
 
 
-def update_target_from_slice(target_dir: FileObj,
-                             append_dim: str,
+def update_target_from_slice(ctx: Context,
                              slice_ds: xr.Dataset,
                              rollback_cb: RollbackCallback):
+    target_dir = ctx.target_dir
+    append_dim = ctx.append_dim
     target_group = open_zarr_group(target_dir)
     target_arrays = get_zarr_arrays_for_dim(target_group, append_dim)
 
@@ -115,15 +119,20 @@ def update_target_from_slice(target_dir: FileObj,
                 rollback_cb("delete_file",
                             chunk_file.path, None)
 
+    # TODO: adjust global attributes dependent on append_dim,
+    #  e.g., time coverage
     logger.info(f"Consolidating target dataset")
     metadata_file = target_dir / ".zmetadata"
     metadata_data = metadata_file.read()
     rollback_cb("replace_file", metadata_file.path, metadata_data)
 
+    # Remove any encoding and attributes from slice,
+    # since both are prescribed by target
     slice_ds = slice_ds.copy()
     slice_ds.attrs = {}
     for slice_var in slice_ds.variables.values():
-        slice_var.attrs = {}
+        slice_var.attrs.clear()
+        slice_var.encoding.clear()
 
     slice_ds.to_zarr(target_dir.uri,
                      storage_options=target_dir.storage_options,
