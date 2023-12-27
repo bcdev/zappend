@@ -99,16 +99,16 @@ CONFIG_V1_SCHEMA = {
                         "type": "array",
                         "items": _NON_EMPTY_STRING_SCHEMA
                     },
-                    shape={
-                        "type": "array",
-                        "items": _ORDINAL_SCHEMA
-                    },
                     chunks={
-                        "type": "array",
+                        "type": ["array", "null"],
                         "items": _ORDINAL_SCHEMA
                     },
                     fill_value={
-                        "type": ["number", "null"]
+                        "oneOf": [
+                            {"type": "null"},
+                            {"type": "number"},
+                            {"const": "NaN"},
+                        ]
                     },
                     scale_factor={
                         "type": "number"
