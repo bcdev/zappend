@@ -95,6 +95,8 @@ def update_target_from_slice(ctx: Context,
         except KeyError:
             raise ValueError(f"Array {array_name!r} not found in slice")
 
+        # TODO: Do not rely on _ARRAY_DIMENSIONS, instead use
+        #   mapping var_name -> append_axis as input
         target_dims = tuple(target_array.attrs.get("_ARRAY_DIMENSIONS"))
         slice_dims = slice_var.dims
         if target_dims != slice_dims:
@@ -126,6 +128,8 @@ def update_target_from_slice(ctx: Context,
             chunk_filename = ".".join(map(str, chunk_index))
             chunk_file = array_dir / chunk_filename
             if chunk_update and chunk_index[append_axis] == start:
+                # TODO: test this path, i.e.,
+                #   rollback actions "delete_dir" and "delete_file"
                 try:
                     chunk_data = chunk_file.read()
                 except FileNotFoundError:

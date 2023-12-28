@@ -6,12 +6,14 @@ from io import StringIO
 import json
 import unittest
 
+import numcodecs
 import numpy as np
 import pytest
 import xarray as xr
 
 from zappend.fsutil.fileobj import FileObj
 from .helpers import clear_memory_fs
+from .helpers import make_test_dataset
 
 TEST_ZARR = "memory://test.zarr"
 

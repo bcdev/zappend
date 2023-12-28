@@ -15,8 +15,6 @@ from zappend.fsutil.transaction import ROLLBACK_FILE
 from ..helpers import make_test_dataset
 
 
-# TODO: test rollback actions "delete_dir" and "delete_file"
-
 class TransactionTest(unittest.TestCase):
     def test_transaction_success(self):
         target_dir = FileObj("memory://cool-cube.zarr")

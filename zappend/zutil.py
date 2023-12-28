@@ -28,6 +28,8 @@ def get_zarr_arrays_for_dim(target_group: zarr.Group,
     for array_name, _array in target_group.arrays():
         target_array: zarr.Array = _array
 
+        # TODO: Do not rely on _ARRAY_DIMENSIONS, instead use
+        #   mapping var_name -> append_axis as input
         target_dims = target_array.attrs.get("_ARRAY_DIMENSIONS")
         if target_dims is None:
             # Should actually not come here

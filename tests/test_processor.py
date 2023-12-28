@@ -21,10 +21,8 @@ class TestProcessor(unittest.TestCase):
         config = dict(target_uri="memory://target.zarr")
 
         ctx = Context(config)
-        if ctx.target_dir.exists():
-            ctx.target_dir.delete(recursive=True)
-        self.assertFalse(ctx.target_dir.exists())
 
+        self.assertFalse(ctx.target_dir.exists())
         processor = Processor(ctx)
         ds1 = make_test_dataset(uri="memory://slice-1.zarr", **test_ds_kwargs)
         processor.process_slices([ds1])
@@ -43,10 +41,8 @@ class TestProcessor(unittest.TestCase):
         config = dict(target_uri="memory://target.zarr")
 
         ctx = Context(config)
-        if ctx.target_dir.exists():
-            ctx.target_dir.delete(recursive=True)
-        self.assertFalse(ctx.target_dir.exists())
 
+        self.assertFalse(ctx.target_dir.exists())
         processor = Processor(ctx)
         ds1 = make_test_dataset(uri="memory://slice-1.zarr", **test_ds_kwargs)
         ds2 = make_test_dataset(uri="memory://slice-2.zarr", **test_ds_kwargs)
