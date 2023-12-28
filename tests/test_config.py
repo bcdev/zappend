@@ -37,8 +37,10 @@ class ConfigValidateTest(unittest.TestCase):
         config = {"zarr_version": 2,
                   "variables": {
                       "chl": {
-                          "dtype": "int32",
                           "dims": [10, 20, 30],
+                          "encoding": {
+                              "dtype": "int32",
+                          },
                       }
                   }}
         with pytest.raises(ValueError,
@@ -85,42 +87,52 @@ class ConfigNormalizeTest(unittest.TestCase):
                 "version": 1,
                 "zarr_version": 2,
                 "fixed_dims": {
-                    "time": None
+                    "x": 200,
                 },
+                "append_dim": "time"
             },
             {
                 "fixed_dims": {
-                    "x": 200,
                     "y": 100,
                 },
                 "variables": {
                     "time": {
-                        "dtype": "uint64",
-                        "dims": "time"
+                        "dims": "time",
+                        "encoding": {
+                            "dtype": "uint64",
+                        }
                     },
                     "y": {
-                        "dtype": "float64",
-                        "dims": "y"
+                        "dims": "y",
+                        "encoding": {
+                            "dtype": "float64",
+                        }
                     },
                     "x": {
-                        "dtype": "float64",
-                        "dims": "x"
+                        "dims": "x",
+                        "encoding": {
+                            "dtype": "float64",
+                        }
                     },
                 }
             },
             {
                 "variables": {
                     "chl": {
-                        "dtype": "float32",
                         "dims": ("time", "y", "x"),
-                        "chunks": (1, 20, 30),
-                        "fill_value": None
+                        "encoding": {
+                            "dtype": "float32",
+                            "chunks": (1, 20, 30),
+                            "fill_value": None,
+                        }
                     },
                     "tsm": {
-                        "dtype": "float32",
                         "dims": ("time", "y", "x"),
-                        "chunks": (1, 20, 30),
-                        "fill_value": None
+                        "encoding": {
+                            "dtype": "float32",
+                            "chunks": (1, 20, 30),
+                            "fill_value": None,
+                        }
                     },
                 }
             }
@@ -132,32 +144,36 @@ class ConfigNormalizeTest(unittest.TestCase):
                 "fixed_dims": {
                     "x": 200,
                     "y": 100,
-                    "time": None
                 },
+                "append_dim": "time",
                 "variables": {
-                    "time": {
-                        "dtype": "uint64",
-                        "dims": "time"
+                    "x": {
+                        "dims": "x",
+                        "encoding": {"dtype": "float64"},
                     },
                     "y": {
-                        "dtype": "float64",
-                        "dims": "y"
+                        "dims": "y",
+                        "encoding": {"dtype": "float64"},
                     },
-                    "x": {
-                        "dtype": "float64",
-                        "dims": "x"
+                    "time": {
+                        "dims": "time",
+                        "encoding": {"dtype": "uint64"},
                     },
                     "chl": {
-                        "dtype": "float32",
                         "dims": ("time", "y", "x"),
-                        "chunks": (1, 20, 30),
-                        "fill_value": None
+                        "encoding": {
+                            "dtype": "float32",
+                            "chunks": (1, 20, 30),
+                            "fill_value": None
+                        },
                     },
                     "tsm": {
-                        "dtype": "float32",
                         "dims": ("time", "y", "x"),
-                        "chunks": (1, 20, 30),
-                        "fill_value": None
+                        "encoding": {
+                            "dtype": "float32",
+                            "chunks": (1, 20, 30),
+                            "fill_value": None
+                        },
                     },
                 }
             },

@@ -5,8 +5,6 @@
 import xarray as xr
 
 from ..context import Context
-from ..outline import DatasetOutline
-from ..outline import assert_compliance
 from .abc import SliceSource
 
 
@@ -22,8 +20,6 @@ class IdentitySliceSource(SliceSource):
         self._slice_ds = slice_ds
 
     def open(self) -> xr.Dataset:
-        slice_outline = DatasetOutline.from_dataset(self._slice_ds)
-        assert_compliance(self._ctx.target_outline, slice_outline)
         return self._slice_ds
 
     def close(self):

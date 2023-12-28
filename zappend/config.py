@@ -44,6 +44,41 @@ _SLICE_POLLING_SCHEMA = {
     ]
 }
 
+_VAR_ENCODING_SCHEMA = {
+    "type": "object",
+    "properties": dict(
+        dtype={
+            "enum": ["int8", "uint8",
+                     "int16", "uint16",
+                     "int32", "uint32",
+                     "int64", "uint64",
+                     "float32", "float64"]
+        },
+        chunks={
+            "type": ["array", "null"],
+            "items": _ORDINAL_SCHEMA
+        },
+        fill_value={
+            "oneOf": [
+                {"type": "null"},
+                {"type": "number"},
+                {"const": "NaN"},
+            ]
+        },
+        scale_factor={
+            "type": "number"
+        },
+        add_offset={
+            "type": "number"
+        },
+        compressor=_ANY_OBJECT_SCHEMA,
+        filters={
+            "type": "array",
+            "items": _ANY_OBJECT_SCHEMA
+        },
+    ),
+}
+
 CONFIG_V1_SCHEMA = {
     "type": "object",
     "properties": dict(
@@ -88,41 +123,12 @@ CONFIG_V1_SCHEMA = {
             "additionalProperties": {
                 "type": "object",
                 "properties": dict(
-                    dtype={
-                        "enum": ["int8", "uint8",
-                                 "int16", "uint16",
-                                 "int32", "uint32",
-                                 "int64", "uint64",
-                                 "float32", "float64"]
-                    },
                     dims={
                         "type": "array",
                         "items": _NON_EMPTY_STRING_SCHEMA
                     },
-                    chunks={
-                        "type": ["array", "null"],
-                        "items": _ORDINAL_SCHEMA
-                    },
-                    fill_value={
-                        "oneOf": [
-                            {"type": "null"},
-                            {"type": "number"},
-                            {"const": "NaN"},
-                        ]
-                    },
-                    scale_factor={
-                        "type": "number"
-                    },
-                    add_offset={
-                        "type": "number"
-                    },
-                    compressor=_ANY_OBJECT_SCHEMA,
-                    filters={
-                        "type": "array",
-                        "items": _ANY_OBJECT_SCHEMA
-                    },
+                    encoding=_VAR_ENCODING_SCHEMA,
                     attrs=_ANY_OBJECT_SCHEMA,
-                    encoding=_ANY_OBJECT_SCHEMA,
                 ),
                 "additionalProperties": False,
             },
@@ -183,7 +189,7 @@ def normalize_config(config_like: ConfigLike) -> Config:
     if isinstance(config_like, str):
         return load_config(FileObj(config_like))
     if isinstance(config_like, (list, tuple)):
-        return merge_configs([normalize_config(c) for c in config_like])
+        return merge_configs(*[normalize_config(c) for c in config_like])
     raise TypeError("config_like must of type NoneType, FileObj, dict,"
                     " str, or a sequence of such values")
 
@@ -203,7 +209,7 @@ def load_config(config_file: FileObj) -> Config:
     return config
 
 
-def merge_configs(configs: list[Config]) -> Config:
+def merge_configs(*configs: Config) -> Config:
     merged_config = dict(configs[0])
     for config in configs[1:]:
         merged_config = _merge_dicts(merged_config, config)

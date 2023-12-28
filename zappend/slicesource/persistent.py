@@ -9,8 +9,6 @@ import xarray as xr
 from ..context import Context
 from ..fsutil.fileobj import FileObj
 from ..log import logger
-from ..outline import DatasetOutline
-from ..outline import assert_compliance
 from .abc import SliceSource
 
 
@@ -26,18 +24,10 @@ class PersistentSliceSource(SliceSource):
         super().__init__(ctx)
         self._slice_file = slice_file
         self._slice_ds: xr.Dataset | None = None
-        self._slice_outline: DatasetOutline | None = None
 
     def open(self) -> xr.Dataset:
         logger.info(f"Opening slice from {self._slice_file.uri}")
-
-        slice_ds = self._wait_for_slice_dataset()
-
-        slice_outline = DatasetOutline.from_dataset(slice_ds)
-        assert_compliance(self._ctx.target_outline, slice_outline,
-                          slice_name=self._slice_file.uri)
-
-        self._slice_ds = slice_ds  # Save instance so we can close it later
+        self._slice_ds = self._wait_for_slice_dataset()
         return self._slice_ds
 
     def close(self):
