@@ -2,10 +2,13 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from typing import Iterable
+from typing import Iterable, Any
 
 import xarray as xr
 
+from .config import ConfigLike
+from .config import normalize_config
+from .config import validate_config
 from .context import Context
 from .fsutil.transaction import Transaction
 from .fsutil.transaction import RollbackCallback
@@ -16,8 +19,11 @@ from .chunkutil import get_chunk_indices
 
 
 class Processor:
-    def __init__(self, ctx: Context):
-        self.ctx = ctx
+    def __init__(self, config: ConfigLike = None, **kwargs):
+        config = normalize_config(config)
+        config.update({k: v for k, v in kwargs.items() if v is not None})
+        validate_config(config)
+        self._config = config
 
     def process_slices(self,
                        slice_iter: Iterable[str | xr.Dataset]):
@@ -45,16 +51,18 @@ class Processor:
         * update target from slice
         """
 
-        with open_slice_source(self.ctx, slice_obj) as slice_ds:
-            target_dir = self.ctx.target_dir
+        ctx = Context(self._config)
+
+        with open_slice_source(ctx, slice_obj) as slice_ds:
+            target_dir = ctx.target_dir
             create = not target_dir.exists()
-            with Transaction(target_dir, self.ctx.temp_dir) as rollback_cb:
+            with Transaction(target_dir, ctx.temp_dir) as rollback_cb:
                 if create:
-                    create_target_from_slice(self.ctx,
+                    create_target_from_slice(ctx,
                                              slice_ds,
                                              rollback_cb)
                 else:
-                    update_target_from_slice(self.ctx,
+                    update_target_from_slice(ctx,
                                              slice_ds,
                                              rollback_cb)
 
