@@ -12,27 +12,28 @@ from zappend.config import merge_configs
 
 
 # TODO: write test
-def get_effective_fixed_dims(config_fixed_dims: dict[str, int] | None,
-                             config_append_dim: str,
-                             dataset: xr.Dataset) -> dict[str, int]:
+def get_effective_target_dims(config_fixed_dims: dict[str, int] | None,
+                              config_append_dim: str,
+                              dataset: xr.Dataset) -> dict[str, int]:
+    if config_fixed_dims:
+        if config_fixed_dims.get(config_append_dim) is not None:
+            raise ValueError(f"Size of append dimension"
+                             f" {config_append_dim!r} must not be specified"
+                             f" as fixed dimension")
+        for dim_name, fixed_dim_size in config_fixed_dims.items():
+            if dim_name not in dataset.dims:
+                raise ValueError(f"Fixed dimension {dim_name!r}"
+                                 f" not found in dataset")
+            ds_dim_size = dataset.dims[dim_name]
+            if fixed_dim_size != ds_dim_size:
+                raise ValueError(f"Wrong size for fixed dimension {dim_name!r},"
+                                 f" expected {fixed_dim_size},"
+                                 f" found {ds_dim_size} in dataset")
     if config_append_dim not in dataset.dims:
         raise ValueError(f"Append dimension"
                          f" {config_append_dim!r} not found in dataset")
-    ds_fixed_dims = {str(k): v
-                     for k, v in dataset.dims.items()
-                     if k != config_append_dim}
-    if not config_fixed_dims:
-        return ds_fixed_dims
 
-    for k, v in config_fixed_dims.items():
-        if k not in ds_fixed_dims:
-            raise ValueError(f"Dimension {k!r}"
-                             f" not found in dataset")
-        v2 = ds_fixed_dims[k]
-        if v != v2:
-            raise ValueError(f"Illegal size of dimension {k!r},"
-                             f" expected {v}, got {v2}")
-    return config_fixed_dims
+    return {str(k): v for k, v in dataset.dims.items()}
 
 
 # TODO: write test

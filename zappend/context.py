@@ -13,7 +13,7 @@ from .config import DEFAULT_APPEND_DIM
 from .config import DEFAULT_SLICE_POLLING_INTERVAL
 from .config import DEFAULT_SLICE_POLLING_TIMEOUT
 from .config import DEFAULT_ZARR_VERSION
-from .metadata import get_effective_fixed_dims
+from .metadata import get_effective_target_dims
 from .metadata import get_effective_variables
 from .fsutil.fileobj import FileObj
 from .log import logger
@@ -33,9 +33,9 @@ class Context:
         self._target_dir = FileObj(target_uri,
                                    storage_options=target_storage_options)
 
-        fixed_dims = config.get("fixed_dims") or None
-        append_dim = config.get("append_dim") or DEFAULT_APPEND_DIM
-        variables = config.get("variables") or {}
+        append_dim_name = config.get("append_dim") or DEFAULT_APPEND_DIM
+        target_dim_sizes = dict(config.get("fixed_dims") or {})
+        target_variables = dict(config.get("variables") or {})
         try:
             with xr.open_zarr(
                 target_uri,
@@ -43,14 +43,16 @@ class Context:
                 decode_cf=False
             ) as target_ds:
                 logger.info(f"Target dataset f{target_uri} found")
-                fixed_dims = get_effective_fixed_dims(fixed_dims, append_dim,
-                                                      target_ds)
-                variables = get_effective_variables(variables, target_ds)
+                target_dim_sizes = get_effective_target_dims(target_dim_sizes,
+                                                             append_dim_name,
+                                                             target_ds)
+                target_variables = get_effective_variables(target_variables,
+                                                           target_ds)
         except FileNotFoundError:
             logger.info(f"Target dataset {target_uri} not found")
-        self._fixed_dims: dict[str, int] | None = fixed_dims
-        self._append_dim: str = append_dim
-        self._variables: dict[str, dict[str, Any]] = variables
+        self._append_dim_name: str = append_dim_name
+        self._target_dim_sizes: dict[str, int] | None = target_dim_sizes
+        self._target_variables: dict[str, dict[str, Any]] = target_variables
 
         temp_dir_uri = config.get("temp_dir", tempfile.gettempdir())
         temp_storage_options = config.get("temp_storage_options")
@@ -62,16 +64,16 @@ class Context:
         return self._config.get("zarr_version", DEFAULT_ZARR_VERSION)
 
     @property
-    def fixed_dims(self) -> dict[str, int] | None:
-        return self._fixed_dims
+    def append_dim_name(self) -> str:
+        return self._append_dim_name
 
     @property
-    def append_dim(self) -> str:
-        return self._append_dim
+    def target_variables(self) -> dict[str, dict[str, Any]]:
+        return self._target_variables
 
     @property
-    def variables(self) -> dict[str, dict[str, Any]]:
-        return self._variables
+    def target_dim_sizes(self) -> dict[str, int]:
+        return self._target_dim_sizes
 
     @property
     def included_var_names(self) -> set[str]:
@@ -147,7 +149,7 @@ class Context:
 
     def configure_target_ds(self, dataset: xr.Dataset) -> xr.Dataset:
         dataset = self._strip_dataset(dataset)
-        variables = get_effective_variables(self.variables, dataset)
+        variables = get_effective_variables(self.target_variables, dataset)
         dataset = self._complete_dataset(dataset, variables)
 
         # Complement dataset attributes and set
@@ -161,7 +163,7 @@ class Context:
 
     def configure_slice_ds(self, dataset: xr.Dataset) -> xr.Dataset:
         dataset = self._strip_dataset(dataset)
-        variables = get_effective_variables(self.variables, dataset)
+        variables = get_effective_variables(self.target_variables, dataset)
         dataset = self._complete_dataset(dataset, variables)
 
         # Remove any encoding and attributes from slice,

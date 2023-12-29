@@ -11,10 +11,8 @@ from .fsutil.transaction import Transaction
 from .fsutil.transaction import RollbackCallback
 from .log import logger
 from .slicesource import open_slice_source
-from .zutil import get_zarr_arrays_for_dim
-from .zutil import open_zarr_group
-from .zutil import get_chunk_update_range
-from .zutil import get_chunk_indices
+from .chunkutil import get_chunk_update_range
+from .chunkutil import get_chunk_indices
 
 
 class Processor:
@@ -64,7 +62,6 @@ class Processor:
 def create_target_from_slice(ctx: Context,
                              slice_ds: xr.Dataset,
                              rollback_cb: RollbackCallback):
-
     target_ds = ctx.configure_target_ds(slice_ds)
     target_dir = ctx.target_dir
     try:
@@ -81,31 +78,39 @@ def create_target_from_slice(ctx: Context,
 def update_target_from_slice(ctx: Context,
                              slice_ds: xr.Dataset,
                              rollback_cb: RollbackCallback):
-
     target_dir = ctx.target_dir
-    append_dim = ctx.append_dim
-    target_group = open_zarr_group(target_dir)
-    target_arrays = get_zarr_arrays_for_dim(target_group, append_dim)
+    append_dim_name = ctx.append_dim_name
+    target_dim_sizes = ctx.target_dim_sizes
+    # target_group = open_zarr_group(target_dir)
+    # target_arrays = get_zarr_arrays_for_dim(target_group, append_dim)
 
     slice_ds = ctx.configure_slice_ds(slice_ds)
 
-    for array_name, (target_array, append_axis) in target_arrays.items():
+    # Emit rollback actions
+    for var_name, var_config in ctx.target_variables.items():
+        assert "dims" in var_config
+        target_var_dim_names = var_config["dims"]
+
         try:
-            slice_var: xr.DataArray = slice_ds[array_name]
-        except KeyError:
-            raise ValueError(f"Array {array_name!r} not found in slice")
+            append_axis = target_var_dim_names.index(append_dim_name)
+        except ValueError:
+            # append dimension does not exist in variable,
+            # so we cannot append data, hence no need to emit
+            # rollback actions
+            continue
 
-        # TODO: Do not rely on _ARRAY_DIMENSIONS, instead use
-        #   mapping var_name -> append_axis as input
-        target_dims = tuple(target_array.attrs.get("_ARRAY_DIMENSIONS"))
-        slice_dims = slice_var.dims
-        if target_dims != slice_dims:
-            raise ValueError(f"Array dimensions"
-                             f" for {array_name!r} do not match:"
-                             f" expected {target_dims},"
-                             f" but got {slice_dims}")
+        assert "encoding" in var_config
+        target_var_encoding = var_config["encoding"]
 
-        array_dir = target_dir / array_name
+        assert "chunks" in target_var_encoding
+        target_var_chunks = target_var_encoding["chunks"]
+        target_var_shape = tuple(target_dim_sizes[k]
+                                 for k in target_var_dim_names)
+
+        assert var_name in slice_ds
+        slice_var = slice_ds.variables[var_name]
+
+        array_dir = target_dir / var_name
 
         array_metadata_file = array_dir / ".zarray"
         array_metadata = array_metadata_file.read()
@@ -113,12 +118,12 @@ def update_target_from_slice(ctx: Context,
                     array_metadata_file.path, array_metadata)
 
         chunk_update, append_dim_range = \
-            get_chunk_update_range(target_array.shape[append_axis],
-                                   target_array.chunks[append_axis],
+            get_chunk_update_range(target_var_shape[append_axis],
+                                   target_var_chunks[append_axis],
                                    slice_var.shape[append_axis])
 
-        chunk_indexes = get_chunk_indices(target_array.shape,
-                                          target_array.chunks,
+        chunk_indexes = get_chunk_indices(target_var_shape,
+                                          target_var_chunks,
                                           append_axis,
                                           append_dim_range)
 
@@ -157,7 +162,7 @@ def update_target_from_slice(ctx: Context,
                      write_empty_chunks=False,
                      consolidated=True,
                      mode="a",
-                     append_dim=append_dim)
+                     append_dim=append_dim_name)
 
     # target_store = get_zarr_store(target_dir)
     # zarr.convenience.consolidate_metadata(target_store)
