@@ -8,27 +8,25 @@ import numcodecs
 import numpy as np
 import xarray as xr
 
-from zappend.config import merge_configs
+from .config import merge_configs
 
 
-# TODO: write test
 def get_effective_target_dims(config_fixed_dims: dict[str, int] | None,
                               config_append_dim: str,
                               dataset: xr.Dataset) -> dict[str, int]:
     if config_fixed_dims:
         if config_fixed_dims.get(config_append_dim) is not None:
             raise ValueError(f"Size of append dimension"
-                             f" {config_append_dim!r} must not be specified"
-                             f" as fixed dimension")
+                             f" {config_append_dim!r} must not be fixed")
         for dim_name, fixed_dim_size in config_fixed_dims.items():
             if dim_name not in dataset.dims:
                 raise ValueError(f"Fixed dimension {dim_name!r}"
                                  f" not found in dataset")
             ds_dim_size = dataset.dims[dim_name]
             if fixed_dim_size != ds_dim_size:
-                raise ValueError(f"Wrong size for fixed dimension {dim_name!r},"
-                                 f" expected {fixed_dim_size},"
-                                 f" found {ds_dim_size} in dataset")
+                raise ValueError(f"Wrong size for fixed dimension {dim_name!r}"
+                                 f" in dataset: expected {fixed_dim_size},"
+                                 f" found {ds_dim_size}")
     if config_append_dim not in dataset.dims:
         raise ValueError(f"Append dimension"
                          f" {config_append_dim!r} not found in dataset")
@@ -45,6 +43,7 @@ def get_effective_variables(config_variables: dict[str, dict[str, Any]] | None,
                         for k, v in config_variables.items()
                         if k != "*"}
 
+    # Complement configured variables by dataset variables
     for var_name, variable in dataset.variables.items():
         var_name = str(var_name)
         ds_var_def = dict(dims=list(map(str, variable.dims)),
@@ -58,12 +57,13 @@ def get_effective_variables(config_variables: dict[str, dict[str, Any]] | None,
             config_var_dims = config_var_def.get("dims")
             if config_var_dims is not None and config_var_dims != ds_var_dims:
                 raise ValueError(f"Dimension mismatch for"
-                                 f" variable {var_name!r},"
+                                 f" variable {var_name!r}:"
                                  f" expected {config_var_dims},"
                                  f" got {ds_var_dims}")
             config_var_def = merge_configs(ds_var_def, config_var_def)
         config_variables[var_name] = config_var_def
 
+    # Normalize effective variables
     for var_name, config_var_def in config_variables.items():
         encoding = config_var_def.get("encoding") or {}
         attrs = config_var_def.get("attrs") or {}
