@@ -1,6 +1,7 @@
 # Copyright © 2023 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
+
 import json
 import unittest
 
@@ -11,6 +12,7 @@ import yaml
 from zappend.config import normalize_config, CONFIG_V1_SCHEMA
 from zappend.config import validate_config
 from zappend.fsutil.fileobj import FileObj
+from .helpers import clear_memory_fs
 
 
 class ConfigValidateTest(unittest.TestCase):
@@ -35,8 +37,10 @@ class ConfigValidateTest(unittest.TestCase):
         config = {"zarr_version": 2,
                   "variables": {
                       "chl": {
-                          "dtype": "int32",
                           "dims": [10, 20, 30],
+                          "encoding": {
+                              "dtype": "int32",
+                          },
                       }
                   }}
         with pytest.raises(ValueError,
@@ -47,6 +51,9 @@ class ConfigValidateTest(unittest.TestCase):
 
 
 class ConfigNormalizeTest(unittest.TestCase):
+    def setUp(self):
+        clear_memory_fs()
+
     def test_normalize_dict(self):
         config = {"version": 1, "zarr_version": 2}
         self.assertIs(config, normalize_config(config))
@@ -79,43 +86,53 @@ class ConfigNormalizeTest(unittest.TestCase):
             {
                 "version": 1,
                 "zarr_version": 2,
-                "dims": {
-                    "time": None
+                "fixed_dims": {
+                    "x": 200,
                 },
+                "append_dim": "time"
             },
             {
-                "dims": {
-                    "x": 200,
+                "fixed_dims": {
                     "y": 100,
                 },
                 "variables": {
                     "time": {
-                        "dtype": "uint64",
-                        "dims": "time"
+                        "dims": "time",
+                        "encoding": {
+                            "dtype": "uint64",
+                        }
                     },
                     "y": {
-                        "dtype": "float64",
-                        "dims": "y"
+                        "dims": "y",
+                        "encoding": {
+                            "dtype": "float64",
+                        }
                     },
                     "x": {
-                        "dtype": "float64",
-                        "dims": "x"
+                        "dims": "x",
+                        "encoding": {
+                            "dtype": "float64",
+                        }
                     },
                 }
             },
             {
                 "variables": {
                     "chl": {
-                        "dtype": "float32",
                         "dims": ("time", "y", "x"),
-                        "chunks": (1, 20, 30),
-                        "fill_value": None
+                        "encoding": {
+                            "dtype": "float32",
+                            "chunks": (1, 20, 30),
+                            "fill_value": None,
+                        }
                     },
                     "tsm": {
-                        "dtype": "float32",
                         "dims": ("time", "y", "x"),
-                        "chunks": (1, 20, 30),
-                        "fill_value": None
+                        "encoding": {
+                            "dtype": "float32",
+                            "chunks": (1, 20, 30),
+                            "fill_value": None,
+                        }
                     },
                 }
             }
@@ -124,35 +141,39 @@ class ConfigNormalizeTest(unittest.TestCase):
             {
                 "version": 1,
                 "zarr_version": 2,
-                "dims": {
+                "fixed_dims": {
                     "x": 200,
                     "y": 100,
-                    "time": None
                 },
+                "append_dim": "time",
                 "variables": {
-                    "time": {
-                        "dtype": "uint64",
-                        "dims": "time"
+                    "x": {
+                        "dims": "x",
+                        "encoding": {"dtype": "float64"},
                     },
                     "y": {
-                        "dtype": "float64",
-                        "dims": "y"
+                        "dims": "y",
+                        "encoding": {"dtype": "float64"},
                     },
-                    "x": {
-                        "dtype": "float64",
-                        "dims": "x"
+                    "time": {
+                        "dims": "time",
+                        "encoding": {"dtype": "uint64"},
                     },
                     "chl": {
-                        "dtype": "float32",
                         "dims": ("time", "y", "x"),
-                        "chunks": (1, 20, 30),
-                        "fill_value": None
+                        "encoding": {
+                            "dtype": "float32",
+                            "chunks": (1, 20, 30),
+                            "fill_value": None
+                        },
                     },
                     "tsm": {
-                        "dtype": "float32",
                         "dims": ("time", "y", "x"),
-                        "chunks": (1, 20, 30),
-                        "fill_value": None
+                        "encoding": {
+                            "dtype": "float32",
+                            "chunks": (1, 20, 30),
+                            "fill_value": None
+                        },
                     },
                 }
             },
@@ -175,8 +196,7 @@ class ConfigNormalizeTest(unittest.TestCase):
         self.assertEqual(
             {
                 'append_dim',
-                'dims',
-                'slice_access_mode',
+                'fixed_dims',
                 'slice_engine',
                 'slice_polling',
                 'slice_storage_options',

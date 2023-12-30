@@ -5,25 +5,27 @@
 from typing import Iterable
 
 import xarray as xr
-import zarr.storage
-import zarr.convenience
 
+from .config import ConfigLike
+from .config import normalize_config
+from .config import validate_config
 from .context import Context
-from .fsutil.fileobj import FileObj
 from .fsutil.transaction import Transaction
 from .fsutil.transaction import RollbackCallback
 from .log import logger
-from .slicezarr import open_slice_zarr
-from .zutil import get_zarr_arrays_for_dim
-from .zutil import open_zarr_group
-from .zutil import get_zarr_store
-from .zutil import get_chunk_update_range
-from .zutil import get_chunk_indices
+from .slicesource import open_slice_source
+from .tailoring import tailor_target_dataset
+from .tailoring import tailor_slice_dataset
+from .chunkutil import get_chunk_update_range
+from .chunkutil import get_chunk_indices
 
 
 class Processor:
-    def __init__(self, ctx: Context):
-        self.ctx = ctx
+    def __init__(self, config: ConfigLike = None, **kwargs):
+        config = normalize_config(config)
+        config.update({k: v for k, v in kwargs.items() if v is not None})
+        validate_config(config)
+        self._config = config
 
     def process_slices(self,
                        slice_iter: Iterable[str | xr.Dataset]):
@@ -31,51 +33,101 @@ class Processor:
             self.process_slice(slice_obj)
 
     def process_slice(self, slice_obj: str | xr.Dataset):
-        with open_slice_zarr(self.ctx, slice_obj) as slice_dir:
-            target_dir = self.ctx.target_dir
-            update_mode = target_dir.exists()
-            with Transaction(target_dir, self.ctx.temp_dir) as rollback_cb:
-                if update_mode:
-                    update_target_from_slice(self.ctx.target_dir,
-                                             self.ctx.append_dim,
-                                             slice_dir,
+        """Process a single slice.
+
+        If there is no target yet, just config and slice:
+
+        * complete config outline from slice outline
+        * check config/slice outline compliance
+        * copy slice and add/remove vars to/from slice
+        * set encoding in slice
+        * write target from slice
+
+        If target exists, with config, slice, and target:
+
+        * complete config outline from target outline
+        * check config/target outline compliance
+        * check config/slice outline compliance
+        * copy slice and add/remove vars to/from slice
+        * remove encoding from slice
+        * update target from slice
+        """
+
+        ctx = Context(self._config)
+
+        with open_slice_source(ctx, slice_obj) as slice_ds:
+            target_dir = ctx.target_dir
+            create = not target_dir.exists()
+            with Transaction(target_dir, ctx.temp_dir) as rollback_cb:
+                if create:
+                    create_target_from_slice(ctx,
+                                             slice_ds,
                                              rollback_cb)
                 else:
-                    create_target_from_slice(self.ctx.target_dir,
-                                             slice_dir,
+                    update_target_from_slice(ctx,
+                                             slice_ds,
                                              rollback_cb)
 
 
-def create_target_from_slice(target_dir, slice_dir, rollback_cb):
+def create_target_from_slice(ctx: Context,
+                             slice_ds: xr.Dataset,
+                             rollback_cb: RollbackCallback):
+    target_ds = tailor_target_dataset(slice_ds,
+                                      ctx.included_var_names,
+                                      ctx.excluded_var_names,
+                                      ctx.target_variables,
+                                      ctx.target_attrs)
+    target_dir = ctx.target_dir
+    # TODO: adjust global attributes dependent on append_dim,
+    #  e.g., time coverage
     try:
-        slice_dir.copy(target_dir)
+        target_ds.to_zarr(store=target_dir.uri,
+                          storage_options=target_dir.storage_options,
+                          zarr_version=ctx.zarr_version,
+                          write_empty_chunks=False,
+                          consolidated=True)
     finally:
         if target_dir.exists():
             rollback_cb("delete_dir", target_dir.path, None)
 
 
-def update_target_from_slice(target_dir: FileObj,
-                             append_dim: str,
-                             slice_dir: FileObj,
+def update_target_from_slice(ctx: Context,
+                             slice_ds: xr.Dataset,
                              rollback_cb: RollbackCallback):
-    target_group = open_zarr_group(target_dir)
-    slice_group = open_zarr_group(slice_dir)
-    target_arrays = get_zarr_arrays_for_dim(target_group, append_dim)
-    for array_name, (target_array, append_axis) in target_arrays.items():
+    target_dir = ctx.target_dir
+    append_dim_name = ctx.append_dim_name
+    target_dim_sizes = ctx.target_dim_sizes
+
+    slice_ds = tailor_slice_dataset(slice_ds,
+                                    ctx.included_var_names,
+                                    ctx.excluded_var_names,
+                                    ctx.target_variables)
+
+    # Emit rollback actions
+    for var_name, var_config in ctx.target_variables.items():
+        assert "dims" in var_config
+        target_var_dim_names = var_config["dims"]
+
         try:
-            slice_array: zarr.Array = slice_group[array_name]
-        except KeyError:
-            raise ValueError(f"Array {array_name!r} not found in slice")
+            append_axis = target_var_dim_names.index(append_dim_name)
+        except ValueError:
+            # append dimension does not exist in variable,
+            # so we cannot append data, hence no need to emit
+            # rollback actions
+            continue
 
-        target_dims = target_array.attrs.get("_ARRAY_DIMENSIONS")
-        slice_dims = slice_array.attrs.get("_ARRAY_DIMENSIONS")
-        if target_dims != slice_dims:
-            raise ValueError(f"Array dimensions"
-                             f" for {array_name!r} do not match:"
-                             f" expected {target_dims},"
-                             f" but got {slice_dims}")
+        assert "encoding" in var_config
+        target_var_encoding = var_config["encoding"]
 
-        array_dir = target_dir / array_name
+        assert "chunks" in target_var_encoding
+        target_var_chunks = target_var_encoding["chunks"]
+        target_var_shape = tuple(target_dim_sizes[k]
+                                 for k in target_var_dim_names)
+
+        assert var_name in slice_ds
+        slice_var = slice_ds.variables[var_name]
+
+        array_dir = target_dir / var_name
 
         array_metadata_file = array_dir / ".zarray"
         array_metadata = array_metadata_file.read()
@@ -83,12 +135,12 @@ def update_target_from_slice(target_dir: FileObj,
                     array_metadata_file.path, array_metadata)
 
         chunk_update, append_dim_range = \
-            get_chunk_update_range(target_array.shape[append_axis],
-                                   target_array.chunks[append_axis],
-                                   slice_array.shape[append_axis])
+            get_chunk_update_range(target_var_shape[append_axis],
+                                   target_var_chunks[append_axis],
+                                   slice_var.shape[append_axis])
 
-        chunk_indexes = get_chunk_indices(target_array.shape,
-                                          target_array.chunks,
+        chunk_indexes = get_chunk_indices(target_var_shape,
+                                          target_var_chunks,
                                           append_axis,
                                           append_dim_range)
 
@@ -98,6 +150,8 @@ def update_target_from_slice(target_dir: FileObj,
             chunk_filename = ".".join(map(str, chunk_index))
             chunk_file = array_dir / chunk_filename
             if chunk_update and chunk_index[append_axis] == start:
+                # TODO: test this path, i.e.,
+                #   rollback actions "delete_dir" and "delete_file"
                 try:
                     chunk_data = chunk_file.read()
                 except FileNotFoundError:
@@ -113,11 +167,19 @@ def update_target_from_slice(target_dir: FileObj,
                 rollback_cb("delete_file",
                             chunk_file.path, None)
 
-        target_array.append(slice_array, axis=append_axis)
-
+    # TODO: adjust global attributes dependent on append_dim,
+    #  e.g., time coverage
     logger.info(f"Consolidating target dataset")
     metadata_file = target_dir / ".zmetadata"
     metadata_data = metadata_file.read()
     rollback_cb("replace_file", metadata_file.path, metadata_data)
-    target_store = get_zarr_store(target_dir)
-    zarr.convenience.consolidate_metadata(target_store)
+
+    slice_ds.to_zarr(store=target_dir.uri,
+                     storage_options=target_dir.storage_options,
+                     write_empty_chunks=False,
+                     consolidated=True,
+                     mode="a",
+                     append_dim=append_dim_name)
+
+    # target_store = get_zarr_store(target_dir)
+    # zarr.convenience.consolidate_metadata(target_store)
