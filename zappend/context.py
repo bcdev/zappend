@@ -5,8 +5,6 @@
 import tempfile
 from typing import Any, Dict
 
-import dask.array
-import numpy as np
 import xarray as xr
 
 from .config import DEFAULT_APPEND_DIM
@@ -72,6 +70,10 @@ class Context:
         return self._target_variables
 
     @property
+    def target_attrs(self) -> dict[str, Any]:
+        return self._config.get("attrs") or {}
+
+    @property
     def target_dim_sizes(self) -> dict[str, int]:
         return self._target_dim_sizes
 
@@ -82,97 +84,6 @@ class Context:
     @property
     def excluded_var_names(self) -> set[str]:
         return set(self._config.get("excluded_var_names", []))
-
-    # TODO: extract function and test
-    def _strip_dataset(self, dataset: xr.Dataset) -> xr.Dataset:
-        dataset_var_names = set(map(str, dataset.variables.keys()))
-        included_var_names = self.included_var_names
-        excluded_var_names = self.excluded_var_names
-        if not included_var_names:
-            included_var_names = dataset_var_names
-        if excluded_var_names:
-            included_var_names -= excluded_var_names
-        drop_var_names = dataset_var_names - included_var_names
-        return dataset.drop_vars(drop_var_names)
-
-    # TODO: extract function and test
-    def _complete_dataset(self,
-                          dataset: xr.Dataset,
-                          variables: dict[str, dict[str, Any]]) -> xr.Dataset:
-        for var_name, var_config in variables.items():
-            var = dataset.variables.get(var_name)
-            if var is None:
-                logger.warning(
-                    f"Variable {var_name!r} not found in slice dataset;"
-                    f" creating it."
-                )
-                var_dims = var_config["dims"]
-                assert var_dims is not None
-
-                def get_dim_size(dim_name: str) -> int:
-                    return dataset.dims[dim_name]
-
-                try:
-                    shape = tuple(map(get_dim_size, var_dims))
-                except KeyError:
-                    raise ValueError(f"Cannot create variable {var_name!r}"
-                                     f" because at least one of its dimensions"
-                                     f" {var_dims!r} does not exist in the"
-                                     f" slice dataset")
-
-                var_encoding = var_config.get("encoding", {})
-                chunks = var_encoding.get("chunks")
-                if chunks is None:
-                    chunks = shape
-
-                if ("_FillValue" in var_encoding
-                    and var_encoding["_FillValue"] is not None):
-                    memory_dtype = "float64"
-                    memory_fill_value = float("NaN")
-                else:
-                    memory_dtype = var_encoding.get("dtype", "float32")
-                    memory_fill_value = var_encoding.get("_FillValue")
-                    if memory_fill_value is None:
-                        if memory_dtype in ("float32", "float64"):
-                            memory_fill_value = float("NaN")
-                        else:
-                            memory_fill_value = 0
-                var = xr.DataArray(
-                    dask.array.full(shape,
-                                    memory_fill_value,
-                                    chunks=chunks,
-                                    dtype=np.dtype(memory_dtype)),
-                    dims=var_dims
-                )
-                dataset[var_name] = var
-        return dataset
-
-    def configure_target_ds(self, dataset: xr.Dataset) -> xr.Dataset:
-        dataset = self._strip_dataset(dataset)
-        variables = get_effective_variables(self.target_variables, dataset)
-        dataset = self._complete_dataset(dataset, variables)
-
-        # Complement dataset attributes and set
-        # variable encoding and attributes
-        dataset.attrs.update(self._config.get("attrs", {}))
-        for var_name, var_config in variables.items():
-            variable = dataset.variables[var_name]
-            variable.encoding = var_config["encoding"]
-            variable.attrs = var_config["attrs"]
-        return dataset
-
-    def configure_slice_ds(self, dataset: xr.Dataset) -> xr.Dataset:
-        dataset = self._strip_dataset(dataset)
-        variables = get_effective_variables(self.target_variables, dataset)
-        dataset = self._complete_dataset(dataset, variables)
-
-        # Remove any encoding and attributes from slice,
-        # since both are prescribed by target
-        dataset.attrs.clear()
-        for variable in dataset.variables.values():
-            variable.encoding = {}
-            variable.attrs = {}
-        return dataset
 
     @property
     def target_dir(self) -> FileObj:

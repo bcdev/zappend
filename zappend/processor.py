@@ -2,7 +2,7 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from typing import Iterable, Any
+from typing import Iterable
 
 import xarray as xr
 
@@ -14,6 +14,8 @@ from .fsutil.transaction import Transaction
 from .fsutil.transaction import RollbackCallback
 from .log import logger
 from .slicesource import open_slice_source
+from .tailoring import tailor_target_dataset
+from .tailoring import tailor_slice_dataset
 from .chunkutil import get_chunk_update_range
 from .chunkutil import get_chunk_indices
 
@@ -70,8 +72,14 @@ class Processor:
 def create_target_from_slice(ctx: Context,
                              slice_ds: xr.Dataset,
                              rollback_cb: RollbackCallback):
-    target_ds = ctx.configure_target_ds(slice_ds)
+    target_ds = tailor_target_dataset(slice_ds,
+                                      ctx.included_var_names,
+                                      ctx.excluded_var_names,
+                                      ctx.target_variables,
+                                      ctx.target_attrs)
     target_dir = ctx.target_dir
+    # TODO: adjust global attributes dependent on append_dim,
+    #  e.g., time coverage
     try:
         target_ds.to_zarr(store=target_dir.uri,
                           storage_options=target_dir.storage_options,
@@ -89,10 +97,11 @@ def update_target_from_slice(ctx: Context,
     target_dir = ctx.target_dir
     append_dim_name = ctx.append_dim_name
     target_dim_sizes = ctx.target_dim_sizes
-    # target_group = open_zarr_group(target_dir)
-    # target_arrays = get_zarr_arrays_for_dim(target_group, append_dim)
 
-    slice_ds = ctx.configure_slice_ds(slice_ds)
+    slice_ds = tailor_slice_dataset(slice_ds,
+                                    ctx.included_var_names,
+                                    ctx.excluded_var_names,
+                                    ctx.target_variables)
 
     # Emit rollback actions
     for var_name, var_config in ctx.target_variables.items():
