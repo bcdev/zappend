@@ -150,8 +150,6 @@ def update_target_from_slice(ctx: Context,
             chunk_filename = ".".join(map(str, chunk_index))
             chunk_file = array_dir / chunk_filename
             if chunk_update and chunk_index[append_axis] == start:
-                # TODO: test this path, i.e.,
-                #   rollback actions "delete_dir" and "delete_file"
                 try:
                     chunk_data = chunk_file.read()
                 except FileNotFoundError:

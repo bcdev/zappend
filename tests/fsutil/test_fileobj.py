@@ -122,6 +122,16 @@ class FileObjTest(unittest.TestCase):
             # noinspection PyUnusedLocal
             parent = parent.parent
 
+        # local filesystem
+        file = FileObj("test.zarr/chl/.zarray")
+        fs = file.fs
+        parent = file.parent
+        self.assertIsInstance(parent, FileObj)
+        self.assertEqual("test.zarr/chl", parent.uri)
+        self.assertEqual(os.path.abspath("test.zarr/chl").replace("\\", "/"),
+                         parent.path)
+        self.assertIs(fs, parent.fs)
+
     def test_parent_with_chained_uri(self):
         file = FileObj("dir://chl/.zarray::file:/eo-data/test.zarr")
         fs = file.fs
@@ -129,6 +139,16 @@ class FileObjTest(unittest.TestCase):
         self.assertIsInstance(parent, FileObj)
         self.assertEqual("dir://chl::file:/eo-data/test.zarr", parent.uri)
         self.assertEqual("chl", parent.path)
+        self.assertIs(fs, parent.fs)
+
+        # local filesystem
+        file = FileObj("test.zarr/chl/.zarray::/eo-data/test.zarr")
+        fs = file.fs
+        parent = file.parent
+        self.assertIsInstance(parent, FileObj)
+        self.assertEqual("test.zarr/chl::/eo-data/test.zarr", parent.uri)
+        self.assertEqual(os.path.abspath("test.zarr/chl").replace("\\", "/"),
+                         parent.path)
         self.assertIs(fs, parent.fs)
 
     def test_for_path(self):

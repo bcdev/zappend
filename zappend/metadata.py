@@ -34,7 +34,6 @@ def get_effective_target_dims(config_fixed_dims: dict[str, int] | None,
     return {str(k): v for k, v in dataset.dims.items()}
 
 
-# TODO: write test
 def get_effective_variables(config_variables: dict[str, dict[str, Any]] | None,
                             dataset: xr.Dataset) -> dict[str, dict[str, Any]]:
     config_variables = config_variables or {}
