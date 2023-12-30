@@ -2,13 +2,88 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 
 import numcodecs
 import numpy as np
 import xarray as xr
 
 from .config import merge_configs
+
+
+class Undefined:
+    pass
+
+
+UNDEFINED = Undefined()
+
+
+class VariableEncoding:
+    # noinspection PyPep8Naming
+    def __init__(self,
+                 dtype: np.dtype | Undefined = UNDEFINED,
+                 chunks: Sequence[int] | None | Undefined = UNDEFINED,
+                 fill_value: int | float | None | Undefined = UNDEFINED,
+                 _FillValue: int | float | None | Undefined = UNDEFINED,
+                 scale_factor: int | float | Undefined = UNDEFINED,
+                 add_offset: int | float | Undefined = UNDEFINED,
+                 compressor: Any | None | Undefined = UNDEFINED,
+                 filters: Sequence[Any] | None | Undefined = UNDEFINED):
+        self.dtype = dtype
+        self.chunks = chunks
+        self.fill_value = fill_value
+        self.scale_factor = scale_factor
+        self.add_offset = add_offset
+        self.compressor = compressor
+        self.filters = filters
+        if isinstance(fill_value, Undefined):
+            self.fill_value = _FillValue
+
+    def to_dict(self):
+        d = {k: v for k, v in self.__dict__.items()
+             if not isinstance(v, Undefined) and not k.startswith("_")}
+        if "fill_value" in d:
+            d["_FillValue"] = d.pop("fill_value")
+        return d
+
+
+class VariableMetadata:
+    def __init__(self,
+                 dims: Sequence[str] | None = None,
+                 encoding: VariableEncoding | None = None,
+                 attrs: dict[str, int] | None = None):
+        self.dims: tuple[str] = tuple(dims or ())
+        self.encoding: VariableEncoding = encoding or VariableEncoding()
+        self.attrs: dict[str, Any] = dict(attrs or {})
+
+
+class DatasetMetadata:
+    def __init__(self,
+                 dims: dict[str, int] | None = None,
+                 variables: dict[str, VariableMetadata] | None = None,
+                 attrs: dict[str, Any] | None = None):
+        self.dims: dict[str, int] = dict(dims or {})
+        self.variables: dict[str, VariableMetadata] = dict(variables or {})
+        self.attrs: dict[str, Any] = dict(attrs or {})
+
+    @classmethod
+    def from_dataset(cls,
+                     dataset: xr.Dataset,
+                     config_fixed_dims: dict[str, int] | None = None,
+                     config_append_dim: str | None = None,
+                     config_variables: dict[str, dict[str, Any]] | None = None,
+                     config_included_var_names: list[str] | None = None,
+                     config_excluded_var_names: list[str] | None = None,
+                     config_attrs: dict[str, Any] | None = None):
+        dims = get_effective_target_dims(config_fixed_dims,
+                                         config_append_dim,
+                                         dataset)
+        variables = get_effective_variables(config_variables,
+                                            dataset)
+        attrs = merge_configs(dataset.attrs, config_attrs or {})
+        return DatasetMetadata(dims=dims,
+                               variables=variables,
+                               attrs=attrs)
 
 
 def get_effective_target_dims(config_fixed_dims: dict[str, int] | None,
@@ -35,8 +110,10 @@ def get_effective_target_dims(config_fixed_dims: dict[str, int] | None,
 
 
 # TODO: write test
-def get_effective_variables(config_variables: dict[str, dict[str, Any]] | None,
-                            dataset: xr.Dataset) -> dict[str, dict[str, Any]]:
+def get_effective_variables(
+    config_variables: dict[str, dict[str, Any]] | None,
+    dataset: xr.Dataset
+) -> dict[str, VariableMetadata]:
     config_variables = config_variables or {}
     defaults = config_variables.get("*", {})
     config_variables = {k: merge_configs(defaults, v)
@@ -46,7 +123,7 @@ def get_effective_variables(config_variables: dict[str, dict[str, Any]] | None,
     # Complement configured variables by dataset variables
     for var_name, variable in dataset.variables.items():
         var_name = str(var_name)
-        ds_var_def = dict(dims=list(map(str, variable.dims)),
+        ds_var_def = dict(dims=tuple(map(str, variable.dims)),
                           encoding=dict(variable.encoding),
                           attrs=dict(variable.attrs))
         config_var_def = config_variables.get(var_name)
@@ -63,20 +140,24 @@ def get_effective_variables(config_variables: dict[str, dict[str, Any]] | None,
             config_var_def = merge_configs(ds_var_def, config_var_def)
         config_variables[var_name] = config_var_def
 
-    # Normalize effective variables
+    # Normalize variables
+    effective_variables = {}
     for var_name, config_var_def in config_variables.items():
-        encoding = config_var_def.get("encoding") or {}
-        attrs = config_var_def.get("attrs") or {}
+        dims = tuple(config_var_def.get("dims") or ())
+        encoding = dict(config_var_def.get("encoding") or {})
+        attrs = dict(config_var_def.get("attrs") or {})
         for prop_name, normalize_value in _ENCODING_PROPS.items():
             if prop_name in attrs:
                 if prop_name not in encoding:
                     encoding[prop_name] = attrs.pop(prop_name)
             if prop_name in encoding:
                 encoding[prop_name] = normalize_value(encoding[prop_name])
-        config_var_def["encoding"] = encoding
-        config_var_def["attrs"] = attrs
-
-    return config_variables
+        effective_variables[var_name] = VariableMetadata(
+            dims=dims,
+            encoding=VariableEncoding(**encoding),
+            attrs=attrs
+        )
+    return effective_variables
 
 
 def _normalize_dtype(dtype: Any) -> np.dtype | None:
