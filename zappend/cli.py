@@ -38,7 +38,11 @@ def zappend(slices: tuple[str, ...],
         return
 
     from zappend.api import zappend
-    zappend(slices, config=config, target_uri=target, dry_run=dry_run)
+    # noinspection PyBroadException
+    try:
+        zappend(slices, config=config, target_uri=target, dry_run=dry_run)
+    except BaseException as e:
+        raise click.ClickException(f"{e}") from e
 
 
 def _show_config_help():
