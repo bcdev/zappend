@@ -134,6 +134,7 @@ CONFIG_V1_SCHEMA = {
             },
         },
 
+        dry_run={"type": "boolean", "default": False}
     ),
     # "required": ["version", "fixed_dims", "append_dim"],
     "additionalProperties": False,
@@ -210,6 +211,8 @@ def load_config(config_file: FileObj) -> Config:
 
 
 def merge_configs(*configs: Config) -> Config:
+    if not configs:
+        return {}
     merged_config = dict(configs[0])
     for config in configs[1:]:
         merged_config = _merge_dicts(merged_config, config)

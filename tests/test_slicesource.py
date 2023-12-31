@@ -30,7 +30,7 @@ class SliceSourceTest(unittest.TestCase):
         with slice_zarr as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
-    def test_persistent(self):
+    def test_persistent_zarr(self):
         slice_dir = FileObj("memory://slice.zarr")
         make_test_dataset(uri=slice_dir.uri)
         ctx = Context(dict(target_uri="memory://target.zarr"))
@@ -38,6 +38,18 @@ class SliceSourceTest(unittest.TestCase):
         self.assertIsInstance(slice_zarr, PersistentSliceSource)
         with slice_zarr as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
+
+    # def test_persistent_nc(self):
+    #     slice_ds = make_test_dataset()
+    #     slice_file = FileObj("memory:///slice.nc")
+    #     with slice_file.fs.open(slice_file.path, "wb") as f:
+    #         slice_ds.to_netcdf(f)
+    #     ctx = Context(dict(target_uri="memory://target.zarr",
+    #                        slice_engine="scipy"))
+    #     slice_nc = open_slice_source(ctx, slice_file.uri)
+    #     self.assertIsInstance(slice_nc, PersistentSliceSource)
+    #     with slice_nc as slice_ds:
+    #         self.assertIsInstance(slice_ds, xr.Dataset)
 
     def test_persistent_wait_success(self):
         slice_dir = FileObj("memory://slice.zarr")

@@ -48,3 +48,26 @@ class TestProcessor(unittest.TestCase):
                           decode_cf=True)
         self.assertEqual({'x', 'y', 'time', 'chl', 'tsm'}, set(ds.variables))
         self.assertEqual({'time': 2, 'y': 10, 'x': 20}, ds.dims)
+
+    def test_process_two_slices_with_chunk_overlap(self):
+        target_dir = FileObj("memory://target.zarr")
+        self.assertFalse(target_dir.exists())
+
+        processor = Processor(dict(
+            target_uri=target_dir.uri,
+            variables=dict(
+                chl=dict(encoding=dict(chunks=[3, 5, 10])),
+                tsm=dict(encoding=dict(chunks=[3, 5, 10])),
+            )
+        ))
+        test_ds_kwargs = dict(shape=(2, 10, 20), chunks=(2, 5, 10))
+        ds1 = make_test_dataset(uri="memory://slice-1.zarr", **test_ds_kwargs)
+        ds2 = make_test_dataset(uri="memory://slice-2.zarr", **test_ds_kwargs)
+        processor.process_slices([ds1, ds2])
+
+        self.assertTrue(target_dir.exists())
+        ds = xr.open_zarr(target_dir.uri,
+                          storage_options=target_dir.storage_options,
+                          decode_cf=True)
+        self.assertEqual({'x', 'y', 'time', 'chl', 'tsm'}, set(ds.variables))
+        self.assertEqual({'time': 4, 'y': 10, 'x': 20}, ds.dims)

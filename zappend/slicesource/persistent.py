@@ -74,6 +74,7 @@ class PersistentSliceSource(SliceSource):
                                 storage_options=storage_options,
                                 decode_cf=False)
 
-        return xr.open_dataset(self._slice_file.uri,
-                               engine=engine,
-                               decode_cf=False)
+        with self._slice_file.fs.open(self._slice_file.path, "rb") as f:
+            return xr.open_dataset(f,
+                                   engine=engine,
+                                   decode_cf=False)

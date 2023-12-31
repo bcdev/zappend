@@ -196,6 +196,7 @@ class ConfigNormalizeTest(unittest.TestCase):
         self.assertEqual(
             {
                 'append_dim',
+                'dry_run',
                 'fixed_dims',
                 'slice_engine',
                 'slice_polling',

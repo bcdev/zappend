@@ -15,17 +15,17 @@ RollbackAction = (Literal["delete_dir"]
 RollbackCallback = Callable[
     [
         RollbackAction,
-        # TODO: Check if we should use FileObj instead of path
+        # TODO: check if we should use FileObj instead of path
         str,  # target path
         bytes | None  # original data, if operation is "replace_file"
     ],
     None  # void
 ]
 
-LOCK_FILE = "__rollback__.lock"
+LOCK_EXT = ".lock"
 ROLLBACK_FILE = "__rollback__.txt"
 
-ROLLBACK_ACTIONS = {"delete_dir", "delete_file", "replace_file"}
+ROLLBACK_ACTIONS = "delete_dir", "delete_file", "replace_file"
 
 
 class Transaction:
@@ -39,9 +39,7 @@ class Transaction:
                  target_dir: FileObj,
                  rollback_dir: FileObj,
                  create_rollback_subdir: bool = True):
-        lock_file = target_dir.parent / LOCK_FILE
-        if lock_file.exists():
-            raise IOError(f"Target is locked: {lock_file.uri}")
+        lock_file = target_dir.parent / (target_dir.filename + LOCK_EXT)
         transaction_id = str(uuid.uuid4())
         if create_rollback_subdir:
             rollback_dir = rollback_dir / transaction_id
@@ -58,21 +56,23 @@ class Transaction:
                              " with nested 'with' statements")
         self._entered_ctx = True
 
-        if not self._rollback_dir.exists():
-            self._rollback_dir.mkdir()
-        self._rollback_file.write("")  # touch
-
         lock_file = self._lock_file
         if lock_file.exists():
             raise IOError(f"Target is locked: {lock_file.uri}")
         lock_file.write(self._rollback_dir.uri)
 
-        return self._add_rollback_op
+        if not self._rollback_dir.exists():
+            self._rollback_dir.mkdir()
+        self._rollback_file.write("")  # touch
+
+        return self._add_rollback_action
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._assert_entered_ctx()
 
         if exc_type is not None and self._rollback_file.exists():
+            logger.error("Error in transaction", exc_info=True)
+
             rollback_txt = self._rollback_file.read(mode="r")
             rollback_records = [record
                                 for record in [
@@ -107,23 +107,29 @@ class Transaction:
         with self._target_dir.fs.open(target_path, "wb") as f:
             f.write(data)
 
-    def _add_rollback_op(self,
-                         action: RollbackAction,
-                         path: str,
-                         data: bytes | None):
+    def _add_rollback_action(self,
+                             action: RollbackAction,
+                             path: str,
+                             data: bytes | None):
         self._assert_entered_ctx()
         if not isinstance(action, str):
             raise TypeError(
-                f"action must of type str, but was {type(action)}")
-        if not isinstance(path, str):
-            raise TypeError(f"path must of type str, but was {type(path)}")
-        if not isinstance(data, (bytes, type(None))):
-            raise TypeError(f"data must be None or of type bytes,"
-                            f" but was {type(data)}")
+                f"Type of 'action' argument must be {str},"
+                f" but was {type(action)}")
         if action not in ROLLBACK_ACTIONS:
-            raise ValueError(f"action must be one of"
-                             f" {', '.join(ROLLBACK_ACTIONS)},"
-                             f" but was {action}")
+            actions = ', '.join(map(repr, ROLLBACK_ACTIONS))
+            raise ValueError(f"Value of 'action' argument must be one of"
+                             f" {actions}, but was {action!r}")
+        if not isinstance(path, str):
+            raise TypeError(f"Type of 'path' argument must be {str},"
+                            f" but was {type(path)}")
+        if action == "replace_file":
+            if not isinstance(data, bytes):
+                raise TypeError(f"Type of 'data' argument must be {bytes},"
+                                f" but was {type(data)}")
+        else:
+            if data is not None:
+                raise ValueError(f"Value of 'data' argument must be None")
 
         assert hasattr(self, "_" + action)
         if data is not None:

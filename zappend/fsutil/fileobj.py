@@ -5,6 +5,9 @@ import fsspec
 from .path import split_filename
 
 
+# TODO: check if we should make FileObj an ABC
+#  and then introduce concrete File and Directory classes
+
 class FileObj:
     """An object that represents a file or directory in some filesystem.
 
@@ -75,6 +78,10 @@ class FileObj:
 
     def __truediv__(self, rel_path: str):
         return self.for_path(rel_path)
+
+    @property
+    def filename(self) -> str:
+        return split_filename(self.path)[1]
 
     @property
     def parent(self) -> "FileObj":
@@ -159,11 +166,6 @@ class FileObj:
             mode = "w" if isinstance(data, str) else "wb"
         with self._fs.open(self._path, mode=mode) as f:
             return f.write(data)
-
-    def copy(self, target: "FileObj"):
-        source_map = self.fs.get_mapper(self.path)
-        target_map = target.fs.get_mapper(target.path, create=True)
-        target_map.update(source_map)
 
     def delete(self, recursive: bool = False) -> bool:
         self._resolve()
