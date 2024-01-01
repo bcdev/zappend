@@ -64,7 +64,7 @@ class Context:
         return self._config.get("append_dim") or DEFAULT_APPEND_DIM
 
     @property
-    def target_metadata(self) -> DatasetMetadata:
+    def target_metadata(self) -> DatasetMetadata | None:
         return self._target_metadata
 
     @target_metadata.setter
