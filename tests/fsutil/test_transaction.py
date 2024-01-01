@@ -6,7 +6,6 @@ import unittest
 from typing import Callable
 
 import pytest
-import xarray as xr
 
 from zappend.fsutil.fileobj import FileObj
 from zappend.fsutil.transaction import Transaction
@@ -115,7 +114,8 @@ class TransactionTest(unittest.TestCase):
             self.assertTrue(test_file_3.exists())
             self.assertEqual(b"4-5-6", test_file_3.read())
 
-    def test_raise_on_nested_transaction(self):
+    # noinspection PyMethodMayBeStatic
+    def test_it_raises_on_nested_transaction(self):
         test_root = FileObj("memory://test")
         test_root.mkdir()
         rollback_dir = FileObj("memory://rollback")
@@ -127,7 +127,8 @@ class TransactionTest(unittest.TestCase):
                 with transaction:
                     pass
 
-    def test_raise_on_locked_target(self):
+    # noinspection PyMethodMayBeStatic
+    def test_it_raises_on_locked_target(self):
         test_root = FileObj("memory://test")
         test_root.mkdir()
         rollback_dir = FileObj("memory://rollback")
@@ -137,7 +138,8 @@ class TransactionTest(unittest.TestCase):
                 with Transaction(test_root, rollback_dir):
                     pass
 
-    def test_raise_on_abuse(self):
+    # noinspection PyMethodMayBeStatic
+    def test_it_raises_if_not_used_with_with(self):
         test_root = FileObj("memory://test")
         test_root.mkdir()
         rollback_dir = FileObj("memory://rollback")
@@ -147,7 +149,41 @@ class TransactionTest(unittest.TestCase):
                                  " used with the 'with' statement"):
             transaction._add_rollback_action("delete_file", "path", None)
 
-    def test_raise_on_illegal_callback_calls(self):
+    def test_deletes_lock(self):
+        test_root = FileObj("memory://test")
+        test_root.mkdir()
+        rollback_dir = FileObj("memory://rollback")
+        rollback_dir.mkdir()
+        transaction = Transaction(test_root, rollback_dir,
+                                  create_rollback_subdir=False)
+        self.assertFalse(transaction._lock_file.exists())
+        with transaction:
+            self.assertTrue(transaction._lock_file.exists())
+        self.assertFalse(transaction._lock_file.exists())
+
+    def test_leaves_lock_behind_when_it_cannot_be_deleted(self):
+        test_root = FileObj("memory://test")
+        test_root.mkdir()
+        rollback_dir = FileObj("memory://rollback")
+        rollback_dir.mkdir()
+        transaction = Transaction(test_root, rollback_dir,
+                                  create_rollback_subdir=False)
+        delete_called = False
+
+        def _delete():
+            nonlocal delete_called
+            delete_called = True
+            raise OSError("Bam!")
+
+        transaction._lock_file.delete = _delete
+        self.assertFalse(transaction._lock_file.exists())
+        with transaction:
+            self.assertTrue(transaction._lock_file.exists())
+        self.assertEqual(True, delete_called)
+        self.assertTrue(transaction._lock_file.exists())
+
+    # noinspection PyMethodMayBeStatic
+    def test_it_raises_on_illegal_callback_calls(self):
         test_root = FileObj("memory://test")
         test_root.mkdir()
         rollback_dir = FileObj("memory://rollback")
