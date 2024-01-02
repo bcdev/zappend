@@ -167,9 +167,3 @@ def update_target_from_slice(ctx: Context,
                      consolidated=True,
                      mode="a",
                      append_dim=append_dim_name)
-
-    # TODO: unchunk (coordinate) variables that contain the append dimension,
-    #   if their chunks=None, e.g., time, time_bnds
-
-    # target_store = get_zarr_store(target_dir)
-    # zarr.convenience.consolidate_metadata(target_store)

@@ -193,6 +193,35 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
             ).to_dict()
         )
 
+    def test_variable_defaults(self):
+        self.assertEqual(
+            {'attrs': {},
+             'dims': {'time': 2, 'x': 4, 'y': 3},
+             'variables': {'a': {'attrs': {},
+                                 'dims': ('time', 'y', 'x'),
+                                 'encoding': {'chunks': (16, 3, 4),
+                                              'dtype': np.dtype('float32')},
+                                 'shape': (2, 3, 4)},
+                           'b': {'attrs': {},
+                                 'dims': ('time', 'y', 'x'),
+                                 'encoding': {'chunks': (16, 3, 4),
+                                              'dtype': np.dtype('float64')},
+                                 'shape': (2, 3, 4)}}},
+            DatasetMetadata.from_dataset(
+                xr.Dataset({
+                    "a": xr.DataArray(np.zeros((2, 3, 4)),
+                                      dims=("time", "y", "x")),
+                    "b": xr.DataArray(np.zeros((2, 3, 4)),
+                                      dims=("time", "y", "x")),
+                }),
+                {"variables": {
+                    "*": {"encoding": {"chunks": [16, 3, 4]}},
+                    "a": {"encoding": {"dtype": "float32"}},
+                    "b": {"encoding": {"dtype": "float64"}},
+                }}
+            ).to_dict()
+        )
+
     def test_variable_encoding_normalisation(self):
         def normalize(k, v):
             metadata = DatasetMetadata.from_dataset(

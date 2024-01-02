@@ -21,7 +21,7 @@ class ApiTest(unittest.TestCase):
                 target_uri=target_uri)
         self.assertFalse(FileObj(target_uri).exists())
 
-    def test_3_slices(self):
+    def test_some_slices(self):
         target_uri = "memory://target.zarr"
         slices = [make_test_dataset(),
                   make_test_dataset(),
