@@ -1,6 +1,7 @@
 # Copyright © 2023 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
+
 import math
 import unittest
 
@@ -9,115 +10,122 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from zappend.metadata import get_effective_target_dims
-from zappend.metadata import get_effective_variables
+from zappend.metadata import DatasetMetadata
 
 
-class GetEffectiveTargetDimsTest(unittest.TestCase):
+class DatasetMetadataDimsTest(unittest.TestCase):
 
-    def test_without_fixed_sizes(self):
+    def test_dims_without_fixed_dims_given(self):
+        ds = xr.Dataset(
+            {"a": xr.DataArray(np.zeros((2, 3, 4)), dims=("z", "y", "x"))})
         self.assertEqual(
             {"z": 2, "y": 3, "x": 4},
-            get_effective_target_dims(
-                None,
-                "z",
-                xr.Dataset({
-                    "a": xr.DataArray(np.zeros((2, 3, 4)),
-                                      dims=("z", "y", "x"))
-                })
-            )
+            DatasetMetadata.from_dataset(
+                ds,
+                {"append_dim": "z"}
+            ).dims
         )
 
-    def test_with_fixed_sizes(self):
+    def test_dims_with_fixed_dims_given(self):
+        ds = xr.Dataset(
+            {"a": xr.DataArray(np.zeros((2, 3, 4)), dims=("z", "y", "x"))})
         self.assertEqual(
             {"z": 2, "y": 3, "x": 4},
-            get_effective_target_dims(
-                {"y": 3, "x": 4},
-                "z",
-                xr.Dataset({
-                    "a": xr.DataArray(np.zeros((2, 3, 4)),
-                                      dims=("z", "y", "x"))
-                })
-            )
+            DatasetMetadata.from_dataset(
+                ds,
+                {
+                    "append_dim": "z",
+                    "fixed_dims": {"y": 3, "x": 4}
+                }
+            ).dims
         )
 
     # noinspection PyMethodMayBeStatic
-    def test_raise_append_dim_not_found(self):
+    def test_it_raises_if_append_dim_not_found(self):
+        ds = xr.Dataset({"a": xr.DataArray(np.zeros((2, 3, 4)),
+                                           dims=("time", "y", "x"))})
         with pytest.raises(ValueError,
                            match="Append dimension 'z' not found in dataset"):
-            get_effective_target_dims(
-                None,
-                "z",
-                xr.Dataset({
-                    "a": xr.DataArray(np.zeros((2, 3, 4)),
-                                      dims=("time", "y", "x"))
-                })
+            DatasetMetadata.from_dataset(
+                ds,
+                {"append_dim": "z"}
             )
 
     # noinspection PyMethodMayBeStatic
-    def test_raise_append_dim_must_not_be_fixed(self):
+    def test_it_raises_if_append_dim_is_fixed(self):
+        ds = xr.Dataset({"a": xr.DataArray(np.zeros((2, 3, 4)),
+                                           dims=("time", "y", "x"))})
         with pytest.raises(ValueError,
                            match="Size of append dimension 'time'"
                                  " must not be fixed"):
-            get_effective_target_dims(
-                {"time": 2, "y": 3, "x": 4},
-                "time",
-                xr.Dataset({
-                    "a": xr.DataArray(np.zeros((2, 3, 4)),
-                                      dims=("time", "y", "x"))
-                })
+            DatasetMetadata.from_dataset(
+                ds,
+                {
+                    "fixed_dims": {"time": 2, "y": 3, "x": 4},
+                    "append_dim": "time"
+                }
             )
 
     # noinspection PyMethodMayBeStatic
-    def test_raise_fixed_dim_not_found_in_ds(self):
+    def test_it_raises_if_fixed_dim_not_found_in_ds(self):
+        ds = xr.Dataset({"a": xr.DataArray(np.zeros((2, 3, 4)),
+                                           dims=("time", "y", "x"))})
         with pytest.raises(ValueError,
                            match="Fixed dimension 'z' not found in dataset"):
-            get_effective_target_dims(
-                {"y": 3, "z": 4},
-                "time",
-                xr.Dataset({
-                    "a": xr.DataArray(np.zeros((2, 3, 4)),
-                                      dims=("time", "y", "x"))
-                })
+            DatasetMetadata.from_dataset(
+                ds,
+                {
+                    "fixed_dims": {"y": 3, "z": 4},
+                    "append_dim": "time"
+                }
             )
 
     # noinspection PyMethodMayBeStatic
-    def test_raise_wrong_size_found_in_ds(self):
+    def test_it_raises_on_wrong_size_found_in_ds(self):
+        ds = xr.Dataset({"a": xr.DataArray(np.zeros((2, 3, 4)),
+                                           dims=("time", "y", "x"))})
         with pytest.raises(ValueError,
                            match="Wrong size for fixed dimension 'x'"
                                  " in dataset: expected 5, found 4"):
-            get_effective_target_dims(
-                {"y": 3, "x": 5},
-                "time",
-                xr.Dataset({
-                    "a": xr.DataArray(np.zeros((2, 3, 4)),
-                                      dims=("time", "y", "x"))
-                })
+            DatasetMetadata.from_dataset(
+                ds,
+                {
+                    "fixed_dims": {"y": 3, "x": 5},
+                    "append_dim": "time"
+                }
             )
 
 
-class GetEffectiveVariablesTest(unittest.TestCase):
+class DatasetMetadataVariablesTest(unittest.TestCase):
 
-    def test_add_missing(self):
+    def test_add_missing_variables(self):
         self.assertEqual(
             {
-                "a": {"dims": ["time", "y", "x"], "encoding": {}, "attrs": {}},
-                "b": {"dims": ["time", "y", "x"], "encoding": {}, "attrs": {}},
+                'attrs': {},
+                'dims': {'time': 2, 'x': 4, 'y': 3},
+                'variables': {'a': {'attrs': {},
+                                    'dims': ('time', 'y', 'x'),
+                                    'encoding': {},
+                                    'shape': (2, 3, 4)},
+                              'b': {'attrs': {},
+                                    'dims': ('time', 'y', 'x'),
+                                    'encoding': {},
+                                    'shape': (2, 3, 4)}},
             },
-            get_effective_variables(
-                {
-                    "a": {"dims": ["time", "y", "x"]}
-                },
+            DatasetMetadata.from_dataset(
                 xr.Dataset({
                     "a": xr.DataArray(np.zeros((2, 3, 4)),
                                       dims=("time", "y", "x")),
                     "b": xr.DataArray(np.zeros((2, 3, 4)),
                                       dims=("time", "y", "x")),
-                })
-            )
+                }),
+                {"variables": {
+                    "a": {"dims": ["time", "y", "x"]}
+                }},
+            ).to_dict()
         )
 
-    def test_merge_metadata(self):
+    def test_merge_variable_metadata(self):
         config_vars = {
             "a": {"encoding": {"dtype": "uint16"},
                   "attrs": {"title": "A"}},
@@ -133,59 +141,72 @@ class GetEffectiveVariablesTest(unittest.TestCase):
                               attrs={"units": "m/s^2"}),
         })
         ds.a.encoding.update(scale_factor=0.001)
-        ds.b.encoding.update(add_offset=1.0)
+        ds.b.encoding.update(add_offset=0.5)
         self.assertEqual(
             {
-                "a": {"dims": ["time", "y", "x"],
-                      "encoding": {"dtype": np.dtype("uint16"),
-                                   "scale_factor": 0.001},
-                      "attrs": {"title": "A", "units": "m/s"}},
-                "b": {"dims": ["time", "y", "x"],
-                      "encoding": {"dtype": np.dtype("int32"),
-                                   "add_offset": 1.0},
-                      "attrs": {"title": "B", "units": "m/s^2"}},
+                'attrs': {},
+                'dims': {'time': 2, 'x': 4, 'y': 3},
+                'variables': {'a': {'attrs': {'title': 'A', 'units': 'm/s'},
+                                    'dims': ('time', 'y', 'x'),
+                                    'encoding': {'dtype': np.dtype('uint16'),
+                                                 'scale_factor': 0.001},
+                                    'shape': (2, 3, 4)},
+                              'b': {'attrs': {'title': 'B', 'units': 'm/s^2'},
+                                    'dims': ('time', 'y', 'x'),
+                                    'encoding': {'add_offset': 0.5,
+                                                 'dtype': np.dtype('int32')},
+                                    'shape': (2, 3, 4)}}
             },
-            get_effective_variables(config_vars, ds)
+            DatasetMetadata.from_dataset(
+                ds,
+                {"variables": config_vars}
+            ).to_dict()
         )
 
-    def test_move_encoding_from_attrs(self):
+    def test_move_variable_encoding_from_attrs(self):
         self.assertEqual(
             {
-                "a": {"dims": ["time", "y", "x"],
-                      "encoding": {"_FillValue": 999},
-                      "attrs": {}},
-                "b": {"dims": ["time", "y", "x"],
-                      "encoding": {"_FillValue": -1},
-                      "attrs": {}},
+                'attrs': {},
+                'dims': {'time': 2, 'x': 4, 'y': 3},
+                'variables': {'a': {'attrs': {},
+                                    'dims': ('time', 'y', 'x'),
+                                    'encoding': {'_FillValue': 999},
+                                    'shape': (2, 3, 4)},
+                              'b': {'attrs': {},
+                                    'dims': ('time', 'y', 'x'),
+                                    'encoding': {'_FillValue': -1},
+                                    'shape': (2, 3, 4)}}
             },
-            get_effective_variables(
-                {
-                    "a": {"dims": ["time", "y", "x"]},
-                    "b": {"dims": ["time", "y", "x"],
-                          "attrs": {"_FillValue": -1}},
-                },
+            DatasetMetadata.from_dataset(
                 xr.Dataset({
                     "a": xr.DataArray(np.zeros((2, 3, 4)),
                                       dims=("time", "y", "x"),
                                       attrs={"_FillValue": 999}),
                     "b": xr.DataArray(np.zeros((2, 3, 4)),
                                       dims=("time", "y", "x")),
-                })
-            )
+                }),
+                {"variables": {
+                    "a": {"dims": ["time", "y", "x"]},
+                    "b": {"dims": ["time", "y", "x"],
+                          "attrs": {"_FillValue": -1}},
+                }}
+            ).to_dict()
         )
 
-    def test_encoding_normalisation(self):
+    def test_variable_encoding_normalisation(self):
         def normalize(k, v):
-            variables = get_effective_variables(
-                {
-                    "a": {"encoding": {k: v}}
-                },
+            metadata = DatasetMetadata.from_dataset(
                 xr.Dataset(
                     {"a": xr.DataArray(np.zeros((2, 3, 4)),
                                        dims=("time", "y", "x")), }
-                )
+                ),
+                {
+                    "variables": {
+                        "a": {"encoding": {k: v}}
+                    }
+                }
             )
-            return variables["a"]["encoding"][k]
+            return getattr(metadata.variables["a"].encoding, k)
 
         self.assertEqual(np.dtype("int32"), normalize("dtype", "int32"))
         dtype = np.dtype("int32")
@@ -221,17 +242,90 @@ class GetEffectiveVariablesTest(unittest.TestCase):
         self.assertIsInstance(filters[1], numcodecs.Delta)
 
     # noinspection PyMethodMayBeStatic
-    def test_raise_wrong_size_found_in_ds(self):
+    def test_it_raises_on_unspecified_variable(self):
         with pytest.raises(ValueError,
-                           match="Dimension mismatch for variable 'a':"
-                                 " expected \\['z', 'y', 'x'\\],"
-                                 " got \\['time', 'y', 'x'\\]"):
-            get_effective_variables(
-                {
-                    "a": {"dims": ["z", "y", "x"]}
-                },
+                           match="The following variables are neither"
+                                 " configured nor contained in the dataset:"
+                                 " b, c"):
+            DatasetMetadata.from_dataset(
                 xr.Dataset({
                     "a": xr.DataArray(np.zeros((2, 3, 4)),
                                       dims=("time", "y", "x")),
-                })
+                }),
+                {
+                    "included_variables": ["a", "b", "c"],
+                    "variables": {
+                        "a": {"dims": ["z", "y", "x"]}
+                    }
+                }
+            )
+
+    def test_it_raises_on_wrong_size_found_in_ds(self):
+        with pytest.raises(ValueError,
+                           match="Dimension mismatch for variable 'a':"
+                                 " expected \\('z', 'y', 'x'\\),"
+                                 " found \\('time', 'y', 'x'\\) in dataset"):
+            DatasetMetadata.from_dataset(
+                xr.Dataset({
+                    "a": xr.DataArray(np.zeros((2, 3, 4)),
+                                      dims=("time", "y", "x")),
+                }),
+                {
+                    "variables": {
+                        "a": {"dims": ["z", "y", "x"]}
+                    }
+                }
+            )
+
+    # noinspection PyMethodMayBeStatic
+    def test_it_raises_on_missing_variable_dims(self):
+        with pytest.raises(ValueError,
+                           match="Missing dimensions of variable 'b'"):
+            DatasetMetadata.from_dataset(
+                xr.Dataset({
+                    "a": xr.DataArray(np.zeros((2, 3, 4)),
+                                      dims=("time", "y", "x")),
+                }),
+                {
+                    "variables": {
+                        "a": {"dims": ["time", "y", "x"]},
+                        "b": {},
+                    }
+                }
+            )
+
+    # noinspection PyMethodMayBeStatic
+    def test_it_raises_on_dim_not_found(self):
+        with pytest.raises(ValueError,
+                           match="Dimension 'Y' of"
+                                 " variable 'b' not found in dataset"):
+            DatasetMetadata.from_dataset(
+                xr.Dataset({
+                    "a": xr.DataArray(np.zeros((2, 3, 4)),
+                                      dims=("time", "y", "x")),
+                }),
+                {
+                    "variables": {
+                        "a": {"dims": ["time", "y", "x"]},
+                        "b": {"dims": ["time", "Y", "x"]},
+                    }
+                },
+            )
+
+    # noinspection PyMethodMayBeStatic
+    def test_it_raises_on_on_missing_dtype_or_fill_value(self):
+        with pytest.raises(ValueError,
+                           match="Missing 'dtype' in encoding configuration"
+                                 " of variable 'b'"):
+            DatasetMetadata.from_dataset(
+                xr.Dataset({
+                    "a": xr.DataArray(np.zeros((2, 3, 4)),
+                                      dims=("time", "y", "x")),
+                }),
+                {
+                    "variables": {
+                        "a": {"dims": ["time", "y", "x"]},
+                        "b": {"dims": ["time", "y", "x"]},
+                    },
+                }
             )

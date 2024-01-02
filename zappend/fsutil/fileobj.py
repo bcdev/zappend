@@ -5,8 +5,10 @@ import fsspec
 from .path import split_filename
 
 
-# TODO: check if we should make FileObj an ABC
-#  and then introduce concrete File and Directory classes
+# Note, we could make FileObj an ABC and then introduce concrete
+# File and Directory classes which would make code more comprehensible.
+# But then, we cannot know the concrete type of the resulting type if we
+# append path components, i.e., my_dir / "file_or_dir" = ?
 
 class FileObj:
     """An object that represents a file or directory in some filesystem.
@@ -72,7 +74,7 @@ class FileObj:
         """Close the filesystem used by this file object."""
         if self._fs is not None:
             if hasattr(self._fs, "close") and callable(
-                    self._fs.close):
+                self._fs.close):
                 self._fs.close()
             self._fs = None
 

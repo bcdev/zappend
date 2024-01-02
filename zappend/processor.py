@@ -37,7 +37,7 @@ class Processor:
 
         If there is no target yet, just config and slice:
 
-        * complete config outline from slice outline
+        * complete config dataset metadata from slice dataset metadata
         * check config/slice outline compliance
         * copy slice and add/remove vars to/from slice
         * set encoding in slice
@@ -55,28 +55,27 @@ class Processor:
 
         ctx = Context(self._config)
 
-        with open_slice_source(ctx, slice_obj) as slice_ds:
-            target_dir = ctx.target_dir
-            create = not target_dir.exists()
-            with Transaction(target_dir, ctx.temp_dir) as rollback_cb:
-                if create:
+        with open_slice_source(ctx, slice_obj) as slice_dataset:
+
+            slice_metadata = ctx.get_dataset_metadata(slice_dataset)
+            if ctx.target_metadata is None:
+                ctx.target_metadata = slice_metadata
+
+            with Transaction(ctx.target_dir, ctx.temp_dir) as rollback_cb:
+                if ctx.target_metadata is slice_metadata:
                     create_target_from_slice(ctx,
-                                             slice_ds,
+                                             slice_dataset,
                                              rollback_cb)
                 else:
                     update_target_from_slice(ctx,
-                                             slice_ds,
+                                             slice_dataset,
                                              rollback_cb)
 
 
 def create_target_from_slice(ctx: Context,
                              slice_ds: xr.Dataset,
                              rollback_cb: RollbackCallback):
-    target_ds = tailor_target_dataset(slice_ds,
-                                      ctx.included_var_names,
-                                      ctx.excluded_var_names,
-                                      ctx.target_variables,
-                                      ctx.target_attrs)
+    target_ds = tailor_target_dataset(slice_ds, ctx.target_metadata)
     target_dir = ctx.target_dir
     # TODO: adjust global attributes dependent on append_dim,
     #  e.g., time coverage
@@ -96,33 +95,23 @@ def update_target_from_slice(ctx: Context,
                              rollback_cb: RollbackCallback):
     target_dir = ctx.target_dir
     append_dim_name = ctx.append_dim_name
-    target_dim_sizes = ctx.target_dim_sizes
+    target_dim_sizes = ctx.target_metadata.dims
 
-    slice_ds = tailor_slice_dataset(slice_ds,
-                                    ctx.included_var_names,
-                                    ctx.excluded_var_names,
-                                    ctx.target_variables)
+    slice_ds = tailor_slice_dataset(slice_ds, ctx.target_metadata)
 
     # Emit rollback actions
-    for var_name, var_config in ctx.target_variables.items():
-        assert "dims" in var_config
-        target_var_dim_names = var_config["dims"]
-
+    for var_name, var_metadata in ctx.target_metadata.variables.items():
         try:
-            append_axis = target_var_dim_names.index(append_dim_name)
+            append_axis = var_metadata.dims.index(append_dim_name)
         except ValueError:
             # append dimension does not exist in variable,
             # so we cannot append data, hence no need to emit
             # rollback actions
             continue
 
-        assert "encoding" in var_config
-        target_var_encoding = var_config["encoding"]
-
-        assert "chunks" in target_var_encoding
-        target_var_chunks = target_var_encoding["chunks"]
-        target_var_shape = tuple(target_dim_sizes[k]
-                                 for k in target_var_dim_names)
+        target_var_shape = tuple(target_dim_sizes[k] for k in var_metadata.dims)
+        target_var_encoding = var_metadata.encoding
+        target_var_chunks = target_var_encoding.chunks or target_var_shape
 
         assert var_name in slice_ds
         slice_var = slice_ds.variables[var_name]
@@ -178,6 +167,9 @@ def update_target_from_slice(ctx: Context,
                      consolidated=True,
                      mode="a",
                      append_dim=append_dim_name)
+
+    # TODO: unchunk (coordinate) variables that contain the append dimension,
+    #   if their chunks=None, e.g., time, time_bnds
 
     # target_store = get_zarr_store(target_dir)
     # zarr.convenience.consolidate_metadata(target_store)

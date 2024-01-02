@@ -9,7 +9,9 @@ import fsspec
 import pytest
 import yaml
 
-from zappend.config import normalize_config, CONFIG_V1_SCHEMA
+from zappend.config import CONFIG_V1_SCHEMA
+from zappend.config import merge_configs
+from zappend.config import normalize_config
 from zappend.config import validate_config
 from zappend.fsutil.fileobj import FileObj
 from .helpers import clear_memory_fs
@@ -80,6 +82,15 @@ class ConfigNormalizeTest(unittest.TestCase):
         config = {"version": 1, "zarr_version": 2}
         file_obj.write(yaml.dump(config))
         self.assertEqual(config, normalize_config(file_obj))
+
+    # noinspection PyMethodMayBeStatic
+    def test_it_raises_if_config_is_not_object(self):
+        file_obj = FileObj("memory://config.yaml")
+        file_obj.write("what?")
+        with pytest.raises(TypeError,
+                           match="Invalid configuration:"
+                                 " memory://config.yaml: object expected"):
+            normalize_config(file_obj)
 
     def test_normalize_sequence(self):
         configs = (
@@ -197,7 +208,9 @@ class ConfigNormalizeTest(unittest.TestCase):
             {
                 'append_dim',
                 'dry_run',
+                'excluded_variables',
                 'fixed_dims',
+                'included_variables',
                 'slice_engine',
                 'slice_polling',
                 'slice_storage_options',
@@ -211,3 +224,24 @@ class ConfigNormalizeTest(unittest.TestCase):
             },
             set(schema["properties"].keys())
         )
+
+    def test_merge_config(self):
+        self.assertEqual({},
+                         merge_configs())
+        self.assertEqual({},
+                         merge_configs({}))
+        self.assertEqual({},
+                         merge_configs({}, {}))
+        self.assertEqual({"a": 1},
+                         merge_configs({"a": 1}))
+        self.assertEqual({"a": 2},
+                         merge_configs({"a": 1}, {"a": 2}))
+        self.assertEqual({"a": None},
+                         merge_configs({"a": 1}, {"a": None}))
+        self.assertEqual({"a": 2},
+                         merge_configs({"a": None}, {"a": 2}))
+        self.assertEqual({"a": [3, 4]},
+                         merge_configs({"a": [1, 2]}, {"a": [3, 4]}))
+        self.assertEqual({"a": {"b": 3, "c": 4}},
+                         merge_configs({"a": {"b": 2, "c": 4}},
+                                       {"a": {"b": 3}}))

@@ -134,6 +134,9 @@ CONFIG_V1_SCHEMA = {
             },
         },
 
+        included_variables={"type": "array", "items": _NON_EMPTY_STRING_SCHEMA},
+        excluded_variables={"type": "array", "items": _NON_EMPTY_STRING_SCHEMA},
+
         dry_run={"type": "boolean", "default": False}
     ),
     # "required": ["version", "fixed_dims", "append_dim"],
@@ -240,13 +243,9 @@ def _merge_lists(list_1: list[Any], list_2: list[Any]) -> list[Any]:
 
 
 def _merge_values(value_1: Any, value_2: Any) -> Any:
-    if value_1 is None:
-        return value_2
-    if value_2 is None:
-        return value_1
     if isinstance(value_1, dict) and isinstance(value_2, dict):
         return _merge_dicts(value_1, value_2)
     if (isinstance(value_1, (list, tuple)) and isinstance(value_2,
                                                           (list, tuple))):
         return _merge_lists(value_1, value_2)
-    return value_1
+    return value_2
