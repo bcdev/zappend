@@ -119,8 +119,7 @@ def make_test_dataset(
                zarr_version=2,
                write_empty_chunks=False)
     return xr.open_zarr(uri,
-                        storage_options=storage_options,
-                        decode_cf=False)
+                        storage_options=storage_options)
 
 
 @contextmanager

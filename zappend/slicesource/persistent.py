@@ -71,10 +71,8 @@ class PersistentSliceSource(SliceSource):
         if engine == "zarr":
             storage_options = self._ctx.slice_storage_options
             return xr.open_zarr(self._slice_file.uri,
-                                storage_options=storage_options,
-                                decode_cf=False)
+                                storage_options=storage_options)
 
         with self._slice_file.fs.open(self._slice_file.path, "rb") as f:
             return xr.open_dataset(f,
-                                   engine=engine,
-                                   decode_cf=False)
+                                   engine=engine)
