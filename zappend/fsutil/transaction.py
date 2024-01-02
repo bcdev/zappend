@@ -15,7 +15,6 @@ RollbackAction = (Literal["delete_dir"]
 RollbackCallback = Callable[
     [
         RollbackAction,
-        # TODO: check if we should use FileObj instead of path
         str,  # target path
         bytes | None  # original data, if operation is "replace_file"
     ],
