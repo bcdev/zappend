@@ -29,6 +29,8 @@ class VariableEncoding:
                  fill_value: int | float | None | Undefined = UNDEFINED,
                  scale_factor: int | float | Undefined = UNDEFINED,
                  add_offset: int | float | Undefined = UNDEFINED,
+                 units: str | Undefined = UNDEFINED,
+                 calendar: str | Undefined = UNDEFINED,
                  compressor: Codec | None | Undefined = UNDEFINED,
                  filters: list[Codec] | None | Undefined = UNDEFINED):
         """All arguments default to UNDEFINED, so they can be distinguished
@@ -39,6 +41,8 @@ class VariableEncoding:
         self.fill_value = fill_value
         self.scale_factor = scale_factor
         self.add_offset = add_offset
+        self.units = units
+        self.calendar = calendar
         self.compressor = compressor
         self.filters = filters
 

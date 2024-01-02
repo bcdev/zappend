@@ -71,6 +71,7 @@ def make_test_dataset(
     dims: tuple[str, str, str] = default_dims,
     shape: tuple[int, int, int] = default_shape,
     chunks: tuple[int, int, int] = default_chunks,
+    index: int = 0,
     uri: str | None = None,
     storage_options: dict[str, Any] | None = None
 ) -> xr.Dataset:
@@ -80,23 +81,29 @@ def make_test_dataset(
     *storage_options* and the dataset returned is the one reopened from that
     location using *storage_options* and ``decode_cf=False``.
     """
+    one_day = np.timedelta64(1, 'D')
     ds = xr.Dataset(
         data_vars=dict(
-            chl=xr.DataArray(np.zeros(shape, dtype="uint16"),
+            chl=xr.DataArray(np.full(shape, index, dtype="uint16"),
                              dims=dims,
                              attrs=dict(scale_factor=0.2,
                                         add_offset=0,
                                         _FillValue=9999)),
-            tsm=xr.DataArray(np.zeros(shape, dtype="int16"),
+            tsm=xr.DataArray(np.full(shape, index, dtype="int16"),
                              dims=dims,
                              attrs=dict(scale_factor=0.01,
                                         add_offset=-200,
                                         _FillValue=-9999)),
         ),
         coords={
-            dims[0]: xr.DataArray(np.arange(shape[0],
-                                            dtype="uint64"),
-                                  dims=dims[0]),
+            dims[0]: xr.DataArray(
+                np.arange(
+                    np.datetime64('2024-01-01') + index * one_day,
+                    np.datetime64('2024-01-01') + (index + shape[0]) * one_day,
+                    one_day,
+                    dtype='datetime64'
+                ),
+                dims=dims[0]),
             dims[1]: xr.DataArray(np.linspace(0, 1, shape[1],
                                               dtype="float64"),
                                   dims=dims[1]),
