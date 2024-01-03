@@ -53,7 +53,9 @@ _SLICE_POLLING_SCHEMA = {
 }
 
 _VAR_ENCODING_SCHEMA = {
-    "description": "TODO",
+    "description": "Variable storage encoding. Settings given here overwrite"
+                   " the encoding settings of the first"
+                   " contributing dataset.",
     "type": "object",
     "properties": dict(
         dtype={
@@ -65,29 +67,36 @@ _VAR_ENCODING_SCHEMA = {
                      "float32", "float64"]
         },
         chunks={
-            "description": "Chunk sizes in dimension order."
-                           " Set to 'null' to not chunk at all.",
-            "type": ["array", "null"],
-            "items": {"type": "integer", "minimum": 1}
+            "description": "Storage chunking.",
+            "oneOf": [
+                {"description": "Chunk sizes in the order of the dimensions.",
+                 "type": "array",
+                 "items": {"type": "integer", "minimum": 1}},
+                {"description": "Disable chunking.", "const": None}]
         },
         fill_value={
             "description": "Storage fill value.",
             "oneOf": [
-                {"type": "null"},
-                {"type": "number"},
-                {"const": "NaN"},
+                {"description": "A number of type and unit of the"
+                                " given storage `dtype`.",
+                 "type": "number"},
+                {"description": "Not-a-number. Can be used only if storage"
+                                " `dtype` is `float32` or `float64`.",
+                 "const": "NaN"},
+                {"description": "No fill value.",
+                 "const": None},
             ]
         },
         scale_factor={
-            "description": "Scale factor."
-                           " memory_value = scale_factor * storage_value"
-                           " + add_offset.",
+            "description": "Scale factor for computing the in-memory value:"
+                           " `memory_value = scale_factor * storage_value"
+                           " + add_offset`.",
             "type": "number"
         },
         add_offset={
-            "description": "Add offset."
-                           " memory_value = scale_factor * storage_value"
-                           " + add_offset.",
+            "description": "Add offset for computing the in-memory value:"
+                           " `memory_value = scale_factor * storage_value"
+                           " + add_offset`.",
             "type": "number"
         },
         units={
@@ -102,7 +111,7 @@ _VAR_ENCODING_SCHEMA = {
         },
         compressor={
             "description": "Compressor."
-                           " Set to 'null' to disable data compression.",
+                           " Set to `null` to disable data compression.",
             "type": ["array", "null"],
             "properties": {
                 "id": {"type": "string"},
@@ -111,7 +120,7 @@ _VAR_ENCODING_SCHEMA = {
             "additionalProperties": True
         },
         filters={
-            "description": "Filters. Set to 'null' to not use filters.",
+            "description": "Filters. Set to `null` to not use filters.",
             "type": ["array", "null"],
             "items": {
                 "type": "object",
@@ -145,7 +154,7 @@ CONFIG_V1_SCHEMA = {
 
         target_storage_options={
             "description": "Options for the filesystem given by"
-                           " the URI of 'target_uri'.",
+                           " the URI of `target_uri`.",
             "type": "object",
             "additionalProperties": True
         },
@@ -153,8 +162,8 @@ CONFIG_V1_SCHEMA = {
         slice_engine={
             "description": "The name of the engine to be used for opening"
                            " contributing datasets."
-                           " Refer to the 'engine' argument of the function"
-                           " xarray.open_dataset().",
+                           " Refer to the `engine` argument of the function"
+                           " `xarray.open_dataset()`.",
             "type": "string",
             "minLength": 1
         },
@@ -179,7 +188,7 @@ CONFIG_V1_SCHEMA = {
 
         temp_storage_options={
             "description": "Options for the filesystem given by"
-                           " the protocol of 'temp_dir'.",
+                           " the protocol of `temp_dir`.",
             "type": "object",
             "additionalProperties": True
         },
@@ -206,18 +215,21 @@ CONFIG_V1_SCHEMA = {
 
         variables={
             "description": "Defines dimensions, encoding, and attributes"
-                           " for variables. Object property names refer to"
-                           " variable names.  Special name '*' refers to all"
-                           " variables, useful for defining default values.",
+                           " for variables in the target dataset."
+                           " Object property names refer to variable names."
+                           " The special name `*` refers to"
+                           " all variables, which is useful for defining"
+                           " common values.",
             "type": "object",
             "additionalProperties": {
+                "description": "Variable metadata",
                 "type": "object",
                 "properties": dict(
 
                     dims={
-                        "description": "The dimensions of the variable in the"
-                                       " given order. Each dimension must"
-                                       " exist in contributing datasets.",
+                        "description": "The names of the variable's dimensions"
+                                       " in the given order. Each dimension"
+                                       " must exist in contributing datasets.",
                         "type": "array",
                         "items": {
                             "type": "string",
@@ -240,7 +252,7 @@ CONFIG_V1_SCHEMA = {
         },
 
         included_variables={
-            "description": "Specifies the variables to be included in"
+            "description": "Specifies the names of variables to be included in"
                            " the target dataset. Defaults to all variables"
                            " found in the first contributing dataset.",
             "type": "array",
@@ -248,8 +260,8 @@ CONFIG_V1_SCHEMA = {
         },
 
         excluded_variables={
-            "description": "Specifies individual variables to be excluded"
-                           " from all contributing datasets.",
+            "description": "Specifies the names of individual variables"
+                           " to be excluded  from all contributing datasets.",
             "type": "array",
             "items": {"type": "string", "minLength": 1}
         },
@@ -262,7 +274,6 @@ CONFIG_V1_SCHEMA = {
         }
     ),
 
-    # "required": ["version", "fixed_dims", "append_dim"],
     "additionalProperties": False,
 }
 
@@ -372,3 +383,84 @@ def _merge_values(value_1: Any, value_2: Any) -> Any:
                                                           (list, tuple))):
         return _merge_lists(value_1, value_2)
     return value_2
+
+
+def schema_to_json() -> str:
+    return json.dumps(CONFIG_V1_SCHEMA, indent=2)
+
+
+def schema_to_md() -> str:
+    lines = []
+    _schema_to_md(CONFIG_V1_SCHEMA, [], lines)
+    return "\n".join(lines)
+
+
+def _schema_to_md(schema: dict[str, Any],
+                  path: list[str],
+                  lines: list[str]):
+    undefined = object()
+
+    _type = schema.get("type")
+    if _type and len(path) > 0:
+        if isinstance(_type, str):
+            _type = [_type]
+        value = " | ".join([f"_{name}_" for name in _type])
+        lines.append(f"Type {value}.")
+
+    description = schema.get("description")
+    if description:
+        lines.append(description)
+
+    one_of = schema.get("oneOf")
+    if one_of:
+        lines.append(f"Must be one of the following:")
+        for sub_schema in one_of:
+            sub_lines = []
+            _schema_to_md(sub_schema, path, sub_lines)
+            if sub_lines:
+                lines.append("* " + sub_lines[0])
+                for sub_line in sub_lines[1:]:
+                    lines.append("  " + sub_line)
+
+    const = schema.get("const", undefined)
+    if const is not undefined:
+        value = json.dumps(const)
+        lines.append(f"It's value is `{value}`.")
+
+    default = schema.get("default", undefined)
+    if default is not undefined:
+        value = json.dumps(default)
+        lines.append(f"Defaults to `{value}`.")
+
+    enum = schema.get("enum")
+    if enum:
+        values = ", ".join([json.dumps(v) for v in enum])
+        lines.append(f"Must be one of `{values}`.")
+
+    properties = schema.get("properties")
+    if properties:
+        is_root = len(path) == 0
+        for name, property_schema in properties.items():
+            if is_root:
+                lines.append("")
+                lines.append(f"### `{name}`")
+                lines.append("")
+                _schema_to_md(property_schema, path + [name], lines)
+            else:
+                lines.append(f"* `{name}`:")
+                sub_lines = []
+                _schema_to_md(property_schema, path + [name], sub_lines)
+                for sub_line in sub_lines:
+                    lines.append("  " + sub_line)
+                lines.append("")
+
+    additional_properties = schema.get("additionalProperties")
+    if isinstance(additional_properties, dict):
+        lines.append("Object values are:")
+        lines.append("")
+        _schema_to_md(additional_properties, path, lines)
+
+    required = schema.get("required")
+    if required:
+        names = ", ".join([f"`${name}`" for name in required])
+        lines.append(f"${names} are required.")

@@ -20,18 +20,20 @@ import click
 @click.option("--dry-run", is_flag=True,
               help="Run the tool without creating, changing,"
                    " or deleting any files.")
-@click.option("--help-config", is_flag=True,
+@click.option("--help-config",
+              metavar="json|md",
+              type=click.Choice(["json", "md"]),
               help="Show configuration help and exit.")
 def zappend(slices: tuple[str, ...],
             config: tuple[str, ...],
             target: str | None,
             dry_run: bool,
-            help_config: bool):
+            help_config: str | None):
     """Create or update a Zarr dataset TARGET from slice datasets SLICES.
     """
 
     if help_config:
-        return _show_config_help()
+        return _show_config_help(help_config)
 
     if not slices:
         click.echo("No slice datasets given.")
@@ -45,12 +47,11 @@ def zappend(slices: tuple[str, ...],
         raise click.ClickException(f"{e}") from e
 
 
-def _show_config_help():
-    import json
-    from zappend.config import CONFIG_V1_SCHEMA
-    config_schema_json = json.dumps(CONFIG_V1_SCHEMA, indent=2)
-    print(f"Configuration JSON schema:\n")
-    print(config_schema_json)
+def _show_config_help(config_help_format: str):
+    from zappend.config import schema_to_json
+    from zappend.config import schema_to_md
+    to_text = schema_to_json if config_help_format == "json" else schema_to_md
+    print(to_text() + "\n")
 
 
 if __name__ == '__main__':
