@@ -19,22 +19,30 @@ DEFAULT_APPEND_DIM = "time"
 DEFAULT_SLICE_POLLING_INTERVAL = 2
 DEFAULT_SLICE_POLLING_TIMEOUT = 60
 
-_NON_EMPTY_STRING_SCHEMA = {"type": "string", "minLength": 1}
-_ORDINAL_SCHEMA = {"type": "integer", "minimum": 1}
-_ANY_OBJECT_SCHEMA = {"type": "object", "additionalProperties": True}
-
 _SLICE_POLLING_SCHEMA = {
+    "description": "Defines how to poll for contributing datasets.",
     "oneOf": [
-        {"type": "boolean"},
         {
+            "description": "No polling, fail immediately if dataset"
+                           " is not available.",
+            "const": False
+        },
+        {
+            "description": "Poll using default values.",
+            "const": True
+        },
+        {
+            "description": "Polling parameters.",
             "type": "object",
             "properties": dict(
                 interval={
+                    "description": "Polling interval in seconds.",
                     "type": "number",
                     "exclusiveMinimum": 0,
                     "default": DEFAULT_SLICE_POLLING_INTERVAL
                 },
                 timeout={
+                    "description": "Polling timeout in seconds.",
                     "type": "number",
                     "exclusiveMinimum": 0,
                     "default": DEFAULT_SLICE_POLLING_TIMEOUT
@@ -45,9 +53,13 @@ _SLICE_POLLING_SCHEMA = {
 }
 
 _VAR_ENCODING_SCHEMA = {
+    "description": "Variable storage encoding. Settings given here overwrite"
+                   " the encoding settings of the first"
+                   " contributing dataset.",
     "type": "object",
     "properties": dict(
         dtype={
+            "description": "Storage data type",
             "enum": ["int8", "uint8",
                      "int16", "uint16",
                      "int32", "uint32",
@@ -55,91 +67,213 @@ _VAR_ENCODING_SCHEMA = {
                      "float32", "float64"]
         },
         chunks={
-            "type": ["array", "null"],
-            "items": _ORDINAL_SCHEMA
+            "description": "Storage chunking.",
+            "oneOf": [
+                {"description": "Chunk sizes in the order of the dimensions.",
+                 "type": "array",
+                 "items": {"type": "integer", "minimum": 1}},
+                {"description": "Disable chunking.", "const": None}]
         },
         fill_value={
+            "description": "Storage fill value.",
             "oneOf": [
-                {"type": "null"},
-                {"type": "number"},
-                {"const": "NaN"},
+                {"description": "A number of type and unit of the"
+                                " given storage `dtype`.",
+                 "type": "number"},
+                {"description": "Not-a-number. Can be used only if storage"
+                                " `dtype` is `float32` or `float64`.",
+                 "const": "NaN"},
+                {"description": "No fill value.",
+                 "const": None},
             ]
         },
         scale_factor={
+            "description": "Scale factor for computing the in-memory value:"
+                           " `memory_value = scale_factor * storage_value"
+                           " + add_offset`.",
             "type": "number"
         },
         add_offset={
+            "description": "Add offset for computing the in-memory value:"
+                           " `memory_value = scale_factor * storage_value"
+                           " + add_offset`.",
             "type": "number"
         },
-        compressor=_ANY_OBJECT_SCHEMA,
+        units={
+            "description": "Units of the storage data type"
+                           " if memory data type is date/time.",
+            "type": "string"
+        },
+        calendar={
+            "description": "The calendar to be used"
+                           " if memory data type is date/time.",
+            "type": "string"
+        },
+        compressor={
+            "description": "Compressor."
+                           " Set to `null` to disable data compression.",
+            "type": ["array", "null"],
+            "properties": {
+                "id": {"type": "string"},
+            },
+            "required": ["id"],
+            "additionalProperties": True
+        },
         filters={
-            "type": "array",
-            "items": _ANY_OBJECT_SCHEMA
+            "description": "Filters. Set to `null` to not use filters.",
+            "type": ["array", "null"],
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string"},
+                },
+                "required": ["id"],
+                "additionalProperties": True
+            }
         },
     ),
 }
 
+# TODO: configure logging
+
 CONFIG_V1_SCHEMA = {
+    "description": "Configuration for the zappend tool.",
     "type": "object",
     "properties": dict(
-        version={"const": 1},
+        version={
+            "description": "Configuration version.",
+            "const": 1
+        },
 
-        target_uri=_NON_EMPTY_STRING_SCHEMA,
-
-        slice_engine=_NON_EMPTY_STRING_SCHEMA,
+        target_uri={
+            "description": "The URI or local path of the target Zarr dataset."
+                           " Must be a directory.",
+            "type": "string",
+            "minLength": 1
+        },
 
         target_storage_options={
+            "description": "Options for the filesystem given by"
+                           " the URI of `target_uri`.",
             "type": "object",
             "additionalProperties": True
+        },
+
+        slice_engine={
+            "description": "The name of the engine to be used for opening"
+                           " contributing datasets."
+                           " Refer to the `engine` argument of the function"
+                           " `xarray.open_dataset()`.",
+            "type": "string",
+            "minLength": 1
         },
 
         slice_storage_options={
+            "description": "Options for the filesystem given by"
+                           " the protocol of the URIs of"
+                           " contributing datasets.",
             "type": "object",
             "additionalProperties": True
         },
+
         slice_polling=_SLICE_POLLING_SCHEMA,
 
-        temp_dir=_NON_EMPTY_STRING_SCHEMA,
-        temp_storage_options={"type": "object", "additionalProperties": True},
+        temp_dir={
+            "description": "The URI or local path of the directory that"
+                           " will be used to temporarily store rollback"
+                           " information.",
+            "type": "string",
+            "minLength": 1
+        },
 
-        zarr_version={"const": DEFAULT_ZARR_VERSION},
+        temp_storage_options={
+            "description": "Options for the filesystem given by"
+                           " the protocol of `temp_dir`.",
+            "type": "object",
+            "additionalProperties": True
+        },
+
+        zarr_version={
+            "description": "The Zarr version to be used.",
+            "const": DEFAULT_ZARR_VERSION
+        },
 
         fixed_dims={
+            "description": "Specifies the fixed dimensions of the"
+                           " target dataset. Keys are dimension names, values"
+                           " are dimension sizes.",
             "type": "object",
-            "additionalProperties": _ORDINAL_SCHEMA
+            "additionalProperties": {"type": "integer", "minimum": 1}
         },
 
         append_dim={
-            **_NON_EMPTY_STRING_SCHEMA,
+            "description": "The name of the variadic append dimension.",
+            "type": "string",
+            "minLength": 1,
             "default": DEFAULT_APPEND_DIM
         },
 
-        # Define layout and encoding for variables.
-        # Object property names refer to variable names.
-        # Special name "*" refers to all variables, useful
-        # to define default values.
         variables={
+            "description": "Defines dimensions, encoding, and attributes"
+                           " for variables in the target dataset."
+                           " Object property names refer to variable names."
+                           " The special name `*` refers to"
+                           " all variables, which is useful for defining"
+                           " common values.",
             "type": "object",
             "additionalProperties": {
+                "description": "Variable metadata",
                 "type": "object",
                 "properties": dict(
+
                     dims={
+                        "description": "The names of the variable's dimensions"
+                                       " in the given order. Each dimension"
+                                       " must exist in contributing datasets.",
                         "type": "array",
-                        "items": _NON_EMPTY_STRING_SCHEMA
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        }
                     },
+
                     encoding=_VAR_ENCODING_SCHEMA,
-                    attrs=_ANY_OBJECT_SCHEMA,
+
+                    attrs={
+                        "description": "Arbitrary variable metadata"
+                                       " attributes.",
+                        "type": "object",
+                        "additionalProperties": True
+                    },
+
                 ),
                 "additionalProperties": False,
             },
         },
 
-        included_variables={"type": "array", "items": _NON_EMPTY_STRING_SCHEMA},
-        excluded_variables={"type": "array", "items": _NON_EMPTY_STRING_SCHEMA},
+        included_variables={
+            "description": "Specifies the names of variables to be included in"
+                           " the target dataset. Defaults to all variables"
+                           " found in the first contributing dataset.",
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+        },
 
-        dry_run={"type": "boolean", "default": False}
+        excluded_variables={
+            "description": "Specifies the names of individual variables"
+                           " to be excluded  from all contributing datasets.",
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+        },
+
+        dry_run={
+            "description": "If 'true', log only what would have been done,"
+                           " but don't apply any changes.",
+            "type": "boolean",
+            "default": False
+        }
     ),
-    # "required": ["version", "fixed_dims", "append_dim"],
+
     "additionalProperties": False,
 }
 
@@ -249,3 +383,84 @@ def _merge_values(value_1: Any, value_2: Any) -> Any:
                                                           (list, tuple))):
         return _merge_lists(value_1, value_2)
     return value_2
+
+
+def schema_to_json() -> str:
+    return json.dumps(CONFIG_V1_SCHEMA, indent=2)
+
+
+def schema_to_md() -> str:
+    lines = []
+    _schema_to_md(CONFIG_V1_SCHEMA, [], lines)
+    return "\n".join(lines)
+
+
+def _schema_to_md(schema: dict[str, Any],
+                  path: list[str],
+                  lines: list[str]):
+    undefined = object()
+
+    _type = schema.get("type")
+    if _type and len(path) > 0:
+        if isinstance(_type, str):
+            _type = [_type]
+        value = " | ".join([f"_{name}_" for name in _type])
+        lines.append(f"Type {value}.")
+
+    description = schema.get("description")
+    if description:
+        lines.append(description)
+
+    one_of = schema.get("oneOf")
+    if one_of:
+        lines.append(f"Must be one of the following:")
+        for sub_schema in one_of:
+            sub_lines = []
+            _schema_to_md(sub_schema, path, sub_lines)
+            if sub_lines:
+                lines.append("* " + sub_lines[0])
+                for sub_line in sub_lines[1:]:
+                    lines.append("  " + sub_line)
+
+    const = schema.get("const", undefined)
+    if const is not undefined:
+        value = json.dumps(const)
+        lines.append(f"It's value is `{value}`.")
+
+    default = schema.get("default", undefined)
+    if default is not undefined:
+        value = json.dumps(default)
+        lines.append(f"Defaults to `{value}`.")
+
+    enum = schema.get("enum")
+    if enum:
+        values = ", ".join([json.dumps(v) for v in enum])
+        lines.append(f"Must be one of `{values}`.")
+
+    properties = schema.get("properties")
+    if properties:
+        is_root = len(path) == 0
+        for name, property_schema in properties.items():
+            if is_root:
+                lines.append("")
+                lines.append(f"### `{name}`")
+                lines.append("")
+                _schema_to_md(property_schema, path + [name], lines)
+            else:
+                lines.append(f"* `{name}`:")
+                sub_lines = []
+                _schema_to_md(property_schema, path + [name], sub_lines)
+                for sub_line in sub_lines:
+                    lines.append("  " + sub_line)
+                lines.append("")
+
+    additional_properties = schema.get("additionalProperties")
+    if isinstance(additional_properties, dict):
+        lines.append("Object values are:")
+        lines.append("")
+        _schema_to_md(additional_properties, path, lines)
+
+    required = schema.get("required")
+    if required:
+        names = ", ".join([f"`${name}`" for name in required])
+        lines.append(f"${names} are required.")

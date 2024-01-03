@@ -16,14 +16,14 @@ expected_help_text = \
       Create or update a Zarr dataset TARGET from slice datasets SLICES.
     
     Options:
-      -c, --config CONFIG  Configuration JSON or YAML file. If multiple are passed,
-                           they will be deeply merged into one.
-      -t, --target TARGET  Target Zarr dataset path or URI. Overrides the
-                           'target_uri' configuration field.
-      --dry-run            Run the tool without creating, changing, or deleting any
-                           files.
-      --help-config        Show configuration help and exit.
-      --help               Show this message and exit.
+      -c, --config CONFIG    Configuration JSON or YAML file. If multiple are
+                             passed, they will be deeply merged into one.
+      -t, --target TARGET    Target Zarr dataset path or URI. Overrides the
+                             'target_uri' configuration field.
+      --dry-run              Run the tool without creating, changing, or deleting
+                             any files.
+      --help-config json|md  Show configuration help and exit.
+      --help                 Show this message and exit.
     """
 
 # remove indent
@@ -45,9 +45,13 @@ class CliTest(unittest.TestCase):
     def test_help_config(self):
         runner = CliRunner()
         # noinspection PyTypeChecker
-        result = runner.invoke(zappend, ['--help-config'])
+        result = runner.invoke(zappend, ['--help-config', 'json'])
         self.assertEqual(0, result.exit_code)
-        self.assertIn("Configuration JSON schema:", result.output)
+        self.assertIn('"target_uri": {', result.output)
+        # noinspection PyTypeChecker
+        result = runner.invoke(zappend, ['--help-config', 'md'])
+        self.assertEqual(0, result.exit_code)
+        self.assertIn('### `target_uri`', result.output)
 
     def test_no_slices(self):
         runner = CliRunner()

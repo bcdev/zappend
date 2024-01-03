@@ -10,6 +10,8 @@ import pytest
 import yaml
 
 from zappend.config import CONFIG_V1_SCHEMA
+from zappend.config import schema_to_json
+from zappend.config import schema_to_md
 from zappend.config import merge_configs
 from zappend.config import normalize_config
 from zappend.config import validate_config
@@ -245,3 +247,15 @@ class ConfigNormalizeTest(unittest.TestCase):
         self.assertEqual({"a": {"b": 3, "c": 4}},
                          merge_configs({"a": {"b": 2, "c": 4}},
                                        {"a": {"b": 3}}))
+
+    def test_schema_to_json(self):
+        # Smoke test is sufficient here
+        text = schema_to_json()
+        self.assertIsInstance(text, str)
+        self.assertTrue(len(text) > 0)
+
+    def test_schema_to_md(self):
+        # Smoke test is sufficient here
+        text = schema_to_md()
+        self.assertIsInstance(text, str)
+        self.assertTrue(len(text) > 0)
