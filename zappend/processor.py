@@ -13,6 +13,7 @@ from .context import Context
 from .fsutil.transaction import Transaction
 from .fsutil.transaction import RollbackCallback
 from .log import logger
+from .log import configure_logging
 from .slicesource import open_slice_source
 from .tailoring import tailor_target_dataset
 from .tailoring import tailor_slice_dataset
@@ -25,6 +26,7 @@ class Processor:
         config = normalize_config(config)
         config.update({k: v for k, v in kwargs.items() if v is not None})
         validate_config(config)
+        configure_logging(config.get("logging"))
         self._config = config
 
     def process_slices(self,

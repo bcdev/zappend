@@ -11,8 +11,8 @@ import click
               metavar="CONFIG",
               multiple=True,
               help="Configuration JSON or YAML file."
-                   " If multiple are passed,"
-                   " they will be deeply merged into one.")
+                   " If multiple are passed, subsequent configurations"
+                   " are incremental to the previous ones.")
 @click.option("--target", "-t",
               metavar="TARGET",
               help="Target Zarr dataset path or URI."

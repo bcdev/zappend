@@ -47,12 +47,13 @@ _SLICE_POLLING_SCHEMA = {
                     "exclusiveMinimum": 0,
                     "default": DEFAULT_SLICE_POLLING_TIMEOUT
                 },
-            )
+            ),
+            "required": ["interval", "timeout"],
         }
     ]
 }
 
-_VAR_ENCODING_SCHEMA = {
+_VARIABLE_ENCODING_SCHEMA = {
     "description": "Variable storage encoding. Settings given here overwrite"
                    " the encoding settings of the first"
                    " contributing dataset.",
@@ -133,15 +134,192 @@ _VAR_ENCODING_SCHEMA = {
         },
     ),
 }
+_VARIABLES_SCHEMA = {
+    "description": "Defines dimensions, encoding, and attributes"
+                   " for variables in the target dataset."
+                   " Object property names refer to variable names."
+                   " The special name `*` refers to"
+                   " all variables, which is useful for defining"
+                   " common values.",
+    "type": "object",
+    "additionalProperties": {
+        "description": "Variable metadata.",
+        "type": "object",
+        "properties": dict(
 
-# TODO: configure logging
+            dims={
+                "description": "The names of the variable's dimensions"
+                               " in the given order. Each dimension"
+                               " must exist in contributing datasets.",
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
 
-CONFIG_V1_SCHEMA = {
-    "description": "Configuration for the zappend tool.",
+            encoding=_VARIABLE_ENCODING_SCHEMA,
+
+            attrs={
+                "description": "Arbitrary variable metadata"
+                               " attributes.",
+                "type": "object",
+                "additionalProperties": True
+            },
+
+        ),
+        "additionalProperties": False,
+    },
+}
+
+_LOG_REF_URL = ("https://docs.python.org/3/library/logging.config.html"
+                "#logging-config-dictschema")
+_LOG_HDL_CLS_URL = "https://docs.python.org/3/library/logging.handlers.html"
+
+_LOG_LEVELS = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"]
+
+_LOGGING_SCHEMA = {
+    "description": f"Logging configuration. For details refer to the"
+                   f" [dictionary schema]({_LOG_REF_URL})"
+                   f" of the Python module `logging.config`.",
     "type": "object",
     "properties": dict(
         version={
-            "description": "Configuration version.",
+            "description": "Logging schema version.",
+            "const": 1
+        },
+        formatters={
+            "description": "Formatter definitions."
+                           " Each key is a formatter id and each value is an"
+                           " object describing how to configure the"
+                           " corresponding formatter.",
+            "type": "object",
+            "additionalProperties": {
+                "description": "Formatter configuration.",
+                "type": "object",
+                "properties": dict(
+                    format={
+                        "description": "Format string in the given `style`.",
+                        "type": "string",
+                        "default": "%(message)s"
+                    },
+                    datefmt={
+                        "description": "Format string in the given `style`"
+                                       " for the date/time portion.",
+                        "type": "string",
+                        "default": "%Y-%m-%d %H:%M:%S,uuu"
+                    },
+                    style={
+                        "description": "Determines how the format string"
+                                       " will be merged with its data.",
+                        "enum": ["%", "{", "$"]
+                    },
+                ),
+                "additionalProperties": False
+            },
+        },
+        filters={
+            "description": "Filter definitions."
+                           " Each key is a filter id and each value is a dict"
+                           " describing how to configure the corresponding"
+                           " filter.",
+            "type": "object",
+            "additionalProperties": {
+                "description": "Filter configuration.",
+                "type": "object",
+                "additionalProperties": True
+            },
+        },
+        handlers={
+            "description": "Handler definitions."
+                           " Each key is a handler id and each value is an"
+                           " object describing how to configure the"
+                           " corresponding handler.",
+            "type": "object",
+            "additionalProperties": {
+                "description": "Handler configuration. All keys other than"
+                               " the following are passed through as"
+                               " keyword arguments to the handler's"
+                               " constructor. ",
+                "type": "object",
+                "properties": {
+                    "class": {
+                        "description": f"The fully qualified name of"
+                                       f" the handler class. See"
+                                       f" [logging handlers]"
+                                       f"({_LOG_HDL_CLS_URL}).",
+                        "type": "string",
+                        "examples": ["logging.StreamHandler",
+                                     "logging.FileHandler"]
+                    },
+                    "level": {
+                        "description": "The level of the handler.",
+                        "enum": _LOG_LEVELS
+                    },
+                    "formatter ": {
+                        "description": "The id of the formatter"
+                                       " for this handler.",
+                        "type": "string"
+                    },
+                    "filters": {
+                        "description": "A list of ids of the filters"
+                                       " for this logger.",
+                        "type": "array",
+                        "items": {"type": "string"}
+                    },
+                },
+                "required": ["class"],
+                "additionalProperties": True
+            },
+        },
+        loggers={
+            "description": "Logger definitions."
+                           " Each key is a logger name and each value is an"
+                           " object describing how to configure the"
+                           " corresponding logger. The tool's logger"
+                           " has the id `'zappend'`.",
+            "type": "object",
+            "additionalProperties": {
+                "description": "Logger configuration.",
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "description": "The level of the logger.",
+                        "enum": _LOG_LEVELS
+                    },
+                    "propagate ": {
+                        "description": "The propagation setting of the logger.",
+                        "type": "boolean"
+                    },
+                    "filters": {
+                        "description": "A list of ids of the filters"
+                                       " for this logger.",
+                        "type": "array",
+                        "items": {"type": "string"}
+                    },
+                    "handlers": {
+                        "description": "A list of ids of the handlers"
+                                       " for this logger.",
+                        "type": "array",
+                        "items": {"type": "string"}
+                    },
+                },
+                "additionalProperties": True
+            },
+        },
+    ),
+    "required": ["version"],
+    "additionalProperties": True,
+}
+
+CONFIG_V1_SCHEMA = {
+    "description": "Configuration for the `zappend` tool",
+    "type": "object",
+    "properties": dict(
+        version={
+            "description": "Configuration schema version."
+                           " Allows the schema to evolve while still"
+                           " preserving backwards compatibility.",
             "const": 1
         },
 
@@ -213,43 +391,7 @@ CONFIG_V1_SCHEMA = {
             "default": DEFAULT_APPEND_DIM
         },
 
-        variables={
-            "description": "Defines dimensions, encoding, and attributes"
-                           " for variables in the target dataset."
-                           " Object property names refer to variable names."
-                           " The special name `*` refers to"
-                           " all variables, which is useful for defining"
-                           " common values.",
-            "type": "object",
-            "additionalProperties": {
-                "description": "Variable metadata",
-                "type": "object",
-                "properties": dict(
-
-                    dims={
-                        "description": "The names of the variable's dimensions"
-                                       " in the given order. Each dimension"
-                                       " must exist in contributing datasets.",
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "minLength": 1
-                        }
-                    },
-
-                    encoding=_VAR_ENCODING_SCHEMA,
-
-                    attrs={
-                        "description": "Arbitrary variable metadata"
-                                       " attributes.",
-                        "type": "object",
-                        "additionalProperties": True
-                    },
-
-                ),
-                "additionalProperties": False,
-            },
-        },
+        variables=_VARIABLES_SCHEMA,
 
         included_variables={
             "description": "Specifies the names of variables to be included in"
@@ -271,7 +413,9 @@ CONFIG_V1_SCHEMA = {
                            " but don't apply any changes.",
             "type": "boolean",
             "default": False
-        }
+        },
+
+        logging=_LOGGING_SCHEMA
     ),
 
     "additionalProperties": False,
@@ -399,9 +543,10 @@ def _schema_to_md(schema: dict[str, Any],
                   path: list[str],
                   lines: list[str]):
     undefined = object()
+    is_root = len(path) == 0
 
     _type = schema.get("type")
-    if _type and len(path) > 0:
+    if _type and not is_root:
         if isinstance(_type, str):
             _type = [_type]
         value = " | ".join([f"_{name}_" for name in _type])
@@ -409,7 +554,8 @@ def _schema_to_md(schema: dict[str, Any],
 
     description = schema.get("description")
     if description:
-        lines.append(description)
+        prefix = "## " if is_root else ""
+        lines.append(prefix + description)
 
     one_of = schema.get("oneOf")
     if one_of:
@@ -437,9 +583,17 @@ def _schema_to_md(schema: dict[str, Any],
         values = ", ".join([json.dumps(v) for v in enum])
         lines.append(f"Must be one of `{values}`.")
 
+    required = schema.get("required")
+    if required:
+        names = [f"`{name}`" for name in required]
+        if len(names) > 1:
+            lines.append(f"The keys {', '.join(names)} are required.")
+        else:
+            lines.append(f"The key {names[0]} is required.")
+
     properties = schema.get("properties")
     if properties:
-        is_root = len(path) == 0
+        lines.append("")
         for name, property_schema in properties.items():
             if is_root:
                 lines.append("")
@@ -452,15 +606,10 @@ def _schema_to_md(schema: dict[str, Any],
                 _schema_to_md(property_schema, path + [name], sub_lines)
                 for sub_line in sub_lines:
                     lines.append("  " + sub_line)
-                lines.append("")
+        lines.append("")
 
     additional_properties = schema.get("additionalProperties")
     if isinstance(additional_properties, dict):
         lines.append("Object values are:")
-        lines.append("")
         _schema_to_md(additional_properties, path, lines)
 
-    required = schema.get("required")
-    if required:
-        names = ", ".join([f"`${name}`" for name in required])
-        lines.append(f"${names} are required.")

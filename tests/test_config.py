@@ -213,6 +213,7 @@ class ConfigNormalizeTest(unittest.TestCase):
                 'excluded_variables',
                 'fixed_dims',
                 'included_variables',
+                'logging',
                 'slice_engine',
                 'slice_polling',
                 'slice_storage_options',
