@@ -17,7 +17,8 @@ expected_help_text = \
     
     Options:
       -c, --config CONFIG    Configuration JSON or YAML file. If multiple are
-                             passed, they will be deeply merged into one.
+                             passed, subsequent configurations are incremental to
+                             the previous ones.
       -t, --target TARGET    Target Zarr dataset path or URI. Overrides the
                              'target_uri' configuration field.
       --dry-run              Run the tool without creating, changing, or deleting
