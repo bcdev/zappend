@@ -12,7 +12,13 @@ from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
 
-class RollbackStoreTest(unittest.TestCase):
+class RollbackStoreOverridesTest(unittest.TestCase):
+    def test_overrides(self):
+        # TODO: implement tests for specific store overrides
+        pass
+
+
+class RollbackStoreZarrTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
         self.records = []
@@ -20,7 +26,7 @@ class RollbackStoreTest(unittest.TestCase):
     def handle_rollback_action(self, *args):
         self.records.append(args)
 
-    def test_some_slices(self):
+    def test_create_zarr(self):
         target_dir = FileObj("memory://target.zarr")
         ds = make_test_dataset()
         ds.to_zarr(RollbackStore(target_dir.fs.get_mapper(
@@ -35,46 +41,50 @@ class RollbackStoreTest(unittest.TestCase):
         self.assertEqual(ds.dims, ds2.dims)
         self.assertEqual(
             {
-                ('delete', '.zmetadata'),
-                ('delete', '.zgroup'),
-                ('delete', '.zattrs'),
-                ('delete', 'x/.zarray'),
-                ('delete', 'x/.zattrs'),
-                ('delete', 'x/0'),
-                ('delete', 'y/.zarray'),
-                ('delete', 'y/.zattrs'),
-                ('delete', 'y/0'),
-                ('delete', 'time/.zarray'),
-                ('delete', 'time/.zattrs'),
-                ('delete', 'time/0'),
-                ('delete', 'chl/.zarray'),
-                ('delete', 'chl/.zattrs'),
-                ('delete', 'chl/0.0.0'),
-                ('delete', 'chl/0.0.1'),
-                ('delete', 'chl/0.1.0'),
-                ('delete', 'chl/0.1.1'),
-                ('delete', 'chl/1.0.0'),
-                ('delete', 'chl/1.0.1'),
-                ('delete', 'chl/1.1.0'),
-                ('delete', 'chl/1.1.1'),
-                ('delete', 'chl/2.0.0'),
-                ('delete', 'chl/2.0.1'),
-                ('delete', 'chl/2.1.0'),
-                ('delete', 'chl/2.1.1'),
-                ('delete', 'tsm/.zarray'),
-                ('delete', 'tsm/.zattrs'),
-                ('delete', 'tsm/0.0.0'),
-                ('delete', 'tsm/0.0.1'),
-                ('delete', 'tsm/1.0.0'),
-                ('delete', 'tsm/1.0.1'),
-                ('delete', 'tsm/1.1.0'),
-                ('delete', 'tsm/1.1.1'),
-                ('delete', 'tsm/0.1.0'),
-                ('delete', 'tsm/0.1.1'),
-                ('delete', 'tsm/2.0.0'),
-                ('delete', 'tsm/2.0.1'),
-                ('delete', 'tsm/2.1.0'),
-                ('delete', 'tsm/2.1.1'),
+                ('delete_file', '.zmetadata'),
+                ('delete_file', '.zgroup'),
+                ('delete_file', '.zattrs'),
+                ('delete_file', 'x/.zarray'),
+                ('delete_file', 'x/.zattrs'),
+                ('delete_file', 'x/0'),
+                ('delete_file', 'y/.zarray'),
+                ('delete_file', 'y/.zattrs'),
+                ('delete_file', 'y/0'),
+                ('delete_file', 'time/.zarray'),
+                ('delete_file', 'time/.zattrs'),
+                ('delete_file', 'time/0'),
+                ('delete_file', 'chl/.zarray'),
+                ('delete_file', 'chl/.zattrs'),
+                ('delete_file', 'chl/0.0.0'),
+                ('delete_file', 'chl/0.0.1'),
+                ('delete_file', 'chl/0.1.0'),
+                ('delete_file', 'chl/0.1.1'),
+                ('delete_file', 'chl/1.0.0'),
+                ('delete_file', 'chl/1.0.1'),
+                ('delete_file', 'chl/1.1.0'),
+                ('delete_file', 'chl/1.1.1'),
+                ('delete_file', 'chl/2.0.0'),
+                ('delete_file', 'chl/2.0.1'),
+                ('delete_file', 'chl/2.1.0'),
+                ('delete_file', 'chl/2.1.1'),
+                ('delete_file', 'tsm/.zarray'),
+                ('delete_file', 'tsm/.zattrs'),
+                ('delete_file', 'tsm/0.0.0'),
+                ('delete_file', 'tsm/0.0.1'),
+                ('delete_file', 'tsm/1.0.0'),
+                ('delete_file', 'tsm/1.0.1'),
+                ('delete_file', 'tsm/1.1.0'),
+                ('delete_file', 'tsm/1.1.1'),
+                ('delete_file', 'tsm/0.1.0'),
+                ('delete_file', 'tsm/0.1.1'),
+                ('delete_file', 'tsm/2.0.0'),
+                ('delete_file', 'tsm/2.0.1'),
+                ('delete_file', 'tsm/2.1.0'),
+                ('delete_file', 'tsm/2.1.1'),
             },
-            set(self.records)
+            set([r[:2] for r in self.records])
         )
+
+    def test_append_zarr(self):
+        # TODO implement test for appending a zarr with overlapping chunks
+        pass

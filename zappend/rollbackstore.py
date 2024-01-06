@@ -22,7 +22,7 @@ class RollbackStore(zarr.storage.Store):
         if hasattr(self._store, fn_name):
             return getattr(self._store, fn_name)(*args, **kwargs)
         else:
-            return getattr(self, fn_name)(*args, **kwargs)
+            return getattr(super(), fn_name)(*args, **kwargs)
 
     ###########################################################################
     # collections.abc.Mapping implementations
@@ -51,15 +51,15 @@ class RollbackStore(zarr.storage.Store):
     def __setitem__(self, key: str, value: bytes):
         old_value = self._store.get(key)
         if old_value is not None:
-            self._rollback_cb("replace", key, old_value)
+            self._rollback_cb("replace_file", key, old_value)
         else:
-            self._rollback_cb("delete", key)
+            self._rollback_cb("delete_file", key, None)
         self._store[key] = value
 
     def __delitem__(self, key: str):
         old_value = self._store.get(key)
         if old_value is not None:
-            self._rollback_cb("create", key, old_value)
+            self._rollback_cb("create_file", key, old_value)
         del self._store[key]
 
     ###########################################################################
