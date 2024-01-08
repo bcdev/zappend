@@ -14,11 +14,10 @@ from .fsutil.transaction import Transaction
 from .fsutil.transaction import RollbackCallback
 from .log import logger
 from .log import configure_logging
+from .rollbackstore import RollbackStore
 from .slicesource import open_slice_source
 from .tailoring import tailor_target_dataset
 from .tailoring import tailor_slice_dataset
-from .chunkutil import get_chunk_update_range
-from .chunkutil import get_chunk_indices
 
 
 class Processor:
@@ -77,7 +76,10 @@ class Processor:
 def create_target_from_slice(ctx: Context,
                              slice_ds: xr.Dataset,
                              rollback_cb: RollbackCallback):
+    logger.info(f"Creating target dataset")
     target_ds = tailor_target_dataset(slice_ds, ctx.target_metadata)
+    if ctx.dry_run:
+        return
     target_dir = ctx.target_dir
     # TODO: adjust global attributes dependent on append_dim,
     #  e.g., time coverage
@@ -95,76 +97,23 @@ def create_target_from_slice(ctx: Context,
 def update_target_from_slice(ctx: Context,
                              slice_ds: xr.Dataset,
                              rollback_cb: RollbackCallback):
+    logger.info(f"Updating target dataset")
     target_dir = ctx.target_dir
     append_dim_name = ctx.append_dim_name
-    target_dim_sizes = ctx.target_metadata.dims
 
-    slice_ds = tailor_slice_dataset(slice_ds, ctx.target_metadata)
+    slice_ds = tailor_slice_dataset(slice_ds,
+                                    ctx.target_metadata,
+                                    append_dim_name)
 
-    # Emit rollback actions
-    for var_name, var_metadata in ctx.target_metadata.variables.items():
-        try:
-            append_axis = var_metadata.dims.index(append_dim_name)
-        except ValueError:
-            # append dimension does not exist in variable,
-            # so we cannot append data, hence no need to emit
-            # rollback actions
-            continue
-
-        target_var_shape = tuple(target_dim_sizes[k] for k in var_metadata.dims)
-        target_var_encoding = var_metadata.encoding
-        target_var_chunks = target_var_encoding.chunks or target_var_shape
-
-        assert var_name in slice_ds
-        slice_var = slice_ds.variables[var_name]
-
-        array_dir = target_dir / var_name
-
-        array_metadata_file = array_dir / ".zarray"
-        array_metadata = array_metadata_file.read()
-        rollback_cb("replace_file",
-                    array_metadata_file.path, array_metadata)
-
-        chunk_update, append_dim_range = \
-            get_chunk_update_range(target_var_shape[append_axis],
-                                   target_var_chunks[append_axis],
-                                   slice_var.shape[append_axis])
-
-        chunk_indexes = get_chunk_indices(target_var_shape,
-                                          target_var_chunks,
-                                          append_axis,
-                                          append_dim_range)
-
-        start, _ = append_dim_range
-
-        for chunk_index in chunk_indexes:
-            chunk_filename = ".".join(map(str, chunk_index))
-            chunk_file = array_dir / chunk_filename
-            if chunk_update and chunk_index[append_axis] == start:
-                try:
-                    chunk_data = chunk_file.read()
-                except FileNotFoundError:
-                    # missing chunk files are ok, fill_value!
-                    chunk_data = None
-                if chunk_data:
-                    rollback_cb("replace_file",
-                                chunk_file.path, chunk_data)
-                else:
-                    rollback_cb("delete_file",
-                                chunk_file.path, None)
-            else:
-                rollback_cb("delete_file",
-                            chunk_file.path, None)
+    if ctx.dry_run:
+        return
 
     # TODO: adjust global attributes dependent on append_dim,
     #  e.g., time coverage
-    logger.info(f"Consolidating target dataset")
-    metadata_file = target_dir / ".zmetadata"
-    metadata_data = metadata_file.read()
-    rollback_cb("replace_file", metadata_file.path, metadata_data)
 
-    slice_ds.to_zarr(store=target_dir.uri,
-                     storage_options=target_dir.storage_options,
+    store = RollbackStore(target_dir.fs.get_mapper(root=target_dir.path),
+                          rollback_cb)
+    slice_ds.to_zarr(store=store,
                      write_empty_chunks=False,
                      consolidated=True,
                      mode="a",

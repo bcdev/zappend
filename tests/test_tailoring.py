@@ -5,6 +5,7 @@
 import unittest
 
 import numpy as np
+import pyproj
 import xarray as xr
 
 from zappend.metadata import DatasetMetadata
@@ -125,7 +126,37 @@ class TailorTargetDatasetTest(unittest.TestCase):
 
 class TailorSliceDatasetTest(unittest.TestCase):
 
-    def test_it_sets_metadata(self):
+    def test_it_drops_constant_variables(self):
+        ds = xr.Dataset(
+            {
+                "a": xr.DataArray(np.zeros((2, 3, 4)),
+                                  dims=("time", "y", "x")),
+                "b": xr.DataArray(np.zeros((2, 3, 4)),
+                                  dims=("time", "y", "x")),
+                "spatial_ref": xr.DataArray(
+                    np.array(0),
+                    attrs=pyproj.CRS("EPSG:4326").to_cf()
+                )
+            },
+            coords={
+                "x": xr.DataArray(np.linspace(0.0, 1.0, 4),
+                                  dims="x"),
+                "y": xr.DataArray(np.linspace(0.0, 1.0, 3),
+                                  dims="y"),
+            }
+        )
+        tailored_ds = tailor_slice_dataset(
+            ds,
+            DatasetMetadata.from_dataset(ds, {}),
+            "time"
+        )
+        self.assertIsInstance(tailored_ds, xr.Dataset)
+        self.assertEqual(
+            {"a", "b"},
+            set(tailored_ds.variables.keys())
+        )
+
+    def test_it_clears_encoding_and_attrs(self):
         ds = xr.Dataset({
             "a": xr.DataArray(np.zeros((2, 3, 4)),
                               dims=("time", "y", "x"),
@@ -148,18 +179,17 @@ class TailorSliceDatasetTest(unittest.TestCase):
                                            "fill_value": -1}},
                     }
                 }
-            )
+            ),
+            "time"
         )
         self.assertIsInstance(tailored_ds, xr.Dataset)
-        self.assertEqual(
-            {"a", "b"},
-            set(tailored_ds.variables.keys())
-        )
 
+        self.assertIn("a", tailored_ds.variables)
         a = tailored_ds.a
         self.assertEqual({}, a.encoding)
         self.assertEqual({}, a.attrs)
 
+        self.assertIn("b", tailored_ds.variables)
         b = tailored_ds.b
         self.assertEqual({}, b.encoding)
         self.assertEqual({}, b.attrs)

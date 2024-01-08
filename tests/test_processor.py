@@ -32,6 +32,14 @@ class TestProcessor(unittest.TestCase):
         self.assertEqual({'time': 1, 'y': 10, 'x': 20}, ds.dims)
         self.assertEqual({'x', 'y', 'time', 'chl', 'tsm'}, set(ds.variables))
 
+        self.assertEqual((20,), ds.x.encoding.get("chunks"))
+        self.assertEqual((10,), ds.y.encoding.get("chunks"))
+        self.assertEqual((1,), ds.time.encoding.get("chunks"))
+        self.assertEqual((1, 5, 10),
+                         ds.chl.encoding.get("chunks"))
+        self.assertEqual((1, 5, 10),
+                         ds.tsm.encoding.get("chunks"))
+
     def test_process_two_slices(self):
         target_dir = FileObj("memory://target.zarr")
         self.assertFalse(target_dir.exists())
