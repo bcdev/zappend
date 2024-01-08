@@ -29,10 +29,18 @@ def tailor_target_dataset(
 
 def tailor_slice_dataset(
     dataset: xr.Dataset,
-    target_metadata: DatasetMetadata
+    target_metadata: DatasetMetadata,
+    append_dim_name: str
 ) -> xr.Dataset:
     dataset = _strip_dataset(dataset, target_metadata)
     dataset = _complete_dataset(dataset, target_metadata)
+
+    const_variables = [k for k, v in dataset.variables.items() if
+                       append_dim_name not in v.dims]
+    if const_variables:
+        # Strip variables that do not have append_dim_name
+        # as dimension, e.g., "x", "y", "crs", ...
+        dataset = dataset.drop_vars(const_variables)
 
     # Remove any encoding and attributes from slice,
     # since both are prescribed by target

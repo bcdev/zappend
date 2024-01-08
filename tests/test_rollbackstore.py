@@ -134,7 +134,8 @@ class RollbackStoreZarrTest(unittest.TestCase):
     def test_to_zarr(self):
         ds = make_test_dataset(
             shape=(1, 50, 100),
-            chunks=(2, 50, 50)
+            chunks=(2, 50, 50),
+            crs="epsg:4326"
         )
         ds.time.encoding.update(chunks=(10,))
         ds.chl.encoding.update(chunks=(2, 50, 50))
@@ -147,6 +148,7 @@ class RollbackStoreZarrTest(unittest.TestCase):
         self.assert_dataset_ok(
             {'x': 100, 'y': 50, 'time': 1},
             {
+                'crs': (),
                 'x': (100,), 'y': (50,), 'time': (10,),
                 'chl': (2, 50, 50),
                 'tsm': (2, 50, 50),
@@ -167,6 +169,9 @@ class RollbackStoreZarrTest(unittest.TestCase):
                 ('delete_file', 'time/.zarray'),
                 ('delete_file', 'time/.zattrs'),
                 ('delete_file', 'time/0'),
+                ('delete_file', 'crs/.zarray'),
+                ('delete_file', 'crs/.zattrs'),
+                ('delete_file', 'crs/0'),
                 ('delete_file', 'chl/.zarray'),
                 ('delete_file', 'chl/.zattrs'),
                 ('delete_file', 'chl/0.0.0'),
@@ -188,7 +193,8 @@ class RollbackStoreZarrTest(unittest.TestCase):
             chunks=(1, 50, 50)
         )
         # drop variables w.o. "time" dim
-        slice_1 = slice_1.drop_vars(["x", "y"])
+        slice_1 = slice_1.drop_vars([k for k, v in slice_1.variables.items()
+                                     if "time" not in v.dims])
         slice_1.attrs = {}
         for k, v in slice_1.variables.items():
             v.encoding = {}
@@ -205,6 +211,7 @@ class RollbackStoreZarrTest(unittest.TestCase):
         )
         self.assert_dataset_ok({'x': 100, 'y': 50, 'time': 2},
                                {
+                                   'crs': (),
                                    'x': (100,), 'y': (50,), 'time': (10,),
                                    'chl': (2, 50, 50),
                                    'tsm': (2, 50, 50),
@@ -234,7 +241,8 @@ class RollbackStoreZarrTest(unittest.TestCase):
             chunks=(1, 50, 50)
         )
         # drop variables w.o. "time" dim
-        slice_2 = slice_2.drop_vars(["x", "y"])
+        slice_2 = slice_2.drop_vars([k for k, v in slice_2.variables.items()
+                                     if "time" not in v.dims])
         for k, v in slice_2.variables.items():
             v.encoding = {}
             v.attrs = {}
@@ -250,6 +258,7 @@ class RollbackStoreZarrTest(unittest.TestCase):
         )
         self.assert_dataset_ok({'x': 100, 'y': 50, 'time': 3},
                                {
+                                   'crs': (),
                                    'x': (100,), 'y': (50,), 'time': (10,),
                                    'chl': (2, 50, 50),
                                    'tsm': (2, 50, 50),

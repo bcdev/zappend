@@ -99,7 +99,9 @@ def update_target_from_slice(ctx: Context,
     target_dir = ctx.target_dir
     append_dim_name = ctx.append_dim_name
 
-    slice_ds = tailor_slice_dataset(slice_ds, ctx.target_metadata)
+    slice_ds = tailor_slice_dataset(slice_ds,
+                                    ctx.target_metadata,
+                                    append_dim_name)
 
     # TODO: adjust global attributes dependent on append_dim,
     #  e.g., time coverage

@@ -7,6 +7,7 @@ from typing import Any
 
 import fsspec
 import numpy as np
+import pyproj
 import xarray as xr
 
 default_dims = ("time", "y", "x")
@@ -71,6 +72,7 @@ def make_test_dataset(
     dims: tuple[str, str, str] = default_dims,
     shape: tuple[int, int, int] = default_shape,
     chunks: tuple[int, int, int] = default_chunks,
+    crs: str | None = None,
     index: int = 0,
     uri: str | None = None,
     storage_options: dict[str, Any] | None = None
@@ -112,6 +114,9 @@ def make_test_dataset(
                                   dims=dims[2]),
         }
     )
+
+    if crs:
+        ds["crs"] = xr.DataArray(np.array(0), attrs=pyproj.CRS(crs).to_cf())
 
     ds = ds.chunk(dict(tuple(zip(dims, chunks))))
 
