@@ -61,6 +61,11 @@ class Processor:
             slice_metadata = ctx.get_dataset_metadata(slice_dataset)
             if ctx.target_metadata is None:
                 ctx.target_metadata = slice_metadata
+            else:
+                ctx.target_metadata.assert_compatible_slice(
+                    slice_metadata,
+                    ctx.append_dim_name
+                )
 
             with Transaction(ctx.target_dir, ctx.temp_dir) as rollback_cb:
                 if ctx.target_metadata is slice_metadata:

@@ -342,7 +342,7 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
             )
 
     # noinspection PyMethodMayBeStatic
-    def test_it_raises_on_on_missing_dtype_or_fill_value(self):
+    def test_it_raises_on_missing_dtype_or_fill_value(self):
         with pytest.raises(ValueError,
                            match="Missing 'dtype' in encoding configuration"
                                  " of variable 'b'"):
@@ -358,3 +358,109 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                     },
                 }
             )
+
+
+class DatasetMetadataSliceCompatibilityTest(unittest.TestCase):
+
+    # noinspection PyMethodMayBeStatic
+    def test_compatible(self):
+        target_md = DatasetMetadata.from_dataset(
+            xr.Dataset({
+                "a": xr.DataArray(np.zeros((12, 3, 4)),
+                                  dims=("time", "y", "x")),
+                "b": xr.DataArray(np.zeros((12, 3, 4)),
+                                  dims=("time", "y", "x")),
+            }),
+            {},
+        )
+        slice_md = DatasetMetadata.from_dataset(
+            xr.Dataset({
+                "a": xr.DataArray(np.zeros((1, 3, 4)),
+                                  dims=("time", "y", "x")),
+                "b": xr.DataArray(np.zeros((1, 3, 4)),
+                                  dims=("time", "y", "x")),
+            }),
+            {},
+        )
+
+        # Should not raise
+        target_md.assert_compatible_slice(slice_md, "time")
+
+    # noinspection PyMethodMayBeStatic
+    def test_raise_on_missing_dimension(self):
+        target_md = DatasetMetadata.from_dataset(
+            xr.Dataset({
+                "a": xr.DataArray(np.zeros((12, 3, 4)),
+                                  dims=("time", "y", "x")),
+                "b": xr.DataArray(np.zeros((12, 3, 4)),
+                                  dims=("time", "y", "x")),
+            }),
+            {},
+        )
+        slice_md = DatasetMetadata.from_dataset(
+            xr.Dataset({
+                "a": xr.DataArray(np.zeros((1, 3)),
+                                  dims=("time", "y")),
+                "b": xr.DataArray(np.zeros((1, 3)),
+                                  dims=("time", "y")),
+            }),
+            {},
+        )
+
+        with pytest.raises(ValueError,
+                           match="Missing dimension 'x' in slice dataset"):
+            target_md.assert_compatible_slice(slice_md, "time")
+
+    # noinspection PyMethodMayBeStatic
+    def test_raise_on_wrong_dimension_size(self):
+        target_md = DatasetMetadata.from_dataset(
+            xr.Dataset({
+                "a": xr.DataArray(np.zeros((12, 3, 4)),
+                                  dims=("time", "y", "x")),
+                "b": xr.DataArray(np.zeros((12, 3, 4)),
+                                  dims=("time", "y", "x")),
+            }),
+            {},
+        )
+        slice_md = DatasetMetadata.from_dataset(
+            xr.Dataset({
+                "a": xr.DataArray(np.zeros((12, 4, 4)),
+                                  dims=("time", "y", "x")),
+                "b": xr.DataArray(np.zeros((12, 4, 4)),
+                                  dims=("time", "y", "x")),
+            }),
+            {},
+        )
+
+        with pytest.raises(ValueError,
+                           match="Wrong size for dimension 'y'"
+                                 " in slice dataset: expected 3, but found 4"):
+            target_md.assert_compatible_slice(slice_md, "time")
+
+    # noinspection PyMethodMayBeStatic
+    def test_raise_on_wrong_var_dimensions(self):
+        target_md = DatasetMetadata.from_dataset(
+            xr.Dataset({
+                "a": xr.DataArray(np.zeros((12, 3, 4)),
+                                  dims=("time", "y", "x")),
+                "b": xr.DataArray(np.zeros((12, 3, 4)),
+                                  dims=("time", "y", "x")),
+            }),
+            {},
+        )
+        slice_md = DatasetMetadata.from_dataset(
+            xr.Dataset({
+                "a": xr.DataArray(np.zeros((1, 3)),
+                                  dims=("time", "y")),
+                "b": xr.DataArray(np.zeros((1, 3, 4)),
+                                  dims=("time", "y", "x")),
+            }),
+            {},
+        )
+
+        with pytest.raises(ValueError,
+                           match="Wrong dimensions for variable 'a' in"
+                                 " slice dataset:"
+                                 " expected \\('time', 'y', 'x'\\),"
+                                 " but found \\('time', 'y'\\)"):
+            target_md.assert_compatible_slice(slice_md, "time")

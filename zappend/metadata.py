@@ -87,6 +87,28 @@ class DatasetMetadata:
                                for k, v in self.variables.items()},
                     attrs=self.attrs)
 
+    def assert_compatible_slice(self,
+                                slice_metadata: "DatasetMetadata",
+                                append_dim: str):
+        for dim_name, dim_size in self.dims.items():
+            if dim_name not in slice_metadata.dims:
+                raise ValueError(f"Missing dimension"
+                                 f" {dim_name!r} in slice dataset")
+            slice_dim_size = slice_metadata.dims[dim_name]
+            if dim_name != append_dim and dim_size != slice_dim_size:
+                raise ValueError(f"Wrong size for dimension {dim_name!r}"
+                                 f" in slice dataset:"
+                                 f" expected {dim_size},"
+                                 f" but found {slice_dim_size}")
+        for var_name, var_metadata in self.variables.items():
+            slice_var_metadata = slice_metadata.variables.get(var_name)
+            if (slice_var_metadata is not None
+                    and var_metadata.dims != slice_var_metadata.dims):
+                raise ValueError(f"Wrong dimensions for variable {var_name!r}"
+                                 f" in slice dataset:"
+                                 f" expected {var_metadata.dims},"
+                                 f" but found {slice_var_metadata.dims}")
+
     @classmethod
     def from_dataset(cls,
                      dataset: xr.Dataset,
@@ -137,12 +159,12 @@ def _get_effective_dims(dataset: xr.Dataset,
     return {str(k): v for k, v in dataset.dims.items()}
 
 
-def _get_effective_variables(dataset: xr.Dataset,
-                             config_included_variables: list[str] | None,
-                             config_excluded_variables: list[str] | None,
-                             config_variables: dict[str, dict[
-                                 str, Any]] | None) -> dict[
-    str, VariableMetadata]:
+def _get_effective_variables(
+    dataset: xr.Dataset,
+    config_included_variables: list[str] | None,
+    config_excluded_variables: list[str] | None,
+    config_variables: dict[str, dict[str, Any]] | None
+) -> dict[str, VariableMetadata]:
     config_variables = dict(config_variables or {})
     defaults = config_variables.pop("*", {})
     config_variables = {k: merge_configs(defaults, v)
@@ -167,7 +189,7 @@ def _get_effective_variables(dataset: xr.Dataset,
     variables = {}
 
     for var_name in selected_var_names:
-        config_var_def = dict(config_variables.get(var_name) or {})
+        config_var_def: dict = dict(config_variables.get(var_name) or {})
         ds_var = dataset.variables.get(var_name)
         if ds_var is not None:
             # Variable found in dataset: use dataset variable to complement
