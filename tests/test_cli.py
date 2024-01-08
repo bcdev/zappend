@@ -6,6 +6,7 @@ import unittest
 from click.testing import CliRunner
 
 from zappend.cli import zappend
+from zappend.fsutil.fileobj import FileObj
 from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
@@ -60,6 +61,7 @@ class CliTest(unittest.TestCase):
         result = runner.invoke(zappend, [])
         self.assertEqual(0, result.exit_code)
         self.assertEqual("No slice datasets given.\n", result.output)
+        self.assertFalse(FileObj("memory://target.zarr").exists())
 
     def test_some_slices_and_target(self):
         make_test_dataset(uri="memory://slice-1.zarr")
@@ -78,6 +80,27 @@ class CliTest(unittest.TestCase):
                                ])
         self.assertEqual("", result.output)
         self.assertEqual(0, result.exit_code)
+        self.assertTrue(FileObj("memory://target.zarr").exists())
+
+    def test_some_slices_and_target_dry_run(self):
+        make_test_dataset(uri="memory://slice-1.zarr")
+        make_test_dataset(uri="memory://slice-2.zarr")
+        make_test_dataset(uri="memory://slice-3.zarr")
+
+        runner = CliRunner()
+        # noinspection PyTypeChecker
+        result = runner.invoke(zappend,
+                               [
+                                   "--target",
+                                   "memory://target.zarr",
+                                   "--dry-run",
+                                   "memory://slice-1.zarr",
+                                   "memory://slice-2.zarr",
+                                   "memory://slice-3.zarr",
+                               ])
+        self.assertEqual("", result.output)
+        self.assertEqual(0, result.exit_code)
+        self.assertFalse(FileObj("memory://target.zarr").exists())
 
     def test_some_slices_and_no_target(self):
         make_test_dataset(uri="memory://slice-1.zarr")
@@ -95,3 +118,4 @@ class CliTest(unittest.TestCase):
         self.assertEqual(1, result.exit_code)
         self.assertEqual("Error: Missing 'target_uri' in configuration\n",
                          result.output)
+        self.assertFalse(FileObj("memory://target.zarr").exists())

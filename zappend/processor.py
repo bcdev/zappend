@@ -78,6 +78,8 @@ def create_target_from_slice(ctx: Context,
                              rollback_cb: RollbackCallback):
     logger.info(f"Creating target dataset")
     target_ds = tailor_target_dataset(slice_ds, ctx.target_metadata)
+    if ctx.dry_run:
+        return
     target_dir = ctx.target_dir
     # TODO: adjust global attributes dependent on append_dim,
     #  e.g., time coverage
@@ -102,6 +104,9 @@ def update_target_from_slice(ctx: Context,
     slice_ds = tailor_slice_dataset(slice_ds,
                                     ctx.target_metadata,
                                     append_dim_name)
+
+    if ctx.dry_run:
+        return
 
     # TODO: adjust global attributes dependent on append_dim,
     #  e.g., time coverage

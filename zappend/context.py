@@ -100,3 +100,7 @@ class Context:
     @property
     def temp_dir(self) -> FileObj:
         return self._temp_dir
+
+    @property
+    def dry_run(self) -> bool:
+        return self._config.get("dry_run", False)

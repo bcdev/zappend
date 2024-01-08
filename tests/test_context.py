@@ -60,3 +60,10 @@ class ContextTest(unittest.TestCase):
         ctx = Context({"target_uri": "memory://target.zarr"})
         self.assertIsInstance(ctx.temp_dir, FileObj)
         self.assertTrue(ctx.temp_dir.exists())
+
+    def test_dry_run(self):
+        ctx = Context({"target_uri": "memory://target.zarr"})
+        self.assertEqual(False, ctx.dry_run)
+        ctx = Context({"target_uri": "memory://target.zarr",
+                       "dry_run": True})
+        self.assertEqual(True, ctx.dry_run)
