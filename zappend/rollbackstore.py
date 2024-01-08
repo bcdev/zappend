@@ -5,8 +5,8 @@
 from collections.abc import MutableMapping
 from typing import Any, Sequence, Mapping
 
-import zarr
-from zarr.context import Context
+import zarr.context
+import zarr.storage
 
 from zappend.fsutil.transaction import RollbackCallback
 
@@ -43,36 +43,44 @@ class RollbackStore(zarr.storage.Store):
         return key in self._store
 
     def __eq__(self, other: Any):
-        return self._store == other
+        return self is other or (
+            isinstance(other, RollbackStore)
+            and self._rollback_cb is other._rollback_cb
+            and self._store == other._store
+        )
 
     ###########################################################################
     # collections.abc.MutableMapping implementations
 
     def __setitem__(self, key: str, value: bytes):
         old_value = self._store.get(key)
+        self._store[key] = value
         if old_value is not None:
             self._rollback_cb("replace_file", key, old_value)
         else:
             self._rollback_cb("delete_file", key, None)
-        self._store[key] = value
 
     def __delitem__(self, key: str):
         old_value = self._store.get(key)
+        del self._store[key]
         if old_value is not None:
             self._rollback_cb("create_file", key, old_value)
-        del self._store[key]
 
     ###########################################################################
     # zarr.storage.BaseStore overrides
 
+    # noinspection SpellCheckingInspection
     def getitems(
-        self, keys: Sequence[str], *, contexts: Mapping[str, Context]
+        self,
+        keys: Sequence[str],
+        *,
+        contexts: Mapping[str, zarr.context.Context]
     ) -> Mapping[str, Any]:
         return self._delegate_call("getitems", keys, contexts)
 
     def rename(self, src_path: str, dst_path: str) -> None:
-        # TODO: emit rollback action
         self._delegate_call("rename", src_path, dst_path)
+        self._rollback_cb("rename_file", dst_path, src_path)
 
     def close(self) -> None:
         self._delegate_call("close")
@@ -84,5 +92,5 @@ class RollbackStore(zarr.storage.Store):
         return self._delegate_call("listdir", path)
 
     def rmdir(self, path: str = "") -> None:
-        # TODO: emit rollback action
         self._delegate_call("rmdir", path)
+        self._rollback_cb("delete_dir", path)
