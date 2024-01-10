@@ -1,4 +1,8 @@
+[![CI](https://github.com/bcdev/zappend/actions/workflows/package.yml/badge.svg)](https://github.com/bcdev/zappend/actions/workflows/package.yml)
+[![PyPI - Version](https://img.shields.io/pypi/v/zappend)](https://pypi.org/project/zappend/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![GitHub License](https://img.shields.io/github/license/bcdev/zappend)](https://github.com/bcdev/zappend)
+
 
 # zappend
 
