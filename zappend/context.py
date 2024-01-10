@@ -21,9 +21,9 @@ class Context:
     def __init__(self, config: Dict[str, Any]):
         self._config = config
 
-        target_uri = config.get("target_uri")
+        target_uri = config.get("target_dir")
         if not target_uri:
-            raise ValueError("Missing 'target_uri' in configuration")
+            raise ValueError("Missing 'target_dir' in configuration")
 
         target_storage_options = config.get("target_storage_options")
         self._target_dir = FileObj(target_uri, storage_options=target_storage_options)

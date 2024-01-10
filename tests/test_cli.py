@@ -20,7 +20,7 @@ expected_help_text = """
                              passed, subsequent configurations are incremental to
                              the previous ones.
       -t, --target TARGET    Target Zarr dataset path or URI. Overrides the
-                             'target_uri' configuration field.
+                             'target_dir' configuration field.
       --dry-run              Run the tool without creating, changing, or deleting
                              any files.
       --help-config json|md  Show configuration help and exit.
@@ -47,11 +47,11 @@ class CliTest(unittest.TestCase):
         # noinspection PyTypeChecker
         result = runner.invoke(zappend, ["--help-config", "json"])
         self.assertEqual(0, result.exit_code)
-        self.assertIn('"target_uri": {', result.output)
+        self.assertIn('"target_dir": {', result.output)
         # noinspection PyTypeChecker
         result = runner.invoke(zappend, ["--help-config", "md"])
         self.assertEqual(0, result.exit_code)
-        self.assertIn("### `target_uri`", result.output)
+        self.assertIn("### `target_dir`", result.output)
 
     def test_no_slices(self):
         runner = CliRunner()
@@ -121,6 +121,6 @@ class CliTest(unittest.TestCase):
         )
         self.assertEqual(1, result.exit_code)
         self.assertEqual(
-            "Error: Missing 'target_uri' in configuration\n", result.output
+            "Error: Missing 'target_dir' in configuration\n", result.output
         )
         self.assertFalse(FileObj("memory://target.zarr").exists())

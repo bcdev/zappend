@@ -21,7 +21,7 @@ import click
     "-t",
     metavar="TARGET",
     help="Target Zarr dataset path or URI."
-    " Overrides the 'target_uri' configuration field.",
+    " Overrides the 'target_dir' configuration field.",
 )
 @click.option(
     "--dry-run",
@@ -54,7 +54,7 @@ def zappend(
 
     # noinspection PyBroadException
     try:
-        zappend(slices, config=config, target_uri=target, dry_run=dry_run)
+        zappend(slices, config=config, target_dir=target, dry_run=dry_run)
     except BaseException as e:
         raise click.ClickException(f"{e}") from e
 

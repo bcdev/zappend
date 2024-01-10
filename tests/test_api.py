@@ -16,15 +16,15 @@ class ApiTest(unittest.TestCase):
         clear_memory_fs()
 
     def test_no_slices(self):
-        target_uri = "memory://target.zarr"
-        zappend([], target_uri=target_uri)
-        self.assertFalse(FileObj(target_uri).exists())
+        target_dir = "memory://target.zarr"
+        zappend([], target_dir=target_dir)
+        self.assertFalse(FileObj(target_dir).exists())
 
     def test_some_slices(self):
-        target_uri = "memory://target.zarr"
+        target_dir = "memory://target.zarr"
         slices = [make_test_dataset(), make_test_dataset(), make_test_dataset()]
-        zappend(slices, target_uri=target_uri)
-        ds = xr.open_zarr(target_uri)
+        zappend(slices, target_dir=target_dir)
+        ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.dims)
         self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
         self.assertEqual({"time", "y", "x"}, set(ds.coords))

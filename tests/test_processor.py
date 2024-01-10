@@ -19,7 +19,7 @@ class TestProcessor(unittest.TestCase):
         target_dir = FileObj("memory://target.zarr")
         self.assertFalse(target_dir.exists())
 
-        processor = Processor(dict(target_uri=target_dir.uri))
+        processor = Processor(dict(target_dir=target_dir.uri))
         test_ds_kwargs = dict(shape=(1, 10, 20), chunks=(1, 5, 10))
         make_test_dataset(uri="memory://slice-1.zarr", **test_ds_kwargs)
         processor.process_slices(["memory://slice-1.zarr"])
@@ -41,7 +41,7 @@ class TestProcessor(unittest.TestCase):
         target_dir = FileObj("memory://target.zarr")
         self.assertFalse(target_dir.exists())
 
-        processor = Processor(dict(target_uri=target_dir.uri))
+        processor = Processor(dict(target_dir=target_dir.uri))
         test_ds_kwargs = dict(shape=(1, 10, 20), chunks=(1, 5, 10))
         make_test_dataset(uri="memory://slice-1.zarr", **test_ds_kwargs)
         make_test_dataset(uri="memory://slice-2.zarr", **test_ds_kwargs)
@@ -75,7 +75,7 @@ class TestProcessor(unittest.TestCase):
 
         processor = Processor(
             {
-                "target_uri": target_dir.uri,
+                "target_dir": target_dir.uri,
                 "variables": {"time": {"encoding": {"chunks": [many]}}},
             }
         )
@@ -111,7 +111,7 @@ class TestProcessor(unittest.TestCase):
 
         processor = Processor(
             dict(
-                target_uri=target_dir.uri,
+                target_dir=target_dir.uri,
                 variables=dict(
                     chl=dict(encoding=dict(chunks=[3, 5, 10])),
                     tsm=dict(encoding=dict(chunks=[3, 5, 10])),

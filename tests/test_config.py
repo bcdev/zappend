@@ -225,7 +225,7 @@ class ConfigNormalizeTest(unittest.TestCase):
                 "slice_polling",
                 "slice_storage_options",
                 "target_storage_options",
-                "target_uri",
+                "target_dir",
                 "temp_dir",
                 "temp_storage_options",
                 "variables",

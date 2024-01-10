@@ -23,7 +23,7 @@ class SliceSourceTest(unittest.TestCase):
     def test_in_memory(self):
         slice_dir = FileObj("memory://slice.zarr")
         dataset = make_test_dataset(uri=slice_dir.uri)
-        ctx = Context(dict(target_uri="memory://target.zarr"))
+        ctx = Context(dict(target_dir="memory://target.zarr"))
         slice_zarr = open_slice_source(ctx, dataset)
         self.assertIsInstance(slice_zarr, IdentitySliceSource)
         with slice_zarr as slice_ds:
@@ -32,7 +32,7 @@ class SliceSourceTest(unittest.TestCase):
     def test_persistent_zarr(self):
         slice_dir = FileObj("memory://slice.zarr")
         make_test_dataset(uri=slice_dir.uri)
-        ctx = Context(dict(target_uri="memory://target.zarr"))
+        ctx = Context(dict(target_dir="memory://target.zarr"))
         slice_zarr = open_slice_source(ctx, slice_dir.uri)
         self.assertIsInstance(slice_zarr, PersistentSliceSource)
         with slice_zarr as slice_ds:
@@ -43,7 +43,7 @@ class SliceSourceTest(unittest.TestCase):
     #     slice_file = FileObj("memory:///slice.nc")
     #     with slice_file.fs.open(slice_file.path, "wb") as f:
     #         slice_ds.to_netcdf(f)
-    #     ctx = Context(dict(target_uri="memory://target.zarr",
+    #     ctx = Context(dict(target_dir="memory://target.zarr",
     #                        slice_engine="scipy"))
     #     slice_nc = open_slice_source(ctx, slice_file.uri)
     #     self.assertIsInstance(slice_nc, PersistentSliceSource)
@@ -55,7 +55,7 @@ class SliceSourceTest(unittest.TestCase):
         make_test_dataset(uri=slice_dir.uri)
         ctx = Context(
             dict(
-                target_uri="memory://target.zarr",
+                target_dir="memory://target.zarr",
                 slice_polling=dict(timeout=0.1, interval=0.02),
             )
         )
@@ -69,7 +69,7 @@ class SliceSourceTest(unittest.TestCase):
         slice_dir = FileObj("memory://slice.zarr")
         ctx = Context(
             dict(
-                target_uri="memory://target.zarr",
+                target_dir="memory://target.zarr",
                 slice_polling=dict(timeout=0.1, interval=0.02),
             )
         )
@@ -82,7 +82,7 @@ class SliceSourceTest(unittest.TestCase):
     def test_invalid_type(self):
         dataset_dir = FileObj("memory://slice.zarr")
         make_test_dataset(uri=dataset_dir.uri)
-        ctx = Context(dict(target_uri="memory://target.zarr"))
+        ctx = Context(dict(target_dir="memory://target.zarr"))
         with pytest.raises(
             TypeError, match="slice_obj must be a str or xarray.Dataset"
         ):

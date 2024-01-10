@@ -6,7 +6,7 @@
 Configuration schema version. Allows the schema to evolve while still preserving backwards compatibility.
 It's value is `1`.
 
-### `target_uri`
+### `target_dir`
 
 Type _string_.
 The URI or local path of the target Zarr dataset. Must be a directory.
@@ -14,7 +14,7 @@ The URI or local path of the target Zarr dataset. Must be a directory.
 ### `target_storage_options`
 
 Type _object_.
-Options for the filesystem given by the URI of `target_uri`.
+Options for the filesystem given by the URI of `target_dir`.
 
 ### `slice_engine`
 
@@ -200,7 +200,7 @@ The key `version` is required.
   Handler definitions. Each key is a handler id and each value is an object describing how to configure the corresponding handler.
   Object values are:
   Type _object_.
-  Handler configuration. All keys other than the following are passed through as keyword arguments to the handler's constructor. 
+  Handler configuration. All keys other than the following are passed through as keyword arguments to the handler's constructor.
   The key `class` is required.
   
   * `class`:

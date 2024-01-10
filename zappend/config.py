@@ -349,7 +349,7 @@ CONFIG_V1_SCHEMA = {
             ),
             "const": 1,
         },
-        target_uri={
+        target_dir={
             "description": (
                 "The URI or local path of the target Zarr dataset."
                 " Must be a directory."
@@ -359,7 +359,7 @@ CONFIG_V1_SCHEMA = {
         },
         target_storage_options={
             "description": (
-                "Options for the filesystem given by" " the URI of `target_uri`."
+                "Options for the filesystem given by" " the URI of `target_dir`."
             ),
             "type": "object",
             "additionalProperties": True,
