@@ -11,9 +11,19 @@ from .identity import IdentitySliceSource
 from .persistent import PersistentSliceSource
 
 
-def open_slice_source(ctx: Context, slice_obj: str | xr.Dataset) -> SliceSource:
+def open_slice_source(
+    ctx: Context, slice_obj: str | xr.Dataset, slice_index: int = 0
+) -> SliceSource:
+    """
+    Open a slice source from given *slice_obj*.
+
+    :param ctx: Processing context
+    :param slice_obj: The slice object
+    :param slice_index: Optional slice index (used for logging only)
+    :return: A new slice source instance
+    """
     if isinstance(slice_obj, xr.Dataset):
-        return IdentitySliceSource(ctx, slice_obj)
+        return IdentitySliceSource(ctx, slice_obj, slice_index)
     if isinstance(slice_obj, str):
         slice_file = FileObj(slice_obj, storage_options=ctx.slice_storage_options)
         return PersistentSliceSource(ctx, slice_file)

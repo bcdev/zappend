@@ -11,8 +11,8 @@ from ..context import Context
 
 class SliceSource(ABC):
     """Provides a slice dataset from different sources.
-    Instances of this class are supposed to be used as
-    context managers.
+    Instances of this class are supposed to be used as context managers.
+    The context manager provides the dataset instance.
 
     :param ctx: The processing context
     """
