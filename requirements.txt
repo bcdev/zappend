@@ -1,4 +1,5 @@
 click
+dask
 fsspec
 jsonschema
 numpy
