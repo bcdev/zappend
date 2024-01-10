@@ -64,15 +64,14 @@ class PersistentSliceSource(SliceSource):
 
     def _open_slice_dataset(self) -> xr.Dataset:
         engine = self._ctx.slice_engine
-        if engine is None \
-            and (self._slice_file.path.endswith(".zarr")
-                 or self._slice_file.path.endswith(".zarr.zip")):
+        if engine is None and (
+            self._slice_file.path.endswith(".zarr")
+            or self._slice_file.path.endswith(".zarr.zip")
+        ):
             engine = "zarr"
         if engine == "zarr":
             storage_options = self._ctx.slice_storage_options
-            return xr.open_zarr(self._slice_file.uri,
-                                storage_options=storage_options)
+            return xr.open_zarr(self._slice_file.uri, storage_options=storage_options)
 
         with self._slice_file.fs.open(self._slice_file.path, "rb") as f:
-            return xr.open_dataset(f,
-                                   engine=engine)
+            return xr.open_dataset(f, engine=engine)

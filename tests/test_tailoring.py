@@ -14,37 +14,35 @@ from zappend.tailoring import tailor_slice_dataset
 
 
 class TailorTargetDatasetTest(unittest.TestCase):
-
     def test_it_sets_metadata(self):
-        ds = xr.Dataset({
-            "a": xr.DataArray(np.zeros((2, 3, 4)),
-                              dims=("time", "y", "x"),
-                              attrs={"units": "mg/m^3",
-                                     "scale_factor": 0.025}),
-            "b": xr.DataArray(np.zeros((2, 3, 4)),
-                              dims=("time", "y", "x"),
-                              attrs={"units": "g/m^3",
-                                     "scale_factor": 0.03}),
-        })
+        ds = xr.Dataset(
+            {
+                "a": xr.DataArray(
+                    np.zeros((2, 3, 4)),
+                    dims=("time", "y", "x"),
+                    attrs={"units": "mg/m^3", "scale_factor": 0.025},
+                ),
+                "b": xr.DataArray(
+                    np.zeros((2, 3, 4)),
+                    dims=("time", "y", "x"),
+                    attrs={"units": "g/m^3", "scale_factor": 0.03},
+                ),
+            }
+        )
         tailored_ds = tailor_target_dataset(
             ds,
             DatasetMetadata.from_dataset(
                 ds,
                 {
                     "variables": {
-                        "a": {"encoding": {"dtype": "uint8",
-                                           "fill_value": 0}},
-                        "b": {"encoding": {"dtype": "int8",
-                                           "fill_value": -1}},
+                        "a": {"encoding": {"dtype": "uint8", "fill_value": 0}},
+                        "b": {"encoding": {"dtype": "int8", "fill_value": -1}},
                     }
-                }
-            )
+                },
+            ),
         )
         self.assertIsInstance(tailored_ds, xr.Dataset)
-        self.assertEqual(
-            {"a", "b"},
-            set(tailored_ds.variables.keys())
-        )
+        self.assertEqual({"a", "b"}, set(tailored_ds.variables.keys()))
 
         a = tailored_ds.a
         self.assertEqual(np.dtype("uint8"), a.encoding.get("dtype"))
@@ -59,37 +57,29 @@ class TailorTargetDatasetTest(unittest.TestCase):
         self.assertEqual({"units": "g/m^3"}, b.attrs)
 
     def test_it_strips_vars(self):
-        ds = xr.Dataset({
-            "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
-            "b": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
-        })
-
-        tailored_ds = tailor_target_dataset(
-            ds,
-            DatasetMetadata.from_dataset(
-                ds,
-                {"included_variables": ["b"]})
-        )
-        self.assertEqual(
-            {"b"},
-            set(tailored_ds.variables.keys())
+        ds = xr.Dataset(
+            {
+                "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
+                "b": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
+            }
         )
 
         tailored_ds = tailor_target_dataset(
-            ds,
-            DatasetMetadata.from_dataset(
-                ds,
-                {"excluded_variables": ["b"]})
+            ds, DatasetMetadata.from_dataset(ds, {"included_variables": ["b"]})
         )
-        self.assertEqual(
-            {"a"},
-            set(tailored_ds.variables.keys())
+        self.assertEqual({"b"}, set(tailored_ds.variables.keys()))
+
+        tailored_ds = tailor_target_dataset(
+            ds, DatasetMetadata.from_dataset(ds, {"excluded_variables": ["b"]})
         )
+        self.assertEqual({"a"}, set(tailored_ds.variables.keys()))
 
     def test_it_completes_vars(self):
-        ds = xr.Dataset({
-            "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
-        })
+        ds = xr.Dataset(
+            {
+                "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
+            }
+        )
 
         tailored_ds = tailor_target_dataset(
             ds,
@@ -98,89 +88,79 @@ class TailorTargetDatasetTest(unittest.TestCase):
                 {
                     "variables": {
                         "a": {"dims": ["time", "y", "x"]},
-                        "b": {"dims": ["time", "y", "x"],
-                              "encoding": {"dtype": "int16",
-                                           "fill_value": 0}},
-                        "c": {"dims": ["time", "y", "x"],
-                              "encoding": {"dtype": "uint32"}},
+                        "b": {
+                            "dims": ["time", "y", "x"],
+                            "encoding": {"dtype": "int16", "fill_value": 0},
+                        },
+                        "c": {
+                            "dims": ["time", "y", "x"],
+                            "encoding": {"dtype": "uint32"},
+                        },
                     },
-                })
+                },
+            ),
         )
-        self.assertEqual(
-            {"a", "b", "c"},
-            set(tailored_ds.variables.keys())
-        )
+        self.assertEqual({"a", "b", "c"}, set(tailored_ds.variables.keys()))
 
         b = tailored_ds.b
         self.assertEqual(np.dtype("float64"), b.dtype)
-        self.assertEqual(np.dtype("int16"),
-                         b.encoding.get("dtype"))
+        self.assertEqual(np.dtype("int16"), b.encoding.get("dtype"))
 
         c = tailored_ds.c
         self.assertEqual(np.dtype("uint32"), c.dtype)
-        self.assertEqual(np.dtype("uint32"),
-                         c.encoding.get("dtype"))
+        self.assertEqual(np.dtype("uint32"), c.encoding.get("dtype"))
 
     # noinspection PyMethodMayBeStatic
 
 
 class TailorSliceDatasetTest(unittest.TestCase):
-
     def test_it_drops_constant_variables(self):
         ds = xr.Dataset(
             {
-                "a": xr.DataArray(np.zeros((2, 3, 4)),
-                                  dims=("time", "y", "x")),
-                "b": xr.DataArray(np.zeros((2, 3, 4)),
-                                  dims=("time", "y", "x")),
+                "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
+                "b": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
                 "spatial_ref": xr.DataArray(
-                    np.array(0),
-                    attrs=pyproj.CRS("EPSG:4326").to_cf()
-                )
+                    np.array(0), attrs=pyproj.CRS("EPSG:4326").to_cf()
+                ),
             },
             coords={
-                "x": xr.DataArray(np.linspace(0.0, 1.0, 4),
-                                  dims="x"),
-                "y": xr.DataArray(np.linspace(0.0, 1.0, 3),
-                                  dims="y"),
-            }
+                "x": xr.DataArray(np.linspace(0.0, 1.0, 4), dims="x"),
+                "y": xr.DataArray(np.linspace(0.0, 1.0, 3), dims="y"),
+            },
         )
         tailored_ds = tailor_slice_dataset(
-            ds,
-            DatasetMetadata.from_dataset(ds, {}),
-            "time"
+            ds, DatasetMetadata.from_dataset(ds, {}), "time"
         )
         self.assertIsInstance(tailored_ds, xr.Dataset)
-        self.assertEqual(
-            {"a", "b"},
-            set(tailored_ds.variables.keys())
-        )
+        self.assertEqual({"a", "b"}, set(tailored_ds.variables.keys()))
 
     def test_it_clears_encoding_and_attrs(self):
-        ds = xr.Dataset({
-            "a": xr.DataArray(np.zeros((2, 3, 4)),
-                              dims=("time", "y", "x"),
-                              attrs={"units": "mg/m^3",
-                                     "scale_factor": 0.025}),
-            "b": xr.DataArray(np.zeros((2, 3, 4)),
-                              dims=("time", "y", "x"),
-                              attrs={"units": "g/m^3",
-                                     "scale_factor": 0.03}),
-        })
+        ds = xr.Dataset(
+            {
+                "a": xr.DataArray(
+                    np.zeros((2, 3, 4)),
+                    dims=("time", "y", "x"),
+                    attrs={"units": "mg/m^3", "scale_factor": 0.025},
+                ),
+                "b": xr.DataArray(
+                    np.zeros((2, 3, 4)),
+                    dims=("time", "y", "x"),
+                    attrs={"units": "g/m^3", "scale_factor": 0.03},
+                ),
+            }
+        )
         tailored_ds = tailor_slice_dataset(
             ds,
             DatasetMetadata.from_dataset(
                 ds,
                 {
                     "variables": {
-                        "a": {"encoding": {"dtype": "uint8",
-                                           "fill_value": 0}},
-                        "b": {"encoding": {"dtype": "int8",
-                                           "fill_value": -1}},
+                        "a": {"encoding": {"dtype": "uint8", "fill_value": 0}},
+                        "b": {"encoding": {"dtype": "int8", "fill_value": -1}},
                     }
-                }
+                },
             ),
-            "time"
+            "time",
         )
         self.assertIsInstance(tailored_ds, xr.Dataset)
 

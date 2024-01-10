@@ -8,17 +8,17 @@ from typing import Callable, Literal
 from zappend.fsutil.fileobj import FileObj
 from zappend.log import logger
 
-RollbackAction = (Literal["delete_dir"]
-                  | Literal["delete_file"]
-                  | Literal["replace_file"])
+RollbackAction = (
+    Literal["delete_dir"] | Literal["delete_file"] | Literal["replace_file"]
+)
 
 RollbackCallback = Callable[
     [
         RollbackAction,
         str,  # target path
-        bytes | None  # original data, if operation is "replace_file"
+        bytes | None,  # original data, if operation is "replace_file"
     ],
-    None  # void
+    None,  # void
 ]
 
 LOCK_EXT = ".lock"
@@ -71,10 +71,9 @@ class Transaction:
         be created for the duration of the transaction.
     """
 
-    def __init__(self,
-                 target_dir: FileObj,
-                 temp_dir: FileObj,
-                 disable_rollback: bool = False):
+    def __init__(
+        self, target_dir: FileObj, temp_dir: FileObj, disable_rollback: bool = False
+    ):
         transaction_id = f"zappend-{uuid.uuid4()}"
         rollback_dir = temp_dir / transaction_id
         lock_file = target_dir.parent / (target_dir.filename + LOCK_EXT)
@@ -103,8 +102,9 @@ class Transaction:
 
     def __enter__(self):
         if self._entered_ctx:
-            raise ValueError("Transaction instance cannot be used"
-                             " with nested 'with' statements")
+            raise ValueError(
+                "Transaction instance cannot be used" " with nested 'with' statements"
+            )
         self._entered_ctx = True
 
         lock_file = self._lock_file
@@ -125,11 +125,11 @@ class Transaction:
             logger.error("Error in transaction", exc_info=True)
 
             rollback_txt = self._rollback_file.read(mode="r")
-            rollback_records = [record
-                                for record in [
-                                    line.split()
-                                    for line in rollback_txt.split("\n")
-                                ] if record]
+            rollback_records = [
+                record
+                for record in [line.split() for line in rollback_txt.split("\n")]
+                if record
+            ]
 
             if rollback_records:
                 logger.info(f"Rolling back {len(rollback_records)} action(s)")
@@ -163,26 +163,29 @@ class Transaction:
         data = (self._rollback_dir / rollback_filename).read()
         _file.write(data)
 
-    def _add_rollback_action(self,
-                             action: RollbackAction,
-                             path: str,
-                             data: bytes | None):
+    def _add_rollback_action(
+        self, action: RollbackAction, path: str, data: bytes | None
+    ):
         self._assert_entered_ctx()
         if not isinstance(action, str):
             raise TypeError(
-                f"Type of 'action' argument must be {str},"
-                f" but was {type(action)}")
+                f"Type of 'action' argument must be {str}," f" but was {type(action)}"
+            )
         if action not in ROLLBACK_ACTIONS:
-            actions = ', '.join(map(repr, ROLLBACK_ACTIONS))
-            raise ValueError(f"Value of 'action' argument must be one of"
-                             f" {actions}, but was {action!r}")
+            actions = ", ".join(map(repr, ROLLBACK_ACTIONS))
+            raise ValueError(
+                f"Value of 'action' argument must be one of"
+                f" {actions}, but was {action!r}"
+            )
         if not isinstance(path, str):
-            raise TypeError(f"Type of 'path' argument must be {str},"
-                            f" but was {type(path)}")
+            raise TypeError(
+                f"Type of 'path' argument must be {str}," f" but was {type(path)}"
+            )
         if action == "replace_file":
             if not isinstance(data, bytes):
-                raise TypeError(f"Type of 'data' argument must be {bytes},"
-                                f" but was {type(data)}")
+                raise TypeError(
+                    f"Type of 'data' argument must be {bytes}," f" but was {type(data)}"
+                )
         else:
             if data is not None:
                 raise ValueError(f"Value of 'data' argument must be None")
@@ -204,5 +207,6 @@ class Transaction:
 
     def _assert_entered_ctx(self):
         if not self._entered_ctx:
-            raise ValueError("Transaction instance"
-                             " must be used with the 'with' statement")
+            raise ValueError(
+                "Transaction instance" " must be used with the 'with' statement"
+            )

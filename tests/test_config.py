@@ -31,26 +31,31 @@ class ConfigValidateTest(unittest.TestCase):
     # noinspection PyMethodMayBeStatic
     def test_validate_versions_fail(self):
         config = {"zarr_version": 1}
-        with pytest.raises(ValueError,
-                           match="Invalid configuration:"
-                                 " 2 was expected for zarr_version"):
+        with pytest.raises(
+            ValueError,
+            match="Invalid configuration:" " 2 was expected for zarr_version",
+        ):
             validate_config(config)
 
     # noinspection PyMethodMayBeStatic
     def test_validate_variable_fail(self):
-        config = {"zarr_version": 2,
-                  "variables": {
-                      "chl": {
-                          "dims": [10, 20, 30],
-                          "encoding": {
-                              "dtype": "int32",
-                          },
-                      }
-                  }}
-        with pytest.raises(ValueError,
-                           match="Invalid configuration:"
-                                 " 10 is not of type 'string'"
-                                 " for variables.chl.dims.0"):
+        config = {
+            "zarr_version": 2,
+            "variables": {
+                "chl": {
+                    "dims": [10, 20, 30],
+                    "encoding": {
+                        "dtype": "int32",
+                    },
+                }
+            },
+        }
+        with pytest.raises(
+            ValueError,
+            match="Invalid configuration:"
+            " 10 is not of type 'string'"
+            " for variables.chl.dims.0",
+        ):
             validate_config(config)
 
 
@@ -89,9 +94,10 @@ class ConfigNormalizeTest(unittest.TestCase):
     def test_it_raises_if_config_is_not_object(self):
         file_obj = FileObj("memory://config.yaml")
         file_obj.write("what?")
-        with pytest.raises(TypeError,
-                           match="Invalid configuration:"
-                                 " memory://config.yaml: object expected"):
+        with pytest.raises(
+            TypeError,
+            match="Invalid configuration:" " memory://config.yaml: object expected",
+        ):
             normalize_config(file_obj)
 
     def test_normalize_sequence(self):
@@ -102,7 +108,7 @@ class ConfigNormalizeTest(unittest.TestCase):
                 "fixed_dims": {
                     "x": 200,
                 },
-                "append_dim": "time"
+                "append_dim": "time",
             },
             {
                 "fixed_dims": {
@@ -113,21 +119,21 @@ class ConfigNormalizeTest(unittest.TestCase):
                         "dims": "time",
                         "encoding": {
                             "dtype": "uint64",
-                        }
+                        },
                     },
                     "y": {
                         "dims": "y",
                         "encoding": {
                             "dtype": "float64",
-                        }
+                        },
                     },
                     "x": {
                         "dims": "x",
                         "encoding": {
                             "dtype": "float64",
-                        }
+                        },
                     },
-                }
+                },
             },
             {
                 "variables": {
@@ -137,7 +143,7 @@ class ConfigNormalizeTest(unittest.TestCase):
                             "dtype": "float32",
                             "chunks": (1, 20, 30),
                             "fill_value": None,
-                        }
+                        },
                     },
                     "tsm": {
                         "dims": ("time", "y", "x"),
@@ -145,10 +151,10 @@ class ConfigNormalizeTest(unittest.TestCase):
                             "dtype": "float32",
                             "chunks": (1, 20, 30),
                             "fill_value": None,
-                        }
+                        },
                     },
                 }
-            }
+            },
         )
         self.assertEqual(
             {
@@ -177,7 +183,7 @@ class ConfigNormalizeTest(unittest.TestCase):
                         "encoding": {
                             "dtype": "float32",
                             "chunks": (1, 20, 30),
-                            "fill_value": None
+                            "fill_value": None,
                         },
                     },
                     "tsm": {
@@ -185,12 +191,12 @@ class ConfigNormalizeTest(unittest.TestCase):
                         "encoding": {
                             "dtype": "float32",
                             "chunks": (1, 20, 30),
-                            "fill_value": None
+                            "fill_value": None,
                         },
                     },
-                }
+                },
             },
-            normalize_config(configs)
+            normalize_config(configs),
         )
 
     # noinspection PyMethodMayBeStatic
@@ -208,47 +214,40 @@ class ConfigNormalizeTest(unittest.TestCase):
         self.assertIsInstance(schema["properties"], dict)
         self.assertEqual(
             {
-                'append_dim',
-                'disable_rollback',
-                'dry_run',
-                'excluded_variables',
-                'fixed_dims',
-                'included_variables',
-                'logging',
-                'slice_engine',
-                'slice_polling',
-                'slice_storage_options',
-                'target_storage_options',
-                'target_uri',
-                'temp_dir',
-                'temp_storage_options',
-                'variables',
-                'version',
-                'zarr_version'
+                "append_dim",
+                "disable_rollback",
+                "dry_run",
+                "excluded_variables",
+                "fixed_dims",
+                "included_variables",
+                "logging",
+                "slice_engine",
+                "slice_polling",
+                "slice_storage_options",
+                "target_storage_options",
+                "target_uri",
+                "temp_dir",
+                "temp_storage_options",
+                "variables",
+                "version",
+                "zarr_version",
             },
-            set(schema["properties"].keys())
+            set(schema["properties"].keys()),
         )
 
     def test_merge_config(self):
-        self.assertEqual({},
-                         merge_configs())
-        self.assertEqual({},
-                         merge_configs({}))
-        self.assertEqual({},
-                         merge_configs({}, {}))
-        self.assertEqual({"a": 1},
-                         merge_configs({"a": 1}))
-        self.assertEqual({"a": 2},
-                         merge_configs({"a": 1}, {"a": 2}))
-        self.assertEqual({"a": None},
-                         merge_configs({"a": 1}, {"a": None}))
-        self.assertEqual({"a": 2},
-                         merge_configs({"a": None}, {"a": 2}))
-        self.assertEqual({"a": [3, 4]},
-                         merge_configs({"a": [1, 2]}, {"a": [3, 4]}))
-        self.assertEqual({"a": {"b": 3, "c": 4}},
-                         merge_configs({"a": {"b": 2, "c": 4}},
-                                       {"a": {"b": 3}}))
+        self.assertEqual({}, merge_configs())
+        self.assertEqual({}, merge_configs({}))
+        self.assertEqual({}, merge_configs({}, {}))
+        self.assertEqual({"a": 1}, merge_configs({"a": 1}))
+        self.assertEqual({"a": 2}, merge_configs({"a": 1}, {"a": 2}))
+        self.assertEqual({"a": None}, merge_configs({"a": 1}, {"a": None}))
+        self.assertEqual({"a": 2}, merge_configs({"a": None}, {"a": 2}))
+        self.assertEqual({"a": [3, 4]}, merge_configs({"a": [1, 2]}, {"a": [3, 4]}))
+        self.assertEqual(
+            {"a": {"b": 3, "c": 4}},
+            merge_configs({"a": {"b": 2, "c": 4}}, {"a": {"b": 3}}),
+        )
 
     def test_schema_to_json(self):
         # Smoke test is sufficient here

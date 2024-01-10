@@ -17,7 +17,6 @@ from .helpers import make_test_dataset
 
 
 class SliceSourceTest(unittest.TestCase):
-
     def setUp(self):
         clear_memory_fs()
 
@@ -54,9 +53,12 @@ class SliceSourceTest(unittest.TestCase):
     def test_persistent_wait_success(self):
         slice_dir = FileObj("memory://slice.zarr")
         make_test_dataset(uri=slice_dir.uri)
-        ctx = Context(dict(target_uri="memory://target.zarr",
-                           slice_polling=dict(timeout=0.1,
-                                              interval=0.02)))
+        ctx = Context(
+            dict(
+                target_uri="memory://target.zarr",
+                slice_polling=dict(timeout=0.1, interval=0.02),
+            )
+        )
         slice_zarr = open_slice_source(ctx, slice_dir.uri)
         self.assertIsInstance(slice_zarr, PersistentSliceSource)
         with slice_zarr as slice_ds:
@@ -65,9 +67,12 @@ class SliceSourceTest(unittest.TestCase):
     # noinspection PyMethodMayBeStatic
     def test_persistent_wait_fail(self):
         slice_dir = FileObj("memory://slice.zarr")
-        ctx = Context(dict(target_uri="memory://target.zarr",
-                           slice_polling=dict(timeout=0.1,
-                                              interval=0.02)))
+        ctx = Context(
+            dict(
+                target_uri="memory://target.zarr",
+                slice_polling=dict(timeout=0.1, interval=0.02),
+            )
+        )
         slice_zarr = open_slice_source(ctx, slice_dir.uri)
         with pytest.raises(FileNotFoundError, match=slice_dir.uri):
             with slice_zarr:
@@ -78,7 +83,8 @@ class SliceSourceTest(unittest.TestCase):
         dataset_dir = FileObj("memory://slice.zarr")
         make_test_dataset(uri=dataset_dir.uri)
         ctx = Context(dict(target_uri="memory://target.zarr"))
-        with pytest.raises(TypeError,
-                           match="slice_obj must be a str or xarray.Dataset"):
+        with pytest.raises(
+            TypeError, match="slice_obj must be a str or xarray.Dataset"
+        ):
             # noinspection PyTypeChecker
             open_slice_source(ctx, dataset_dir)

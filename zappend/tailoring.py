@@ -11,8 +11,7 @@ from .log import logger
 
 
 def tailor_target_dataset(
-    dataset: xr.Dataset,
-    target_metadata: DatasetMetadata
+    dataset: xr.Dataset, target_metadata: DatasetMetadata
 ) -> xr.Dataset:
     dataset = _strip_dataset(dataset, target_metadata)
     dataset = _complete_dataset(dataset, target_metadata)
@@ -28,15 +27,14 @@ def tailor_target_dataset(
 
 
 def tailor_slice_dataset(
-    dataset: xr.Dataset,
-    target_metadata: DatasetMetadata,
-    append_dim_name: str
+    dataset: xr.Dataset, target_metadata: DatasetMetadata, append_dim_name: str
 ) -> xr.Dataset:
     dataset = _strip_dataset(dataset, target_metadata)
     dataset = _complete_dataset(dataset, target_metadata)
 
-    const_variables = [k for k, v in dataset.variables.items() if
-                       append_dim_name not in v.dims]
+    const_variables = [
+        k for k, v in dataset.variables.items() if append_dim_name not in v.dims
+    ]
     if const_variables:
         # Strip variables that do not have append_dim_name
         # as dimension, e.g., "x", "y", "crs", ...
@@ -51,22 +49,22 @@ def tailor_slice_dataset(
     return dataset
 
 
-def _strip_dataset(dataset: xr.Dataset,
-                   target_metadata: DatasetMetadata) -> xr.Dataset:
-    drop_var_names = (set(map(str, dataset.variables.keys()))
-                      - set(target_metadata.variables.keys()))
+def _strip_dataset(dataset: xr.Dataset, target_metadata: DatasetMetadata) -> xr.Dataset:
+    drop_var_names = set(map(str, dataset.variables.keys())) - set(
+        target_metadata.variables.keys()
+    )
     return dataset.drop_vars(drop_var_names)
 
 
-def _complete_dataset(dataset: xr.Dataset,
-                      target_metadata: DatasetMetadata) -> xr.Dataset:
+def _complete_dataset(
+    dataset: xr.Dataset, target_metadata: DatasetMetadata
+) -> xr.Dataset:
     for var_name, var_metadata in target_metadata.variables.items():
         var = dataset.variables.get(var_name)
         if var is not None:
             continue
         logger.warning(
-            f"Variable {var_name!r} not found in slice dataset;"
-            f" creating it."
+            f"Variable {var_name!r} not found in slice dataset;" f" creating it."
         )
         encoding = var_metadata.encoding.to_dict()
         chunks = encoding.get("chunks")
@@ -84,11 +82,13 @@ def _complete_dataset(dataset: xr.Dataset,
             memory_dtype = encoding.get("dtype", np.dtype("float64"))
             memory_fill_value = 0
         var = xr.DataArray(
-            dask.array.full(var_metadata.shape,
-                            memory_fill_value,
-                            chunks=chunks,
-                            dtype=np.dtype(memory_dtype)),
-            dims=var_metadata.dims
+            dask.array.full(
+                var_metadata.shape,
+                memory_fill_value,
+                chunks=chunks,
+                dtype=np.dtype(memory_dtype),
+            ),
+            dims=var_metadata.dims,
         )
         dataset[var_name] = var
     return dataset

@@ -26,18 +26,13 @@ class Context:
             raise ValueError("Missing 'target_uri' in configuration")
 
         target_storage_options = config.get("target_storage_options")
-        self._target_dir = FileObj(target_uri,
-                                   storage_options=target_storage_options)
+        self._target_dir = FileObj(target_uri, storage_options=target_storage_options)
 
         try:
             with xr.open_zarr(
-                target_uri,
-                storage_options=target_storage_options
+                target_uri, storage_options=target_storage_options
             ) as target_dataset:
-                target_metadata = DatasetMetadata.from_dataset(
-                    target_dataset,
-                    config
-                )
+                target_metadata = DatasetMetadata.from_dataset(target_dataset, config)
         except FileNotFoundError:
             target_metadata = None
 
@@ -45,8 +40,7 @@ class Context:
 
         temp_dir_uri = config.get("temp_dir", tempfile.gettempdir())
         temp_storage_options = config.get("temp_storage_options")
-        self._temp_dir = FileObj(temp_dir_uri,
-                                 storage_options=temp_storage_options)
+        self._temp_dir = FileObj(temp_dir_uri, storage_options=temp_storage_options)
 
     def get_dataset_metadata(self, dataset: xr.Dataset) -> DatasetMetadata:
         return DatasetMetadata.from_dataset(dataset, self._config)
@@ -91,7 +85,7 @@ class Context:
             slice_polling = {}
         return (
             slice_polling.get("interval", DEFAULT_SLICE_POLLING_INTERVAL),
-            slice_polling.get("timeout", DEFAULT_SLICE_POLLING_TIMEOUT)
+            slice_polling.get("timeout", DEFAULT_SLICE_POLLING_TIMEOUT),
         )
 
     @property

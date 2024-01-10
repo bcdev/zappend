@@ -17,18 +17,14 @@ class ApiTest(unittest.TestCase):
 
     def test_no_slices(self):
         target_uri = "memory://target.zarr"
-        zappend([],
-                target_uri=target_uri)
+        zappend([], target_uri=target_uri)
         self.assertFalse(FileObj(target_uri).exists())
 
     def test_some_slices(self):
         target_uri = "memory://target.zarr"
-        slices = [make_test_dataset(),
-                  make_test_dataset(),
-                  make_test_dataset()]
-        zappend(slices,
-                target_uri=target_uri)
+        slices = [make_test_dataset(), make_test_dataset(), make_test_dataset()]
+        zappend(slices, target_uri=target_uri)
         ds = xr.open_zarr(target_uri)
-        self.assertEqual({'time': 9, 'y': 50, 'x': 100}, ds.dims)
-        self.assertEqual({'chl', 'tsm'}, set(ds.data_vars))
-        self.assertEqual({'time', 'y', 'x'}, set(ds.coords))
+        self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.dims)
+        self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
+        self.assertEqual({"time", "y", "x"}, set(ds.coords))

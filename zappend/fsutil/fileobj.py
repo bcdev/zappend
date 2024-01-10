@@ -14,6 +14,7 @@ from .path import split_filename
 # But then, we cannot know the concrete type of the resulting type if we
 # append path components, i.e., my_dir / "file_or_dir" = ?
 
+
 class FileObj:
     """An object that represents a file or directory in some filesystem.
 
@@ -28,11 +29,13 @@ class FileObj:
         For internal use only.
     """
 
-    def __init__(self,
-                 uri: str,
-                 storage_options: dict[str, Any] | None = None,
-                 fs: fsspec.AbstractFileSystem | None = None,
-                 path: str | None = None):
+    def __init__(
+        self,
+        uri: str,
+        storage_options: dict[str, Any] | None = None,
+        fs: fsspec.AbstractFileSystem | None = None,
+        path: str | None = None,
+    ):
         self._uri = uri
         self._storage_options = storage_options
         self._fs = fs
@@ -49,8 +52,9 @@ class FileObj:
         if self._storage_options is None:
             return f"FileObj({self.uri!r})"
         else:
-            return f"FileObj({self.uri!r}," \
-                   f" storage_options={self._storage_options!r})"
+            return (
+                f"FileObj({self.uri!r}," f" storage_options={self._storage_options!r})"
+            )
 
     @property
     def uri(self) -> str:
@@ -90,7 +94,6 @@ class FileObj:
 
     @property
     def parent(self) -> "FileObj":
-
         if "::" in self.uri:
             # If uri is a chained URL, use path of first component
             first_uri, rest = self.uri.split("::", maxsplit=1)
@@ -114,10 +117,12 @@ class FileObj:
             # it is ok, we are still unresolved
             new_path = None
 
-        return FileObj(uri=new_uri,
-                       path=new_path,
-                       storage_options=self._storage_options,
-                       fs=self.fs)
+        return FileObj(
+            uri=new_uri,
+            path=new_path,
+            storage_options=self._storage_options,
+            fs=self.fs,
+        )
 
     def for_path(self, rel_path: str) -> "FileObj":
         if not isinstance(rel_path, str):
@@ -141,10 +146,12 @@ class FileObj:
             # it is ok, we are still unresolved
             new_path = None
 
-        return FileObj(uri=new_uri,
-                       path=new_path,
-                       storage_options=self._storage_options,
-                       fs=self.fs)
+        return FileObj(
+            uri=new_uri,
+            path=new_path,
+            storage_options=self._storage_options,
+            fs=self.fs,
+        )
 
     ############################################################
     # Basic filesystem operations
@@ -162,13 +169,11 @@ class FileObj:
         with self._fs.open(self._path, mode=mode) as f:
             return f.read()
 
-    def write(self,
-              data: str | bytes,
-              mode: Literal["wb"]
-                    | Literal["w"]
-                    | Literal["ab"]
-                    | Literal["a"]
-                    | None = None) -> int:
+    def write(
+        self,
+        data: str | bytes,
+        mode: Literal["wb"] | Literal["w"] | Literal["ab"] | Literal["a"] | None = None,
+    ) -> int:
         self._resolve()
         if mode is None:
             mode = "w" if isinstance(data, str) else "wb"
@@ -184,9 +189,7 @@ class FileObj:
 
     def _resolve(self):
         if self._fs is None or self._path is None:
-            fs, path = fsspec.core.url_to_fs(
-                self._uri, **(self._storage_options or {})
-            )
+            fs, path = fsspec.core.url_to_fs(self._uri, **(self._storage_options or {}))
             if self._fs is None:
                 self._fs = fs
             if self._path is None:
