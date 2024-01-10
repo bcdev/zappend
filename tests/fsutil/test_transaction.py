@@ -9,7 +9,6 @@ import pytest
 
 from zappend.fsutil.fileobj import FileObj
 from zappend.fsutil.transaction import Transaction
-from zappend.fsutil.transaction import LOCK_EXT
 from zappend.fsutil.transaction import ROLLBACK_FILE
 from ..helpers import clear_memory_fs
 
@@ -21,12 +20,15 @@ class TransactionTest(unittest.TestCase):
         clear_memory_fs()
 
     def test_transaction_success(self):
-        self._run_transaction_test(fail=False)
+        self._run_transaction_test(fail=False, rollback=True)
 
-    def test_transaction_with_rollback(self):
-        self._run_transaction_test(fail=True)
+    def test_transaction_failure_with_rollback(self):
+        self._run_transaction_test(fail=True, rollback=True)
 
-    def _run_transaction_test(self, fail: bool):
+    def test_transaction_failure_without_rollback(self):
+        self._run_transaction_test(fail=True, rollback=False)
+
+    def _run_transaction_test(self, fail: bool, rollback: bool):
 
         test_root = FileObj("memory://test")
         test_root.mkdir()
@@ -42,7 +44,8 @@ class TransactionTest(unittest.TestCase):
         self.assertFalse(test_file_3.exists())
 
         temp_dir = FileObj("memory://temp")
-        transaction = Transaction(test_root, temp_dir)
+        transaction = Transaction(test_root, temp_dir,
+                                  disable_rollback=not rollback)
 
         self.assertEqual(test_root, transaction.target_dir)
 
@@ -69,25 +72,26 @@ class TransactionTest(unittest.TestCase):
 
         try:
             with transaction as rollback_cb:
-                self.assertTrue(rollback_file.exists())
                 self.assertTrue(lock_file.exists())
+                self.assertEqual(rollback, rollback_file.exists())
 
                 change_test_file_1(rollback_cb)
                 create_test_file_2(rollback_cb)
                 create_test_folder(rollback_cb)
 
-                rollback_data = rollback_file.read(mode="rt")
-                rollback_records = [line.split()[:2]
-                                    for line in rollback_data.split("\n")]
-                self.assertEqual(
-                    [
-                        ["replace_file", "file-1.txt"],
-                        ["delete_file", "file-2.txt"],
-                        ["delete_dir", "folder"],
-                        []
-                    ],
-                    rollback_records
-                )
+                if rollback:
+                    rollback_data = rollback_file.read(mode="rt")
+                    rollback_records = [line.split()[:2]
+                                        for line in rollback_data.split("\n")]
+                    self.assertEqual(
+                        [
+                            ["replace_file", "file-1.txt"],
+                            ["delete_file", "file-2.txt"],
+                            ["delete_dir", "folder"],
+                            []
+                        ],
+                        rollback_records
+                    )
 
                 if fail:
                     raise OSError("disk full")
@@ -101,7 +105,7 @@ class TransactionTest(unittest.TestCase):
         self.assertFalse(lock_file.exists())
         self.assertFalse(rollback_dir.exists())
 
-        if fail:
+        if fail and rollback:
             self.assertTrue(test_root.exists())
             self.assertTrue(test_file_1.exists())  # replace_file by rollback
             self.assertEqual(b"A-B-C", test_file_1.read())

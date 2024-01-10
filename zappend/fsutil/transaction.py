@@ -27,8 +27,6 @@ ROLLBACK_FILE = "__rollback__.txt"
 ROLLBACK_ACTIONS = "delete_dir", "delete_file", "replace_file"
 
 
-# TODO: allow disabling rollbacks entirely
-
 class Transaction:
     """
     A filesystem transaction.
@@ -57,17 +55,26 @@ class Transaction:
     Reported paths must be relative to *target_dir*. The empty path ``""``
     refers to *target_dir* itself.
 
+    When entering the context, a lock file will be created which prevents
+    other transactions to modify *target_dir*. The lock file will be placed
+    next to *target_dir* and its name is the filename of *target_dir* with a
+    ``.lock`` extension. The lock file will be removed on context exit.
+
     :param target_dir: The target directory that is subject to this
         transaction. All paths emitted to the rollback callback must be
         relative to *target_dir*. The directory may or may not exist yet.
     :param temp_dir: Temporary directory in which a unique subdirectory
         will be created that will be used to collect
         rollback data during the transaction. The directory must exist.
+    :param disable_rollback: Disable rollback entirely.
+        No rollback data will be written, however a lock file will still
+        be created for the duration of the transaction.
     """
 
     def __init__(self,
                  target_dir: FileObj,
-                 temp_dir: FileObj):
+                 temp_dir: FileObj,
+                 disable_rollback: bool = False):
         transaction_id = f"zappend-{uuid.uuid4()}"
         rollback_dir = temp_dir / transaction_id
         lock_file = target_dir.parent / (target_dir.filename + LOCK_EXT)
@@ -76,6 +83,7 @@ class Transaction:
         self._rollback_file = rollback_dir / ROLLBACK_FILE
         self._target_dir = target_dir
         self._lock_file = lock_file
+        self._disable_rollback = disable_rollback
         self._entered_ctx = False
 
     @property
@@ -104,8 +112,9 @@ class Transaction:
             raise IOError(f"Target is locked: {lock_file.uri}")
         lock_file.write(self._rollback_dir.uri)
 
-        self._rollback_dir.mkdir()
-        self._rollback_file.write("")  # touch
+        if not self._disable_rollback:
+            self._rollback_dir.mkdir()
+            self._rollback_file.write("")  # touch
 
         return self._add_rollback_action
 
@@ -131,7 +140,8 @@ class Transaction:
                     action_method = getattr(self, "_" + action)
                     action_method(*args)
 
-        self._rollback_dir.delete(recursive=True)
+        if not self._disable_rollback:
+            self._rollback_dir.delete(recursive=True)
 
         lock_file = self._lock_file
         try:
@@ -176,6 +186,9 @@ class Transaction:
         else:
             if data is not None:
                 raise ValueError(f"Value of 'data' argument must be None")
+
+        if self._disable_rollback:
+            return
 
         assert hasattr(self, "_" + action)
         if data is not None:
