@@ -12,9 +12,61 @@ that is, the append operation is a transaction that can be rolled back,
 in case the append operation fails. This ensures integrity of the target 
 data cube. 
 
-## Requirements
+## How it works
 
-### Core
+### CLI
+
+```
+Usage: zappend [OPTIONS] [SLICES]...
+
+  Create or update a Zarr dataset TARGET from slice datasets SLICES.
+
+Options:
+  -c, --config CONFIG    Configuration JSON or YAML file. If multiple are
+                         passed, subsequent configurations are incremental to
+                         the previous ones.
+  -t, --target TARGET    Target Zarr dataset path or URI. Overrides the
+                         'target_dir' configuration field.
+  --dry-run              Run the tool without creating, changing, or deleting
+                         any files.
+  --help-config json|md  Show configuration help and exit.
+  --help                 Show this message and exit.
+```
+
+### API
+
+The API is defined in module `zappend.api`:
+
+```python
+def zappend(slices: Iterable[str | xr.Dataset], config: ConfigLike = None, **kwargs):
+    """
+    Create or update a Zarr dataset from dataset slices.
+
+    :param slices: The slice datasets. An iterable that yields either
+        ``str`` or ``xarray.Dataset`` objects. If ``str`` is used,
+        it is interpreted as local dataset path or dataset URI.
+        If a URI is used, protocol-specific parameters apply, given by
+        configuration parameter ``slice_storage_options``.
+    :param config: Processor configuration.
+        May be a file path or URI, a ``dict``, ``None``, or a sequence of
+        the aforementioned. If a sequence is used, subsequent configurations
+        are incremental to the previous ones.
+    :param kwargs: Additional configuration parameters.
+        Can be used to pass or override configuration values in *config*.
+    """
+    processor = Processor(config, **kwargs)
+    processor.process_slices(slices)
+```
+
+### Configuration
+
+The configuration is described in a
+[dedicated document](https://github.com/bcdev/zappend/blob/main/CONFIG.md).
+
+
+## Tool Requirements
+
+### Core Requirements
 
 * Create a target Zarr dataset by appending Zarr dataset slices along a 
   given *append dimension*, usually `time`.   
@@ -95,38 +147,4 @@ data cube.
 * Use it in xcube data stores for the `write_data()` method, as a parameter 
   to enforce sequential writing of Zarr datasets as a robust option when a 
   plain write fails.
-
-## How it works
-
-CLI: zappend_cli --config *config_path* *target_path* *slice_paths* ...
-
-```
-def zappend_cli(target_path, slice_paths, config_path):
-  config = read_config(config_path)
-  zappend_api(target_path, open_slice, slice_paths, config=config)
-```
-
-API: zappend_api(*target_path*, *slice_fn*, *slice_args*, config=*config*)
-
-```
-def zappend_api(target_path, slice_fn, slice_args, config=None):
-  slice_iter = iter(slice_fn(*args, config=config) for args in slice_args)
-  process(target_path, slice_iter, config)
-```
-
-with
-
-```
-def process(target_path, slice_iter, config):
-  target_fs = get_target_fs(config)
-  
-  if not target_fs.exist(target_path, config):
-    slice_ds = slice_iter.next()
-    target_ds = create_target(target_fs, target_path, slice_ds, config)
-  else:
-    target_ds = open_target(target_fs, target_path)
-     
-  while (slice_ds = slice_iter.next()):
-    target_ds.append(slice_ds)
-```
 
