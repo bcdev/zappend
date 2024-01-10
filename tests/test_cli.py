@@ -10,8 +10,7 @@ from zappend.fsutil.fileobj import FileObj
 from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
-expected_help_text = \
-    """
+expected_help_text = """
     Usage: zappend [OPTIONS] [SLICES]...
     
       Create or update a Zarr dataset TARGET from slice datasets SLICES.
@@ -33,27 +32,26 @@ expected_help_text = expected_help_text.replace("\n    ", "\n").lstrip("\n")
 
 
 class CliTest(unittest.TestCase):
-
     def setUp(self):
         clear_memory_fs()
 
     def test_help(self):
         runner = CliRunner()
         # noinspection PyTypeChecker
-        result = runner.invoke(zappend, ['--help'])
+        result = runner.invoke(zappend, ["--help"])
         self.assertEqual(0, result.exit_code)
         self.assertEqual(expected_help_text, result.output)
 
     def test_help_config(self):
         runner = CliRunner()
         # noinspection PyTypeChecker
-        result = runner.invoke(zappend, ['--help-config', 'json'])
+        result = runner.invoke(zappend, ["--help-config", "json"])
         self.assertEqual(0, result.exit_code)
         self.assertIn('"target_uri": {', result.output)
         # noinspection PyTypeChecker
-        result = runner.invoke(zappend, ['--help-config', 'md'])
+        result = runner.invoke(zappend, ["--help-config", "md"])
         self.assertEqual(0, result.exit_code)
-        self.assertIn('### `target_uri`', result.output)
+        self.assertIn("### `target_uri`", result.output)
 
     def test_no_slices(self):
         runner = CliRunner()
@@ -70,14 +68,16 @@ class CliTest(unittest.TestCase):
 
         runner = CliRunner()
         # noinspection PyTypeChecker
-        result = runner.invoke(zappend,
-                               [
-                                   "--target",
-                                   "memory://target.zarr",
-                                   "memory://slice-1.zarr",
-                                   "memory://slice-2.zarr",
-                                   "memory://slice-3.zarr",
-                               ])
+        result = runner.invoke(
+            zappend,
+            [
+                "--target",
+                "memory://target.zarr",
+                "memory://slice-1.zarr",
+                "memory://slice-2.zarr",
+                "memory://slice-3.zarr",
+            ],
+        )
         self.assertEqual("", result.output)
         self.assertEqual(0, result.exit_code)
         self.assertTrue(FileObj("memory://target.zarr").exists())
@@ -89,15 +89,17 @@ class CliTest(unittest.TestCase):
 
         runner = CliRunner()
         # noinspection PyTypeChecker
-        result = runner.invoke(zappend,
-                               [
-                                   "--target",
-                                   "memory://target.zarr",
-                                   "--dry-run",
-                                   "memory://slice-1.zarr",
-                                   "memory://slice-2.zarr",
-                                   "memory://slice-3.zarr",
-                               ])
+        result = runner.invoke(
+            zappend,
+            [
+                "--target",
+                "memory://target.zarr",
+                "--dry-run",
+                "memory://slice-1.zarr",
+                "memory://slice-2.zarr",
+                "memory://slice-3.zarr",
+            ],
+        )
         self.assertEqual("", result.output)
         self.assertEqual(0, result.exit_code)
         self.assertFalse(FileObj("memory://target.zarr").exists())
@@ -109,13 +111,16 @@ class CliTest(unittest.TestCase):
 
         runner = CliRunner()
         # noinspection PyTypeChecker
-        result = runner.invoke(zappend,
-                               [
-                                   "memory://slice-1.zarr",
-                                   "memory://slice-2.zarr",
-                                   "memory://slice-3.zarr",
-                               ])
+        result = runner.invoke(
+            zappend,
+            [
+                "memory://slice-1.zarr",
+                "memory://slice-2.zarr",
+                "memory://slice-3.zarr",
+            ],
+        )
         self.assertEqual(1, result.exit_code)
-        self.assertEqual("Error: Missing 'target_uri' in configuration\n",
-                         result.output)
+        self.assertEqual(
+            "Error: Missing 'target_uri' in configuration\n", result.output
+        )
         self.assertFalse(FileObj("memory://target.zarr").exists())

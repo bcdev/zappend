@@ -28,8 +28,7 @@ class Processor:
         configure_logging(config.get("logging"))
         self._config = config
 
-    def process_slices(self,
-                       slice_iter: Iterable[str | xr.Dataset]):
+    def process_slices(self, slice_iter: Iterable[str | xr.Dataset]):
         for slice_obj in slice_iter:
             self.process_slice(slice_obj)
 
@@ -57,33 +56,27 @@ class Processor:
         ctx = Context(self._config)
 
         with open_slice_source(ctx, slice_obj) as slice_dataset:
-
             slice_metadata = ctx.get_dataset_metadata(slice_dataset)
             if ctx.target_metadata is None:
                 ctx.target_metadata = slice_metadata
             else:
                 ctx.target_metadata.assert_compatible_slice(
-                    slice_metadata,
-                    ctx.append_dim_name
+                    slice_metadata, ctx.append_dim_name
                 )
 
-            transaction = Transaction(ctx.target_dir,
-                                      ctx.temp_dir,
-                                      disable_rollback=ctx.disable_rollback)
+            transaction = Transaction(
+                ctx.target_dir, ctx.temp_dir, disable_rollback=ctx.disable_rollback
+            )
             with transaction as rollback_callback:
                 if ctx.target_metadata is slice_metadata:
-                    create_target_from_slice(ctx,
-                                             slice_dataset,
-                                             rollback_callback)
+                    create_target_from_slice(ctx, slice_dataset, rollback_callback)
                 else:
-                    update_target_from_slice(ctx,
-                                             slice_dataset,
-                                             rollback_callback)
+                    update_target_from_slice(ctx, slice_dataset, rollback_callback)
 
 
-def create_target_from_slice(ctx: Context,
-                             slice_ds: xr.Dataset,
-                             rollback_cb: RollbackCallback):
+def create_target_from_slice(
+    ctx: Context, slice_ds: xr.Dataset, rollback_cb: RollbackCallback
+):
     target_dir = ctx.target_dir
     logger.info(f"Creating target dataset {target_dir.uri}")
     target_ds = tailor_target_dataset(slice_ds, ctx.target_metadata)
@@ -92,26 +85,26 @@ def create_target_from_slice(ctx: Context,
     # TODO: adjust global attributes dependent on append_dim,
     #  e.g., time coverage
     try:
-        target_ds.to_zarr(store=target_dir.uri,
-                          storage_options=target_dir.storage_options,
-                          zarr_version=ctx.zarr_version,
-                          write_empty_chunks=False,
-                          consolidated=True)
+        target_ds.to_zarr(
+            store=target_dir.uri,
+            storage_options=target_dir.storage_options,
+            zarr_version=ctx.zarr_version,
+            write_empty_chunks=False,
+            consolidated=True,
+        )
     finally:
         if target_dir.exists():
             rollback_cb("delete_dir", "", None)
 
 
-def update_target_from_slice(ctx: Context,
-                             slice_ds: xr.Dataset,
-                             rollback_cb: RollbackCallback):
+def update_target_from_slice(
+    ctx: Context, slice_ds: xr.Dataset, rollback_cb: RollbackCallback
+):
     target_dir = ctx.target_dir
     logger.info(f"Updating target dataset {target_dir.uri}")
     append_dim_name = ctx.append_dim_name
 
-    slice_ds = tailor_slice_dataset(slice_ds,
-                                    ctx.target_metadata,
-                                    append_dim_name)
+    slice_ds = tailor_slice_dataset(slice_ds, ctx.target_metadata, append_dim_name)
 
     if ctx.dry_run:
         return
@@ -119,10 +112,11 @@ def update_target_from_slice(ctx: Context,
     # TODO: adjust global attributes dependent on append_dim,
     #  e.g., time coverage
 
-    store = RollbackStore(target_dir.fs.get_mapper(root=target_dir.path),
-                          rollback_cb)
-    slice_ds.to_zarr(store=store,
-                     write_empty_chunks=False,
-                     consolidated=True,
-                     mode="a",
-                     append_dim=append_dim_name)
+    store = RollbackStore(target_dir.fs.get_mapper(root=target_dir.path), rollback_cb)
+    slice_ds.to_zarr(
+        store=store,
+        write_empty_chunks=False,
+        consolidated=True,
+        mode="a",
+        append_dim=append_dim_name,
+    )

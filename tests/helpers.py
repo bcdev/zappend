@@ -23,7 +23,7 @@ def clear_memory_fs():
 def make_test_config(
     dims: tuple[str, str, str] = default_dims,
     shape: tuple[int, int, int] = default_shape,
-    chunks: tuple[int, int, int] = default_chunks
+    chunks: tuple[int, int, int] = default_chunks,
 ) -> dict[str, Any]:
     return dict(
         fixed_dims={dims[1]: shape[1], dims[2]: shape[2]},
@@ -35,16 +35,10 @@ def make_test_config(
                 chunks=list(chunks),
             ),
             "chl": dict(
-                dtype="uint16",
-                scale_factor=0.2,
-                add_offset=0,
-                fill_value=9999
+                dtype="uint16", scale_factor=0.2, add_offset=0, fill_value=9999
             ),
             "tsm": dict(
-                dtype="int16",
-                scale_factor=0.01,
-                add_offset=-200,
-                fill_value=-9999
+                dtype="int16", scale_factor=0.01, add_offset=-200, fill_value=-9999
             ),
             dims[0]: dict(
                 dtype="uint64",
@@ -64,7 +58,7 @@ def make_test_config(
                 shape=shape[2],
                 chunks=None,
             ),
-        }
+        },
     )
 
 
@@ -75,7 +69,7 @@ def make_test_dataset(
     crs: str | None = None,
     index: int = 0,
     uri: str | None = None,
-    storage_options: dict[str, Any] | None = None
+    storage_options: dict[str, Any] | None = None,
 ) -> xr.Dataset:
     """Make a test dataset and return a xarray.Dataset instance.
 
@@ -83,36 +77,37 @@ def make_test_dataset(
     *storage_options* and the dataset returned is the one reopened from that
     location using *storage_options* and ``decode_cf=False``.
     """
-    one_day = np.timedelta64(1, 'D')
+    one_day = np.timedelta64(1, "D")
     ds = xr.Dataset(
         data_vars=dict(
-            chl=xr.DataArray(np.full(shape, index, dtype="uint16"),
-                             dims=dims,
-                             attrs=dict(scale_factor=0.2,
-                                        add_offset=0,
-                                        _FillValue=9999)),
-            tsm=xr.DataArray(np.full(shape, index, dtype="int16"),
-                             dims=dims,
-                             attrs=dict(scale_factor=0.01,
-                                        add_offset=-200,
-                                        _FillValue=-9999)),
+            chl=xr.DataArray(
+                np.full(shape, index, dtype="uint16"),
+                dims=dims,
+                attrs=dict(scale_factor=0.2, add_offset=0, _FillValue=9999),
+            ),
+            tsm=xr.DataArray(
+                np.full(shape, index, dtype="int16"),
+                dims=dims,
+                attrs=dict(scale_factor=0.01, add_offset=-200, _FillValue=-9999),
+            ),
         ),
         coords={
             dims[0]: xr.DataArray(
                 np.arange(
-                    np.datetime64('2024-01-01') + index * one_day,
-                    np.datetime64('2024-01-01') + (index + shape[0]) * one_day,
+                    np.datetime64("2024-01-01") + index * one_day,
+                    np.datetime64("2024-01-01") + (index + shape[0]) * one_day,
                     one_day,
-                    dtype='datetime64'
+                    dtype="datetime64",
                 ),
-                dims=dims[0]),
-            dims[1]: xr.DataArray(np.linspace(0, 1, shape[1],
-                                              dtype="float64"),
-                                  dims=dims[1]),
-            dims[2]: xr.DataArray(np.linspace(0, 1, shape[2],
-                                              dtype="float64"),
-                                  dims=dims[2]),
-        }
+                dims=dims[0],
+            ),
+            dims[1]: xr.DataArray(
+                np.linspace(0, 1, shape[1], dtype="float64"), dims=dims[1]
+            ),
+            dims[2]: xr.DataArray(
+                np.linspace(0, 1, shape[2], dtype="float64"), dims=dims[2]
+            ),
+        },
     )
 
     if crs:
@@ -126,12 +121,10 @@ def make_test_dataset(
     fs, path = fsspec.core.url_to_fs(uri, **(storage_options or {}))
     if fs.exists(path):
         fs.rm(path, recursive=True)
-    ds.to_zarr(uri,
-               storage_options=storage_options,
-               zarr_version=2,
-               write_empty_chunks=False)
-    return xr.open_zarr(uri,
-                        storage_options=storage_options)
+    ds.to_zarr(
+        uri, storage_options=storage_options, zarr_version=2, write_empty_chunks=False
+    )
+    return xr.open_zarr(uri, storage_options=storage_options)
 
 
 @contextmanager
@@ -142,9 +135,7 @@ def file_tree(fs: fsspec.AbstractFileSystem, tree_data: dict, root: str = ""):
         delete_tree(fs, tree_data, root=root)
 
 
-def create_tree(fs: fsspec.AbstractFileSystem,
-                tree_data: dict,
-                root: str = ""):
+def create_tree(fs: fsspec.AbstractFileSystem, tree_data: dict, root: str = ""):
     if root and not fs.exists(root):
         fs.mkdir(root)
     for k, v in tree_data.items():
@@ -156,9 +147,7 @@ def create_tree(fs: fsspec.AbstractFileSystem,
                 f.write(str(v))
 
 
-def delete_tree(fs: fsspec.AbstractFileSystem,
-                tree_data: dict,
-                root: str = ""):
+def delete_tree(fs: fsspec.AbstractFileSystem, tree_data: dict, root: str = ""):
     if root and fs.exists(root):
         fs.rm(root, recursive=True)
         return

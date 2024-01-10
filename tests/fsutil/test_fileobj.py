@@ -13,28 +13,24 @@ from zappend.fsutil.fileobj import FileObj
 
 
 class FileObjTest(unittest.TestCase):
-
     def test_str(self):
+        self.assertEqual("memory://test.zarr", str(FileObj("memory://test.zarr")))
         self.assertEqual(
             "memory://test.zarr",
-            str(FileObj("memory://test.zarr"))
-        )
-        self.assertEqual(
-            "memory://test.zarr",
-            str(FileObj("memory://test.zarr",
-                        storage_options=dict(asynchronous=False)))
+            str(
+                FileObj("memory://test.zarr", storage_options=dict(asynchronous=False))
+            ),
         )
 
     def test_repr(self):
         self.assertEqual(
-            "FileObj('memory://test.zarr')",
-            repr(FileObj("memory://test.zarr"))
+            "FileObj('memory://test.zarr')", repr(FileObj("memory://test.zarr"))
         )
         self.assertEqual(
-            "FileObj('memory://test.zarr',"
-            " storage_options={'asynchronous': False})",
-            repr(FileObj("memory://test.zarr",
-                         storage_options=dict(asynchronous=False)))
+            "FileObj('memory://test.zarr'," " storage_options={'asynchronous': False})",
+            repr(
+                FileObj("memory://test.zarr", storage_options=dict(asynchronous=False))
+            ),
         )
 
     def test_memory_protocol(self):
@@ -51,8 +47,7 @@ class FileObjTest(unittest.TestCase):
         self.assertEqual(None, zarr_dir.storage_options)
         self.assertIsInstance(zarr_dir.fs, fsspec.AbstractFileSystem)
         self.assertEqual("file", to_protocol(zarr_dir.fs))
-        self.assertEqual(os.path.abspath("test.zarr").replace("\\", "/"),
-                         zarr_dir.path)
+        self.assertEqual(os.path.abspath("test.zarr").replace("\\", "/"), zarr_dir.path)
 
     def test_local_protocol(self):
         zarr_dir = FileObj("test.zarr")
@@ -60,8 +55,7 @@ class FileObjTest(unittest.TestCase):
         self.assertEqual(None, zarr_dir.storage_options)
         self.assertIsInstance(zarr_dir.fs, fsspec.AbstractFileSystem)
         self.assertEqual("file", to_protocol(zarr_dir.fs))
-        self.assertEqual(os.path.abspath("test.zarr").replace("\\", "/"),
-                         zarr_dir.path)
+        self.assertEqual(os.path.abspath("test.zarr").replace("\\", "/"), zarr_dir.path)
 
     def test_s3_protocol(self):
         zarr_dir = FileObj("s3://eo-data/test.zarr")
@@ -87,19 +81,22 @@ class FileObjTest(unittest.TestCase):
         root = FileObj("s3://eo-data/test.zarr")
 
         derived = root / ""
-        self.assert_derived_ok(root, derived,
-                               "s3://eo-data/test.zarr",
-                               "eo-data/test.zarr")
+        self.assert_derived_ok(
+            root, derived, "s3://eo-data/test.zarr", "eo-data/test.zarr"
+        )
 
         derived = root / ".zgroup"
-        self.assert_derived_ok(root, derived,
-                               "s3://eo-data/test.zarr/.zgroup",
-                               "eo-data/test.zarr/.zgroup")
+        self.assert_derived_ok(
+            root, derived, "s3://eo-data/test.zarr/.zgroup", "eo-data/test.zarr/.zgroup"
+        )
 
         derived = root / "chl" / ".zarray"
-        self.assert_derived_ok(root, derived,
-                               "s3://eo-data/test.zarr/chl/.zarray",
-                               "eo-data/test.zarr/chl/.zarray")
+        self.assert_derived_ok(
+            root,
+            derived,
+            "s3://eo-data/test.zarr/chl/.zarray",
+            "eo-data/test.zarr/chl/.zarray",
+        )
 
     def test_parent(self):
         file = FileObj("s3://eo-data/test.zarr/.zmetadata")
@@ -123,8 +120,7 @@ class FileObjTest(unittest.TestCase):
         self.assertEqual("", parent.path)
         self.assertIs(fs, parent.fs)
 
-        with pytest.raises(ValueError,
-                           match="cannot get parent of empty path"):
+        with pytest.raises(ValueError, match="cannot get parent of empty path"):
             # noinspection PyUnusedLocal
             parent = parent.parent
 
@@ -134,8 +130,9 @@ class FileObjTest(unittest.TestCase):
         parent = file.parent
         self.assertIsInstance(parent, FileObj)
         self.assertEqual("test.zarr/chl", parent.uri)
-        self.assertEqual(os.path.abspath("test.zarr/chl").replace("\\", "/"),
-                         parent.path)
+        self.assertEqual(
+            os.path.abspath("test.zarr/chl").replace("\\", "/"), parent.path
+        )
         self.assertIs(fs, parent.fs)
 
     def test_parent_with_chained_uri(self):
@@ -153,35 +150,34 @@ class FileObjTest(unittest.TestCase):
         parent = file.parent
         self.assertIsInstance(parent, FileObj)
         self.assertEqual("test.zarr/chl::/eo-data/test.zarr", parent.uri)
-        self.assertEqual(os.path.abspath("test.zarr/chl").replace("\\", "/"),
-                         parent.path)
+        self.assertEqual(
+            os.path.abspath("test.zarr/chl").replace("\\", "/"), parent.path
+        )
         self.assertIs(fs, parent.fs)
 
     def test_for_path(self):
         root = FileObj("s3://eo-data/test.zarr")
 
         derived = root.for_path("")
-        self.assert_derived_ok(root, derived,
-                               "s3://eo-data/test.zarr",
-                               "eo-data/test.zarr")
+        self.assert_derived_ok(
+            root, derived, "s3://eo-data/test.zarr", "eo-data/test.zarr"
+        )
 
         derived = root.for_path(".zgroup")
-        self.assert_derived_ok(root, derived,
-                               "s3://eo-data/test.zarr/.zgroup",
-                               "eo-data/test.zarr/.zgroup")
+        self.assert_derived_ok(
+            root, derived, "s3://eo-data/test.zarr/.zgroup", "eo-data/test.zarr/.zgroup"
+        )
 
     def test_for_path_with_chained_uri(self):
         root = FileObj("dir://chl::file:/eo-data/test.zarr")
         derived = root.for_path(".zarray")
-        self.assert_derived_ok(root, derived,
-                               "dir://chl/.zarray::file:/eo-data/test.zarr",
-                               "chl/.zarray")
+        self.assert_derived_ok(
+            root, derived, "dir://chl/.zarray::file:/eo-data/test.zarr", "chl/.zarray"
+        )
 
-    def assert_derived_ok(self,
-                          root: FileObj,
-                          derived: FileObj,
-                          expected_uri: str,
-                          expected_path: str):
+    def assert_derived_ok(
+        self, root: FileObj, derived: FileObj, expected_uri: str, expected_path: str
+    ):
         self.assertEqual(expected_uri, derived.uri)
         self.assertEqual(expected_path, derived.path)
         self.assertIs(root.fs, derived.fs)

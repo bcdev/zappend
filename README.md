@@ -1,6 +1,8 @@
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 # zappend
 
-Tool to create and update a Zarr dataset from smaller slices
+Tool for creating and updating a Zarr dataset from smaller slices
 
 The objective of **zappend** is to address recurring memory issues when 
 generating large geospatial data cubes using the 

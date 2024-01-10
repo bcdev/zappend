@@ -18,22 +18,22 @@ class SplitFilenameTest(unittest.TestCase):
 
     def test_split_filename_1c(self):
         self.assertEqual(("", ""), split_filename("/"))
-        self.assertEqual(('', 'a'), split_filename("a"))
-        self.assertEqual(('', 'a'), split_filename("/a"))
-        self.assertEqual(('a', ''), split_filename("a/"))
-        self.assertEqual(('/a', ''), split_filename("/a/"))
+        self.assertEqual(("", "a"), split_filename("a"))
+        self.assertEqual(("", "a"), split_filename("/a"))
+        self.assertEqual(("a", ""), split_filename("a/"))
+        self.assertEqual(("/a", ""), split_filename("/a/"))
 
     def test_split_filename_2c(self):
-        self.assertEqual(('a', 'b'), split_filename("a/b"))
-        self.assertEqual(('/a', 'b'), split_filename("/a/b"))
-        self.assertEqual(('a/b', ''), split_filename("a/b/"))
-        self.assertEqual(('/a/b', ''), split_filename("/a/b/"))
+        self.assertEqual(("a", "b"), split_filename("a/b"))
+        self.assertEqual(("/a", "b"), split_filename("/a/b"))
+        self.assertEqual(("a/b", ""), split_filename("a/b/"))
+        self.assertEqual(("/a/b", ""), split_filename("/a/b/"))
 
     def test_split_filename_3c(self):
-        self.assertEqual(('a/b', 'c'), split_filename("a/b/c"))
-        self.assertEqual(('/a/b', 'c'), split_filename("/a/b/c"))
-        self.assertEqual(('a/b/c', ''), split_filename("a/b/c/"))
-        self.assertEqual(('/a/b/c', ''), split_filename("/a/b/c/"))
+        self.assertEqual(("a/b", "c"), split_filename("a/b/c"))
+        self.assertEqual(("/a/b", "c"), split_filename("/a/b/c"))
+        self.assertEqual(("a/b/c", ""), split_filename("a/b/c/"))
+        self.assertEqual(("/a/b/c", ""), split_filename("/a/b/c/"))
 
 
 class SplitComponentsTest(unittest.TestCase):

@@ -10,7 +10,6 @@ from zappend.log import configure_logging
 
 
 class LogTest(unittest.TestCase):
-
     def test_logger(self):
         self.assertIsInstance(logger, logging.Logger)
         self.assertEqual(logging.NOTSET, logger.level)
@@ -22,21 +21,13 @@ class LogTest(unittest.TestCase):
             "formatters": {
                 "normal": {
                     "format": "%(asctime)s %(levelname)s %(message)s",
-                    "style": "%"
+                    "style": "%",
                 }
             },
             "handlers": {
-                "console": {
-                    "class": "logging.StreamHandler",
-                    "formatter": "normal"
-                }
+                "console": {"class": "logging.StreamHandler", "formatter": "normal"}
             },
-            "loggers": {
-                "zappend": {
-                    "level": "INFO",
-                    "handlers": ["console"]
-                }
-            }
+            "loggers": {"zappend": {"level": "INFO", "handlers": ["console"]}},
         }
 
         old_level = logger.level

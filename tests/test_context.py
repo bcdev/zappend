@@ -36,24 +36,25 @@ class ContextTest(unittest.TestCase):
         ctx = Context({"target_uri": "memory://target.zarr"})
         self.assertEqual("time", ctx.append_dim_name)
 
-        ctx = Context({"target_uri": "memory://target.zarr",
-                       "append_dim": "depth"})
+        ctx = Context({"target_uri": "memory://target.zarr", "append_dim": "depth"})
         self.assertEqual("depth", ctx.append_dim_name)
 
     def test_slice_polling(self):
         ctx = Context({"target_uri": "memory://target.zarr"})
         self.assertEqual((None, None), ctx.slice_polling)
 
-        ctx = Context({"target_uri": "memory://target.zarr",
-                       "slice_polling": False})
+        ctx = Context({"target_uri": "memory://target.zarr", "slice_polling": False})
         self.assertEqual((None, None), ctx.slice_polling)
 
-        ctx = Context({"target_uri": "memory://target.zarr",
-                       "slice_polling": True})
+        ctx = Context({"target_uri": "memory://target.zarr", "slice_polling": True})
         self.assertEqual((2, 60), ctx.slice_polling)
 
-        ctx = Context({"target_uri": "memory://target.zarr",
-                       "slice_polling": {"interval": 1, "timeout": 10}})
+        ctx = Context(
+            {
+                "target_uri": "memory://target.zarr",
+                "slice_polling": {"interval": 1, "timeout": 10},
+            }
+        )
         self.assertEqual((1, 10), ctx.slice_polling)
 
     def test_temp_dir(self):
@@ -64,13 +65,11 @@ class ContextTest(unittest.TestCase):
     def test_disable_rollback(self):
         ctx = Context({"target_uri": "memory://target.zarr"})
         self.assertFalse(ctx.disable_rollback)
-        ctx = Context({"target_uri": "memory://target.zarr",
-                       "disable_rollback": True})
+        ctx = Context({"target_uri": "memory://target.zarr", "disable_rollback": True})
         self.assertTrue(ctx.disable_rollback)
 
     def test_dry_run(self):
         ctx = Context({"target_uri": "memory://target.zarr"})
         self.assertEqual(False, ctx.dry_run)
-        ctx = Context({"target_uri": "memory://target.zarr",
-                       "dry_run": True})
+        ctx = Context({"target_uri": "memory://target.zarr", "dry_run": True})
         self.assertEqual(True, ctx.dry_run)

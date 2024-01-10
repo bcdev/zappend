@@ -12,9 +12,7 @@ from zappend.fsutil.transaction import RollbackCallback
 
 
 class RollbackStore(zarr.storage.Store):
-    def __init__(self,
-                 store: MutableMapping,
-                 rollback_cb: RollbackCallback):
+    def __init__(self, store: MutableMapping, rollback_cb: RollbackCallback):
         self._store = store
         self._rollback_cb = rollback_cb
 
@@ -71,10 +69,7 @@ class RollbackStore(zarr.storage.Store):
 
     # noinspection SpellCheckingInspection
     def getitems(
-        self,
-        keys: Sequence[str],
-        *,
-        contexts: Mapping[str, zarr.context.Context]
+        self, keys: Sequence[str], *, contexts: Mapping[str, zarr.context.Context]
     ) -> Mapping[str, Any]:
         return self._delegate_call("getitems", keys, contexts)
 
