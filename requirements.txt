@@ -1,0 +1,7 @@
+click
+fsspec
+jsonschema
+numpy
+pyyaml
+xarray
+zarr
