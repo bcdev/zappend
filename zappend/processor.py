@@ -81,11 +81,11 @@ class Processor:
 def create_target_from_slice(ctx: Context,
                              slice_ds: xr.Dataset,
                              rollback_cb: RollbackCallback):
-    logger.info(f"Creating target dataset")
+    target_dir = ctx.target_dir
+    logger.info(f"Creating target dataset {target_dir.uri}")
     target_ds = tailor_target_dataset(slice_ds, ctx.target_metadata)
     if ctx.dry_run:
         return
-    target_dir = ctx.target_dir
     # TODO: adjust global attributes dependent on append_dim,
     #  e.g., time coverage
     try:
@@ -102,8 +102,8 @@ def create_target_from_slice(ctx: Context,
 def update_target_from_slice(ctx: Context,
                              slice_ds: xr.Dataset,
                              rollback_cb: RollbackCallback):
-    logger.info(f"Updating target dataset")
     target_dir = ctx.target_dir
+    logger.info(f"Updating target dataset {target_dir.uri}")
     append_dim_name = ctx.append_dim_name
 
     slice_ds = tailor_slice_dataset(slice_ds,

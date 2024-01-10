@@ -123,8 +123,8 @@ class DatasetMetadata:
 
         variables = _get_effective_variables(
             dataset,
-            config.get("included_variables") or {},
-            config.get("excluded_variables") or {},
+            config.get("included_variables") or [],
+            config.get("excluded_variables") or [],
             config.get("variables") or {}
         )
 
@@ -166,11 +166,8 @@ def _get_effective_variables(
     config_variables: dict[str, dict[str, Any]] | None
 ) -> dict[str, VariableMetadata]:
     config_variables = dict(config_variables or {})
+    # Get and remove defaults for all variables
     defaults = config_variables.pop("*", {})
-    config_variables = {k: merge_configs(defaults, v)
-                        for k, v in config_variables.items()
-                        if k != "*"}
-
     all_var_names = (set(map(str, dataset.variables.keys()))
                      .union(set(config_variables.keys())))
     if config_included_variables:
@@ -189,7 +186,11 @@ def _get_effective_variables(
     variables = {}
 
     for var_name in selected_var_names:
-        config_var_def: dict = dict(config_variables.get(var_name) or {})
+        # "*" is default for all variables
+        config_var_def: dict = merge_configs(
+            defaults,
+            config_variables.get(var_name) or {}
+        )
         ds_var = dataset.variables.get(var_name)
         if ds_var is not None:
             # Variable found in dataset: use dataset variable to complement

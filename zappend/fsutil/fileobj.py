@@ -77,8 +77,7 @@ class FileObj:
     def close(self):
         """Close the filesystem used by this file object."""
         if self._fs is not None:
-            if hasattr(self._fs, "close") and callable(
-                self._fs.close):
+            if hasattr(self._fs, "close") and callable(self._fs.close):
                 self._fs.close()
             self._fs = None
 

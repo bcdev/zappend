@@ -35,13 +35,11 @@ class Context:
                 target_uri,
                 storage_options=target_storage_options
             ) as target_dataset:
-                logger.info(f"Target dataset f{target_uri} found")
                 target_metadata = DatasetMetadata.from_dataset(
                     target_dataset,
                     config
                 )
         except FileNotFoundError:
-            logger.info(f"Target dataset {target_uri} not found")
             target_metadata = None
 
         self._target_metadata = target_metadata

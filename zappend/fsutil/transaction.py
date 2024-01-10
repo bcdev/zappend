@@ -27,6 +27,8 @@ ROLLBACK_FILE = "__rollback__.txt"
 ROLLBACK_ACTIONS = "delete_dir", "delete_file", "replace_file"
 
 
+# TODO: allow disabling rollbacks entirely
+
 class Transaction:
     """
     A filesystem transaction.
@@ -79,12 +81,14 @@ class Transaction:
                                     for line in rollback_txt.split("\n")
                                 ] if record]
 
-            for record in rollback_records:
-                logger.debug(f"Running rollback {record}")
-                action = record[0]
-                args = record[1:]
-                action_method = getattr(self, "_" + action)
-                action_method(*args)
+            if rollback_records:
+                logger.info(f"Rolling back {len(rollback_records)} action(s)")
+                for record in rollback_records:
+                    logger.debug(f"Running rollback {record}")
+                    action = record[0]
+                    args = record[1:]
+                    action_method = getattr(self, "_" + action)
+                    action_method(*args)
 
         self._rollback_dir.delete(recursive=True)
 
@@ -96,15 +100,17 @@ class Transaction:
             logger.warning("Note, it should be save to delete it manually.")
 
     def _delete_dir(self, target_path):
-        self._target_dir.fs.rm(target_path, recursive=True)
+        _dir = self._target_dir / target_path
+        _dir.delete(recursive=True)
 
     def _delete_file(self, target_path):
-        self._target_dir.fs.rm(target_path)
+        _file = self._target_dir / target_path
+        _file.delete()
 
     def _replace_file(self, target_path, rollback_filename):
+        _file = self._target_dir / target_path
         data = (self._rollback_dir / rollback_filename).read()
-        with self._target_dir.fs.open(target_path, "wb") as f:
-            f.write(data)
+        _file.write(data)
 
     def _add_rollback_action(self,
                              action: RollbackAction,
