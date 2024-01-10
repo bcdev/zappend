@@ -609,7 +609,7 @@ def _schema_to_md(schema: dict[str, Any], path: list[str], lines: list[str]):
     const = schema.get("const", undefined)
     if const is not undefined:
         value = json.dumps(const)
-        lines.append(f"It's value is `{value}`.")
+        lines.append(f"Its value is `{value}`.")
 
     default = schema.get("default", undefined)
     if default is not undefined:

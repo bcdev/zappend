@@ -4,7 +4,7 @@
 ### `version`
 
 Configuration schema version. Allows the schema to evolve while still preserving backwards compatibility.
-It's value is `1`.
+Its value is `1`.
 
 ### `target_dir`
 
@@ -31,9 +31,9 @@ Options for the filesystem given by the protocol of the URIs of contributing dat
 Defines how to poll for contributing datasets.
 Must be one of the following:
 * No polling, fail immediately if dataset is not available.
-  It's value is `false`.
+  Its value is `false`.
 * Poll using default values.
-  It's value is `true`.
+  Its value is `true`.
 * Type _object_.
   Polling parameters.
   The keys `interval`, `timeout` are required.
@@ -61,7 +61,7 @@ Options for the filesystem given by the protocol of `temp_dir`.
 ### `zarr_version`
 
 The Zarr version to be used.
-It's value is `2`.
+Its value is `2`.
 
 ### `fixed_dims`
 
@@ -100,16 +100,16 @@ Variable metadata.
     * Type _array_.
       Chunk sizes in the order of the dimensions.
     * Disable chunking.
-      It's value is `null`.
+      Its value is `null`.
   * `fill_value`:
     Storage fill value.
     Must be one of the following:
     * Type _number_.
       A number of type and unit of the given storage `dtype`.
     * Not-a-number. Can be used only if storage `dtype` is `float32` or `float64`.
-      It's value is `"NaN"`.
+      Its value is `"NaN"`.
     * No fill value.
-      It's value is `null`.
+      Its value is `null`.
   * `scale_factor`:
     Type _number_.
     Scale factor for computing the in-memory value: `memory_value = scale_factor * storage_value + add_offset`.
@@ -169,7 +169,7 @@ The key `version` is required.
 
 * `version`:
   Logging schema version.
-  It's value is `1`.
+  Its value is `1`.
 * `formatters`:
   Type _object_.
   Formatter definitions. Each key is a formatter id and each value is an object describing how to configure the corresponding formatter.
@@ -235,7 +235,3 @@ The key `version` is required.
   * `handlers`:
     Type _array_.
     A list of ids of the handlers for this logger.
-  
-
-
-
