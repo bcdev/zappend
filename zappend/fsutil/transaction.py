@@ -33,23 +33,65 @@ class Transaction:
     """
     A filesystem transaction.
 
-    See https://github.com/zarr-developers/zarr-python/issues/247
+    Its main motivation is implementing transactional Zarr dataset
+    modifications, because this does not exist for Zarr yet (2024-01), see
+    https://github.com/zarr-developers/zarr-python/issues/247.
+
+    The ``Transaction`` class is used to observe changes to a given target
+    directory *target_dir*.
+
+    Changes must be explicitly registered using a "rollback callback"
+    function that is provided as the result of using the
+    transaction instance as a context manager:::
+
+    with Transaction(target_dir, temp_dir) as rollback_cb:
+        # emit rollback actions here
+
+    The following actions are supported:
+
+    * ``rollback_cb("delete_dir", path)`` if a directory has been created.
+    * ``rollback_cb("delete_file", path)`` if a file has been created.
+    * ``rollback_cb("replace_file", path, original_data)`` if a directory has
+        been changed.
+
+    Reported paths must be relative to *target_dir*. The empty path ``""``
+    refers to *target_dir* itself.
+
+    :param target_dir: The target directory that is subject to this
+        transaction. All paths emitted to the rollback callback must be
+        relative to *target_dir*. The directory may or may not exist yet.
+    :param temp_dir: Temporary directory in which a unique subdirectory
+        will be created that will be used to collect
+        rollback data during the transaction. The directory must exist.
     """
 
     def __init__(self,
                  target_dir: FileObj,
-                 rollback_dir: FileObj,
-                 create_rollback_subdir: bool = True):
+                 temp_dir: FileObj):
+        transaction_id = f"zappend-{uuid.uuid4()}"
+        rollback_dir = temp_dir / transaction_id
         lock_file = target_dir.parent / (target_dir.filename + LOCK_EXT)
-        transaction_id = str(uuid.uuid4())
-        if create_rollback_subdir:
-            rollback_dir = rollback_dir / transaction_id
         self._id = transaction_id
         self._rollback_dir = rollback_dir
         self._rollback_file = rollback_dir / ROLLBACK_FILE
         self._target_dir = target_dir
         self._lock_file = lock_file
         self._entered_ctx = False
+
+    @property
+    def target_dir(self) -> FileObj:
+        """Target directory that is subject to this transaction."""
+        return self._target_dir
+
+    @property
+    def lock_file(self) -> FileObj:
+        """Temporary lock file used during the transaction."""
+        return self._lock_file
+
+    @property
+    def rollback_dir(self) -> FileObj:
+        """Temporary directory containing rollback data."""
+        return self._rollback_dir
 
     def __enter__(self):
         if self._entered_ctx:
@@ -62,8 +104,7 @@ class Transaction:
             raise IOError(f"Target is locked: {lock_file.uri}")
         lock_file.write(self._rollback_dir.uri)
 
-        if not self._rollback_dir.exists():
-            self._rollback_dir.mkdir()
+        self._rollback_dir.mkdir()
         self._rollback_file.write("")  # touch
 
         return self._add_rollback_action

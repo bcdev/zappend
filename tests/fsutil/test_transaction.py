@@ -41,30 +41,34 @@ class TransactionTest(unittest.TestCase):
         self.assertFalse(test_folder.exists())
         self.assertFalse(test_file_3.exists())
 
-        lock_file = test_root.parent / (test_root.filename + LOCK_EXT)
+        temp_dir = FileObj("memory://temp")
+        transaction = Transaction(test_root, temp_dir)
+
+        self.assertEqual(test_root, transaction.target_dir)
+
+        lock_file = transaction.lock_file
         self.assertFalse(lock_file.exists())
 
-        rollback_dir = FileObj("memory://rollback")
+        rollback_dir = transaction.rollback_dir
         rollback_file = rollback_dir / ROLLBACK_FILE
         self.assertFalse(rollback_file.exists())
 
         def change_test_file_1(rollback_cb: Callable):
             original_data = test_file_1.read()
             test_file_1.write("D-E-F")
-            rollback_cb("replace_file", test_file_1.path, original_data)
+            rollback_cb("replace_file", test_file_1.filename, original_data)
 
         def create_test_file_2(rollback_cb: Callable):
             test_file_2.write("1-2-3")
-            rollback_cb("delete_file", test_file_2.path, None)
+            rollback_cb("delete_file", test_file_2.filename, None)
 
         def create_test_folder(rollback_cb: Callable):
             test_folder.mkdir()
             test_file_3.write("4-5-6")
-            rollback_cb("delete_dir", test_folder.path, None)
+            rollback_cb("delete_dir", test_folder.filename, None)
 
         try:
-            with Transaction(test_root, rollback_dir,
-                             create_rollback_subdir=False) as rollback_cb:
+            with transaction as rollback_cb:
                 self.assertTrue(rollback_file.exists())
                 self.assertTrue(lock_file.exists())
 
@@ -77,9 +81,9 @@ class TransactionTest(unittest.TestCase):
                                     for line in rollback_data.split("\n")]
                 self.assertEqual(
                     [
-                        ["replace_file", "/test/file-1.txt"],
-                        ["delete_file", "/test/file-2.txt"],
-                        ["delete_dir", "/test/folder"],
+                        ["replace_file", "file-1.txt"],
+                        ["delete_file", "file-2.txt"],
+                        ["delete_dir", "folder"],
                         []
                     ],
                     rollback_records
@@ -152,22 +156,20 @@ class TransactionTest(unittest.TestCase):
     def test_deletes_lock(self):
         test_root = FileObj("memory://test")
         test_root.mkdir()
-        rollback_dir = FileObj("memory://rollback")
-        rollback_dir.mkdir()
-        transaction = Transaction(test_root, rollback_dir,
-                                  create_rollback_subdir=False)
-        self.assertFalse(transaction._lock_file.exists())
+        temp_dir = FileObj("memory://temp")
+        temp_dir.mkdir()
+        transaction = Transaction(test_root, temp_dir)
+        self.assertFalse(transaction.lock_file.exists())
         with transaction:
-            self.assertTrue(transaction._lock_file.exists())
-        self.assertFalse(transaction._lock_file.exists())
+            self.assertTrue(transaction.lock_file.exists())
+        self.assertFalse(transaction.lock_file.exists())
 
     def test_leaves_lock_behind_when_it_cannot_be_deleted(self):
         test_root = FileObj("memory://test")
         test_root.mkdir()
-        rollback_dir = FileObj("memory://rollback")
-        rollback_dir.mkdir()
-        transaction = Transaction(test_root, rollback_dir,
-                                  create_rollback_subdir=False)
+        temp_dir = FileObj("memory://temp")
+        temp_dir.mkdir()
+        transaction = Transaction(test_root, temp_dir)
         delete_called = False
 
         def _delete():
@@ -175,12 +177,12 @@ class TransactionTest(unittest.TestCase):
             delete_called = True
             raise OSError("Bam!")
 
-        transaction._lock_file.delete = _delete
-        self.assertFalse(transaction._lock_file.exists())
+        transaction.lock_file.delete = _delete
+        self.assertFalse(transaction.lock_file.exists())
         with transaction:
-            self.assertTrue(transaction._lock_file.exists())
+            self.assertTrue(transaction.lock_file.exists())
         self.assertEqual(True, delete_called)
-        self.assertTrue(transaction._lock_file.exists())
+        self.assertTrue(transaction.lock_file.exists())
 
     # noinspection PyMethodMayBeStatic
     def test_it_raises_on_illegal_callback_calls(self):
