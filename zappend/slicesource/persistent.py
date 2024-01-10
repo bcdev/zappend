@@ -26,7 +26,7 @@ class PersistentSliceSource(SliceSource):
         self._slice_ds: xr.Dataset | None = None
 
     def open(self) -> xr.Dataset:
-        logger.info(f"Opening slice from {self._slice_file.uri}")
+        logger.info(f"Opening slice dataset from {self._slice_file.uri}")
         self._slice_ds = self._wait_for_slice_dataset()
         return self._slice_ds
 
@@ -34,6 +34,7 @@ class PersistentSliceSource(SliceSource):
         if self._slice_ds is not None:
             self._slice_ds.close()
             self._slice_ds = None
+        logger.info(f"Slice dataset {self._slice_file.uri} closed")
         super().close()
 
     def _wait_for_slice_dataset(self) -> xr.Dataset:

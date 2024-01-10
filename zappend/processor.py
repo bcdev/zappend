@@ -22,6 +22,16 @@ from .tailoring import tailor_slice_dataset
 
 class Processor:
     def __init__(self, config: ConfigLike = None, **kwargs):
+        """
+        This class implements the actual `zappend` process.
+
+        :param config: Processor configuration.
+            May be a file path or URI, a ``dict``, ``None``, or a sequence of
+            the aforementioned. If a sequence is used, subsequent configurations
+            are incremental to the previous ones.
+        :param kwargs: Additional configuration parameters.
+            Can be used to pass or override configuration values in *config*.
+        """
         config = normalize_config(config)
         config.update({k: v for k, v in kwargs.items() if v is not None})
         validate_config(config)
@@ -29,33 +39,32 @@ class Processor:
         self._config = config
 
     def process_slices(self, slice_iter: Iterable[str | xr.Dataset]):
-        for slice_obj in slice_iter:
-            self.process_slice(slice_obj)
+        for slice_index, slice_obj in enumerate(slice_iter):
+            self.process_slice(slice_obj, slice_index=slice_index)
 
-    def process_slice(self, slice_obj: str | xr.Dataset):
+    def process_slice(self, slice_obj: str | xr.Dataset, slice_index: int = 0):
         """Process a single slice.
 
         If there is no target yet, just config and slice:
 
-        * complete config dataset metadata from slice dataset metadata
-        * check config/slice outline compliance
-        * copy slice and add/remove vars to/from slice
-        * set encoding in slice
+        * create target metadata from configuration and slice dataset
+        * tailor slice according to target metadata and configuration
+        * set encoding and attributes in slice according to target metadata
         * write target from slice
 
         If target exists, with config, slice, and target:
 
-        * complete config outline from target outline
-        * check config/target outline compliance
-        * check config/slice outline compliance
-        * copy slice and add/remove vars to/from slice
-        * remove encoding from slice
+        * create target metadata from configuration and target dataset
+        * create slice metadata from configuration and slice dataset
+        * verify target and slice metadata are compatible
+        * tailor slice according to target metadata and configuration
+        * remove encoding and attributes from slice
         * update target from slice
         """
 
         ctx = Context(self._config)
 
-        with open_slice_source(ctx, slice_obj) as slice_dataset:
+        with open_slice_source(ctx, slice_obj, slice_index) as slice_dataset:
             slice_metadata = ctx.get_dataset_metadata(slice_dataset)
             if ctx.target_metadata is None:
                 ctx.target_metadata = slice_metadata
