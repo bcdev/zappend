@@ -125,6 +125,9 @@ class FileObj:
         if rel_path.startswith("/"):
             raise ValueError("rel_path must be relative")
 
+        if not rel_path:
+            return self
+
         if "::" in self.uri:
             # If uri is a chained URL, add path to first component
             first_uri, rest = self.uri.split("::", maxsplit=1)

@@ -96,7 +96,7 @@ def create_target_from_slice(ctx: Context,
                           consolidated=True)
     finally:
         if target_dir.exists():
-            rollback_cb("delete_dir", target_dir.path, None)
+            rollback_cb("delete_dir", "", None)
 
 
 def update_target_from_slice(ctx: Context,

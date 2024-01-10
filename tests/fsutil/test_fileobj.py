@@ -85,6 +85,12 @@ class FileObjTest(unittest.TestCase):
 
     def test_truediv_override(self):
         root = FileObj("s3://eo-data/test.zarr")
+
+        derived = root / ""
+        self.assert_derived_ok(root, derived,
+                               "s3://eo-data/test.zarr",
+                               "eo-data/test.zarr")
+
         derived = root / ".zgroup"
         self.assert_derived_ok(root, derived,
                                "s3://eo-data/test.zarr/.zgroup",
@@ -153,6 +159,12 @@ class FileObjTest(unittest.TestCase):
 
     def test_for_path(self):
         root = FileObj("s3://eo-data/test.zarr")
+
+        derived = root.for_path("")
+        self.assert_derived_ok(root, derived,
+                               "s3://eo-data/test.zarr",
+                               "eo-data/test.zarr")
+
         derived = root.for_path(".zgroup")
         self.assert_derived_ok(root, derived,
                                "s3://eo-data/test.zarr/.zgroup",
