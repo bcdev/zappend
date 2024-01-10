@@ -408,6 +408,14 @@ CONFIG_V1_SCHEMA = {
             "items": {"type": "string", "minLength": 1}
         },
 
+        disable_rollback={
+            "description": "Disable rolling back dataset changes on failure."
+                           " Effectively disables transactional dataset"
+                           " modifications, so use this setting with care.",
+            "type": "boolean",
+            "default": False
+        },
+
         dry_run={
             "description": "If 'true', log only what would have been done,"
                            " but don't apply any changes.",

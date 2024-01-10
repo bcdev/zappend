@@ -67,15 +67,18 @@ class Processor:
                     ctx.append_dim_name
                 )
 
-            with Transaction(ctx.target_dir, ctx.temp_dir) as rollback_cb:
+            transaction = Transaction(ctx.target_dir,
+                                      ctx.temp_dir,
+                                      disable_rollback=ctx.disable_rollback)
+            with transaction as rollback_callback:
                 if ctx.target_metadata is slice_metadata:
                     create_target_from_slice(ctx,
                                              slice_dataset,
-                                             rollback_cb)
+                                             rollback_callback)
                 else:
                     update_target_from_slice(ctx,
                                              slice_dataset,
-                                             rollback_cb)
+                                             rollback_callback)
 
 
 def create_target_from_slice(ctx: Context,

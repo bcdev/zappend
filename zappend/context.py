@@ -13,7 +13,6 @@ from .config import DEFAULT_SLICE_POLLING_TIMEOUT
 from .config import DEFAULT_ZARR_VERSION
 from .metadata import DatasetMetadata
 from .fsutil.fileobj import FileObj
-from .log import logger
 
 
 class Context:
@@ -98,6 +97,10 @@ class Context:
     @property
     def temp_dir(self) -> FileObj:
         return self._temp_dir
+
+    @property
+    def disable_rollback(self) -> bool:
+        return self._config.get("disable_rollback", False)
 
     @property
     def dry_run(self) -> bool:

@@ -61,6 +61,13 @@ class ContextTest(unittest.TestCase):
         self.assertIsInstance(ctx.temp_dir, FileObj)
         self.assertTrue(ctx.temp_dir.exists())
 
+    def test_disable_rollback(self):
+        ctx = Context({"target_uri": "memory://target.zarr"})
+        self.assertFalse(ctx.disable_rollback)
+        ctx = Context({"target_uri": "memory://target.zarr",
+                       "disable_rollback": True})
+        self.assertTrue(ctx.disable_rollback)
+
     def test_dry_run(self):
         ctx = Context({"target_uri": "memory://target.zarr"})
         self.assertEqual(False, ctx.dry_run)

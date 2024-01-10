@@ -209,6 +209,7 @@ class ConfigNormalizeTest(unittest.TestCase):
         self.assertEqual(
             {
                 'append_dim',
+                'disable_rollback',
                 'dry_run',
                 'excluded_variables',
                 'fixed_dims',

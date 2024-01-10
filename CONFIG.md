@@ -149,6 +149,12 @@ Specifies the names of variables to be included in the target dataset. Defaults 
 Type _array_.
 Specifies the names of individual variables to be excluded  from all contributing datasets.
 
+### `disable_rollback`
+
+Type _boolean_.
+Disable rolling back dataset changes on failure. Effectively disables transactional dataset modifications, so use this setting with care.
+Defaults to `false`.
+
 ### `dry_run`
 
 Type _boolean_.
