@@ -23,7 +23,7 @@ class IdentitySliceSource(SliceSource):
         self._slice_index = slice_index
 
     def open(self) -> xr.Dataset:
-        logger.info(f"Processing slice dataset #{self._slice_index}")
+        logger.info(f"Processing in-memory slice dataset #{self._slice_index}")
         return self._slice_ds
 
     def close(self):
