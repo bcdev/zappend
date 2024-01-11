@@ -1,0 +1,7 @@
+pytest
+pytest-cov
+black
+flake8
+flake8-bugbear
+s3fs
+pyproj

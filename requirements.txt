@@ -3,7 +3,6 @@ dask
 fsspec
 jsonschema
 numpy
-pyproj
 pyyaml
 xarray
 zarr
