@@ -103,7 +103,7 @@ class Transaction:
     def __enter__(self):
         if self._entered_ctx:
             raise ValueError(
-                "Transaction instance cannot be used" " with nested 'with' statements"
+                "Transaction instance cannot be used with nested 'with' statements"
             )
         self._entered_ctx = True
 
@@ -146,8 +146,9 @@ class Transaction:
         lock_file = self._lock_file
         try:
             lock_file.delete()
+            logger.info(f"Transaction completed.")
         except OSError:
-            logger.warning(f"Failed to remove target lock: {lock_file.uri}")
+            logger.warning(f"Failed to remove transaction lock: {lock_file.uri}")
             logger.warning("Note, it should be save to delete it manually.")
 
     def _delete_dir(self, target_path):

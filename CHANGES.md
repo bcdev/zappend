@@ -1,5 +1,6 @@
 ## Version 0.1.2 (in development)
 
+* Fixed problem where info about closing slice was logged twice. [#9]
 * Improved readability of generated configuration documentation.
 * Using `requirements-dev.txt` for development package dependencies.
 

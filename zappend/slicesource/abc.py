@@ -20,10 +20,6 @@ class SliceSource(ABC):
     def __init__(self, ctx: Context):
         self._ctx = ctx
 
-    def __del__(self):
-        """Overridden to call ``close()``."""
-        self.close()
-
     def __enter__(self) -> xr.Dataset:
         return self.open()
 
