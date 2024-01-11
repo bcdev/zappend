@@ -131,7 +131,9 @@ _VARIABLE_ENCODING_SCHEMA = {
             "type": "string",
         },
         compressor={
-            "description": "Compressor. Set to `null` to disable data compression.",
+            "description": (
+                "Compressor definition. Set to `null` to disable data compression."
+            ),
             "type": ["array", "null"],
             "properties": {
                 "id": {"type": "string"},
@@ -143,6 +145,7 @@ _VARIABLE_ENCODING_SCHEMA = {
             "description": "Filters. Set to `null` to not use filters.",
             "type": ["array", "null"],
             "items": {
+                "description": "Filter definition.",
                 "type": "object",
                 "properties": {
                     "id": {"type": "string"},
@@ -579,7 +582,12 @@ def schema_to_md() -> str:
     return "\n".join(lines)
 
 
-def _schema_to_md(schema: dict[str, Any], path: list[str], lines: list[str]):
+def _schema_to_md(
+    schema: dict[str, Any],
+    path: list[str],
+    lines: list[str],
+    type_prefix: str | None = None,
+):
     undefined = object()
     is_root = len(path) == 0
 
@@ -588,7 +596,7 @@ def _schema_to_md(schema: dict[str, Any], path: list[str], lines: list[str]):
         if isinstance(_type, str):
             _type = [_type]
         value = " | ".join([f"_{name}_" for name in _type])
-        lines.append(f"Type {value}.")
+        lines.append(f"{type_prefix or 'Type'} {value}.")
 
     description = schema.get("description")
     if description:
@@ -648,5 +656,20 @@ def _schema_to_md(schema: dict[str, Any], path: list[str], lines: list[str]):
 
     additional_properties = schema.get("additionalProperties")
     if isinstance(additional_properties, dict):
-        lines.append("Object values are:")
-        _schema_to_md(additional_properties, path, lines)
+        lines.append("")
+        _schema_to_md(
+            additional_properties,
+            path,
+            lines,
+            type_prefix="The object's values are of type",
+        )
+
+    items = schema.get("items")
+    if isinstance(items, dict):
+        lines.append("")
+        _schema_to_md(
+            items,
+            path,
+            lines,
+            type_prefix="The array's items are of type",
+        )
