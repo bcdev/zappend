@@ -440,6 +440,16 @@ CONFIG_V1_SCHEMA = {
             "type": "array",
             "items": {"type": "string", "minLength": 1},
         },
+        persist_mem_slices={
+            "description": (
+                "Persist in-memory slices and reopen from a temporary Zarr before"
+                " appending them to the target dataset."
+                " This can prevent expensive re-computation of dask chunks at the"
+                " cost of additional i/o."
+            ),
+            "type": "boolean",
+            "default": False,
+        },
         disable_rollback={
             "description": (
                 "Disable rolling back dataset changes on failure."

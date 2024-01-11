@@ -11,8 +11,8 @@ from .config import DEFAULT_APPEND_DIM
 from .config import DEFAULT_SLICE_POLLING_INTERVAL
 from .config import DEFAULT_SLICE_POLLING_TIMEOUT
 from .config import DEFAULT_ZARR_VERSION
-from .metadata import DatasetMetadata
 from .fsutil.fileobj import FileObj
+from .metadata import DatasetMetadata
 
 
 class Context:
@@ -91,6 +91,10 @@ class Context:
     @property
     def temp_dir(self) -> FileObj:
         return self._temp_dir
+
+    @property
+    def persist_mem_slices(self) -> bool:
+        return self._config.get("persist_mem_slices", False)
 
     @property
     def disable_rollback(self) -> bool:

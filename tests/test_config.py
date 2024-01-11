@@ -221,6 +221,7 @@ class ConfigNormalizeTest(unittest.TestCase):
                 "fixed_dims",
                 "included_variables",
                 "logging",
+                "persist_mem_slices",
                 "slice_engine",
                 "slice_polling",
                 "slice_storage_options",

@@ -9,8 +9,8 @@ from ..log import logger
 from .abc import SliceSource
 
 
-class IdentitySliceSource(SliceSource):
-    """A slice source that returns the dataset passed in when opened.
+class MemorySliceSource(SliceSource):
+    """A slice source that uses the in-memory dataset passed in.
 
     :param ctx: Processing context
     :param slice_ds: The slice dataset
