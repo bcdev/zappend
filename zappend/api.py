@@ -7,9 +7,10 @@ from typing import Any, Iterable
 
 from .config import ConfigLike
 from .processor import Processor
+from .slice import SliceObj
 
 
-def zappend(slices: Iterable[str | xr.Dataset], config: ConfigLike = None, **kwargs):
+def zappend(slices: Iterable[SliceObj], config: ConfigLike = None, **kwargs):
     """
     Create or update a Zarr dataset from dataset slices.
 

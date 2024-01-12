@@ -15,6 +15,7 @@ from .fsutil.transaction import RollbackCallback
 from .log import logger
 from .log import configure_logging
 from .rollbackstore import RollbackStore
+from .slice import SliceObj
 from .slice import get_slice_dataset
 from .tailoring import tailor_target_dataset
 from .tailoring import tailor_slice_dataset
@@ -38,11 +39,11 @@ class Processor:
         configure_logging(config.get("logging"))
         self._config = config
 
-    def process_slices(self, slice_iter: Iterable[str | xr.Dataset]):
+    def process_slices(self, slice_iter: Iterable[SliceObj]):
         for slice_index, slice_obj in enumerate(slice_iter):
             self.process_slice(slice_obj, slice_index=slice_index)
 
-    def process_slice(self, slice_obj: str | xr.Dataset, slice_index: int = 0):
+    def process_slice(self, slice_obj: SliceObj, slice_index: int = 0):
         """Process a single slice.
 
         If there is no target yet, just config and slice:

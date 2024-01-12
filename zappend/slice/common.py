@@ -12,9 +12,12 @@ from ..context import Context
 from ..fsutil.fileobj import FileObj
 
 
+SliceObj = str | FileObj | xr.Dataset | SliceSource
+
+
 def get_slice_dataset(
     ctx: Context,
-    slice_obj: str | FileObj | xr.Dataset | SliceSource,
+    slice_obj: SliceObj,
     slice_index: int = 0,
 ) -> SliceSource:
     """
