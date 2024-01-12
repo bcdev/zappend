@@ -10,8 +10,9 @@ import xarray as xr
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.slicesource.common import open_slice_source
-from zappend.slicesource.identity import IdentitySliceSource
+from zappend.slicesource.memory import MemorySliceSource
 from zappend.slicesource.persistent import PersistentSliceSource
+from zappend.slicesource.temporary import TemporarySliceSource
 from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
@@ -20,16 +21,23 @@ class SliceSourceTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
 
-    def test_in_memory(self):
-        slice_dir = FileObj("memory://slice.zarr")
-        dataset = make_test_dataset(uri=slice_dir.uri)
+    def test_memory_slice_source(self):
+        dataset = make_test_dataset()
         ctx = Context(dict(target_dir="memory://target.zarr"))
         slice_zarr = open_slice_source(ctx, dataset)
-        self.assertIsInstance(slice_zarr, IdentitySliceSource)
+        self.assertIsInstance(slice_zarr, MemorySliceSource)
         with slice_zarr as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
-    def test_persistent_zarr(self):
+    def test_temporary_slice_source(self):
+        dataset = make_test_dataset()
+        ctx = Context(dict(target_dir="memory://target.zarr", persist_mem_slices=True))
+        slice_zarr = open_slice_source(ctx, dataset)
+        self.assertIsInstance(slice_zarr, TemporarySliceSource)
+        with slice_zarr as slice_ds:
+            self.assertIsInstance(slice_ds, xr.Dataset)
+
+    def test_persistent_slice_source_for_zarr(self):
         slice_dir = FileObj("memory://slice.zarr")
         make_test_dataset(uri=slice_dir.uri)
         ctx = Context(dict(target_dir="memory://target.zarr"))
@@ -38,7 +46,7 @@ class SliceSourceTest(unittest.TestCase):
         with slice_zarr as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
-    # def test_persistent_nc(self):
+    # def test_persistent_slice_source_for_nc(self):
     #     slice_ds = make_test_dataset()
     #     slice_file = FileObj("memory:///slice.nc")
     #     with slice_file.fs.open(slice_file.path, "wb") as f:

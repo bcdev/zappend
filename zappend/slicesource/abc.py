@@ -20,6 +20,10 @@ class SliceSource(ABC):
     def __init__(self, ctx: Context):
         self._ctx = ctx
 
+    @property
+    def ctx(self) -> Context:
+        return self._ctx
+
     def __enter__(self) -> xr.Dataset:
         return self.open()
 

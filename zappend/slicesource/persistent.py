@@ -39,7 +39,7 @@ class PersistentSliceSource(SliceSource):
 
     def _wait_for_slice_dataset(self) -> xr.Dataset:
         slice_ds: xr.Dataset | None = None
-        interval, timeout = self._ctx.slice_polling
+        interval, timeout = self.ctx.slice_polling
         if timeout is not None:
             # t0 = time.monotonic()
             # while (time.monotonic() - t0) < timeout:
@@ -52,8 +52,7 @@ class PersistentSliceSource(SliceSource):
                     slice_ds = self._open_slice_dataset()
                 except OSError:
                     logger.debug(
-                        f"Slice not ready or corrupt,"
-                        f" retrying after {interval} seconds"
+                        f"Slice not ready or corrupt, retrying after {interval} seconds"
                     )
                     time.sleep(interval)
         else:
@@ -64,14 +63,14 @@ class PersistentSliceSource(SliceSource):
         return slice_ds
 
     def _open_slice_dataset(self) -> xr.Dataset:
-        engine = self._ctx.slice_engine
+        engine = self.ctx.slice_engine
         if engine is None and (
             self._slice_file.path.endswith(".zarr")
             or self._slice_file.path.endswith(".zarr.zip")
         ):
             engine = "zarr"
         if engine == "zarr":
-            storage_options = self._ctx.slice_storage_options
+            storage_options = self.ctx.slice_storage_options
             return xr.open_zarr(self._slice_file.uri, storage_options=storage_options)
 
         with self._slice_file.fs.open(self._slice_file.path, "rb") as f:

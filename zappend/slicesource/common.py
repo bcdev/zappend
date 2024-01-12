@@ -4,11 +4,12 @@
 
 import xarray as xr
 
+from .abc import SliceSource
+from .memory import MemorySliceSource
+from .persistent import PersistentSliceSource
+from .temporary import TemporarySliceSource
 from ..context import Context
 from ..fsutil.fileobj import FileObj
-from .abc import SliceSource
-from .identity import IdentitySliceSource
-from .persistent import PersistentSliceSource
 
 
 def open_slice_source(
@@ -23,7 +24,10 @@ def open_slice_source(
     :return: A new slice source instance
     """
     if isinstance(slice_obj, xr.Dataset):
-        return IdentitySliceSource(ctx, slice_obj, slice_index)
+        if ctx.persist_mem_slices:
+            return TemporarySliceSource(ctx, slice_obj, slice_index)
+        else:
+            return MemorySliceSource(ctx, slice_obj, slice_index)
     if isinstance(slice_obj, str):
         slice_file = FileObj(slice_obj, storage_options=ctx.slice_storage_options)
         return PersistentSliceSource(ctx, slice_file)
