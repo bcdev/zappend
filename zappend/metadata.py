@@ -10,6 +10,7 @@ import numpy as np
 import xarray as xr
 
 from .config import merge_configs, DEFAULT_APPEND_DIM
+from .log import logger
 
 
 class Undefined:
@@ -34,6 +35,7 @@ class VariableEncoding:
         calendar: str | Undefined = UNDEFINED,
         compressor: Codec | None | Undefined = UNDEFINED,
         filters: list[Codec] | None | Undefined = UNDEFINED,
+        **unknown_settings,
     ):
         """All arguments default to UNDEFINED, so they can be distinguished
         from None, which is has a special meaning for some values.
@@ -47,6 +49,8 @@ class VariableEncoding:
         self.calendar = calendar
         self.compressor = compressor
         self.filters = filters
+        if unknown_settings:
+            logger.warning("Ignoring unknown encoding settings: %s", unknown_settings)
 
     def to_dict(self):
         d = {
@@ -271,6 +275,10 @@ def _get_effective_variables(
                 encoding["fill_value"] = fill_value
         if "preferred_chunks" in encoding:
             encoding.pop("preferred_chunks")
+        if "chunksizes" in encoding:
+            chunk_sizes = encoding.pop("chunksizes")
+            if "chunks" not in encoding:
+                encoding["chunks"] = chunk_sizes
         variables[var_name] = VariableMetadata(
             dims=dims, shape=shape, encoding=VariableEncoding(**encoding), attrs=attrs
         )
