@@ -50,7 +50,10 @@ class VariableEncoding:
         self.compressor = compressor
         self.filters = filters
         if unknown_settings:
-            logger.warning("Ignoring unknown encoding settings: %s", unknown_settings)
+            logger.warning(
+                "Ignoring unknown encoding settings: %s",
+                ", ".join(unknown_settings.keys()),
+            )
 
     def to_dict(self):
         d = {

@@ -2,19 +2,23 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-import xarray as xr
-from typing import Any, Iterable
+from typing import Iterable
 
 from .config import ConfigLike
 from .processor import Processor
+from .slice import SliceFactory
+from .slice import SliceObj
 
 
-def zappend(slices: Iterable[str | xr.Dataset], config: ConfigLike = None, **kwargs):
+def zappend(
+    slices: Iterable[SliceObj | SliceFactory], config: ConfigLike = None, **kwargs
+):
     """
     Create or update a Zarr dataset from dataset slices.
 
-    :param slices: The slice datasets. An iterable that yields either
-        ``str`` or ``xarray.Dataset`` objects. If ``str`` is used,
+    :param slices: An iterable that yields slice objects. A slice object is
+        either a ``str``, ``xarray.Dataset``, ``SliceSource`` or a factory
+        function that returns a slice object. If ``str`` is used,
         it is interpreted as local dataset path or dataset URI.
         If a URI is used, protocol-specific parameters apply, given by
         configuration parameter ``slice_storage_options``.
