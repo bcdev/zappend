@@ -238,6 +238,40 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
             ).to_dict(),
         )
 
+    def test_variable_encoding_from_netcdf(self):
+        a = xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x"))
+        a.encoding.update(chunksizes=(16, 2, 2))  # turned into "chunks"
+        b = xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x"))
+        b.encoding.update(contiguous=True, endian="big")  # logs warning
+        self.assertEqual(
+            {
+                "attrs": {},
+                "dims": {"time": 2, "x": 4, "y": 3},
+                "variables": {
+                    "a": {
+                        "attrs": {},
+                        "dims": ("time", "y", "x"),
+                        "encoding": {"chunks": (16, 2, 2)},
+                        "shape": (2, 3, 4),
+                    },
+                    "b": {
+                        "attrs": {},
+                        "dims": ("time", "y", "x"),
+                        "encoding": {},
+                        "shape": (2, 3, 4),
+                    },
+                },
+            },
+            DatasetMetadata.from_dataset(
+                xr.Dataset(
+                    {
+                        "a": a,
+                        "b": b,
+                    }
+                )
+            ).to_dict(),
+        )
+
     def test_variable_encoding_normalisation(self):
         def normalize(k, v):
             metadata = DatasetMetadata.from_dataset(
