@@ -3,4 +3,4 @@
 # https://opensource.org/licenses/MIT.
 
 from .abc import SliceSource
-from .common import open_slice_source
+from .common import get_slice_dataset

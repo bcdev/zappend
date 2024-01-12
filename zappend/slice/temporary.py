@@ -24,15 +24,15 @@ class TemporarySliceSource(MemorySliceSource):
         self._temp_slice_dir: FileObj | None = None
         self._temp_slice_ds: xr.Dataset | None = None
 
-    def open(self) -> xr.Dataset:
+    def get_dataset(self) -> xr.Dataset:
         slice_index = self._slice_index
-        temp_slice_dir = self.ctx.temp_dir / f"slice-{self._slice_index}.zarr"
+        temp_slice_dir = self.ctx.temp_dir / f"slice-{slice_index}.zarr"
         self._temp_slice_dir = temp_slice_dir
         temp_slice_store = temp_slice_dir.fs.get_mapper(
             temp_slice_dir.path, create=True
         )
         logger.info(
-            f"Persisting in-memory slice dataset #{self._slice_index}"
+            f"Persisting in-memory slice dataset #{slice_index}"
             f" to {temp_slice_dir.uri}"
         )
         self._slice_ds.to_zarr(temp_slice_store)
@@ -40,7 +40,7 @@ class TemporarySliceSource(MemorySliceSource):
         self._temp_slice_ds = xr.open_zarr(temp_slice_store)
         return self._temp_slice_ds
 
-    def close(self):
+    def dispose(self):
         if self._temp_slice_ds is not None:
             self._temp_slice_ds.close()
             self._temp_slice_ds = None
@@ -55,4 +55,4 @@ class TemporarySliceSource(MemorySliceSource):
                 )
                 temp_slice_dir.delete(recursive=True)
 
-        super().close()
+        super().dispose()

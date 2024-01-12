@@ -15,7 +15,7 @@ from .fsutil.transaction import RollbackCallback
 from .log import logger
 from .log import configure_logging
 from .rollbackstore import RollbackStore
-from .slicesource import open_slice_source
+from .slice import get_slice_dataset
 from .tailoring import tailor_target_dataset
 from .tailoring import tailor_slice_dataset
 
@@ -64,7 +64,7 @@ class Processor:
 
         ctx = Context(self._config)
 
-        with open_slice_source(ctx, slice_obj, slice_index) as slice_dataset:
+        with get_slice_dataset(ctx, slice_obj, slice_index) as slice_dataset:
             slice_metadata = ctx.get_dataset_metadata(slice_dataset)
             if ctx.target_metadata is None:
                 ctx.target_metadata = slice_metadata

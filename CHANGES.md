@@ -2,6 +2,8 @@
 
 ### Enhancements
 
+* Allow passing slice objects of type `zappend.slice.SliceSource` 
+  to `zappend`. This way users can implement their own slice sources. [#13]
 * Introduced new configuration flag `persist_mem_slices`. 
   If set, in-memory `xr.Dataset` instances will be first persisted to a 
   temporary Zarr, then reopened, and then appended to the target dataset. [#11]
