@@ -22,29 +22,41 @@ from .tailoring import tailor_slice_dataset
 
 
 class Processor:
-    def __init__(self, config: ConfigLike = None, **kwargs):
-        """
-        This class implements the actual `zappend` process.
+    """This class implements the actual `zappend` process.
 
-        :param config: Processor configuration.
-            May be a file path or URI, a ``dict``, ``None``, or a sequence of
-            the aforementioned. If a sequence is used, subsequent configurations
-            are incremental to the previous ones.
-        :param kwargs: Additional configuration parameters.
-            Can be used to pass or override configuration values in *config*.
-        """
+    :param config: Processor configuration.
+        May be a file path or URI, a ``dict``, ``None``, or a sequence of
+        the aforementioned. If a sequence is used, subsequent configurations
+        are incremental to the previous ones.
+    :param kwargs: Additional configuration parameters.
+        Can be used to pass or override configuration values in *config*.
+    """
+
+    def __init__(self, config: ConfigLike = None, **kwargs):
         config = normalize_config(config)
         config.update({k: v for k, v in kwargs.items() if v is not None})
         validate_config(config)
         configure_logging(config.get("logging"))
         self._config = config
 
-    def process_slices(self, slice_iter: Iterable[SliceObj]):
-        for slice_index, slice_obj in enumerate(slice_iter):
+    def process_slices(self, slices: Iterable[SliceObj]):
+        """Process the given *slices*.
+        Passes each slice in *slices* to the ``process_slice()`` method.
+
+        :param slices: Slice objects.
+        """
+        for slice_index, slice_obj in enumerate(slices):
             self.process_slice(slice_obj, slice_index=slice_index)
 
     def process_slice(self, slice_obj: SliceObj, slice_index: int = 0):
-        """Process a single slice.
+        """Process a single slice object *slice_obj*.
+
+        A slice object is
+        either a ``str``, ``xarray.Dataset``, ``SliceSource`` or a factory
+        function that returns a slice object. If ``str`` is used,
+        it is interpreted as local dataset path or dataset URI.
+        If a URI is used, protocol-specific parameters apply, given by
+        configuration parameter ``slice_storage_options``.
 
         If there is no target yet, just config and slice:
 
@@ -61,6 +73,9 @@ class Processor:
         * tailor slice according to target metadata and configuration
         * remove encoding and attributes from slice
         * update target from slice
+
+        :param slice_obj: The slice object.
+        :param slice_index: An index identifying the slice.
         """
 
         ctx = Context(self._config)

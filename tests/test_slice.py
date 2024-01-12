@@ -28,38 +28,51 @@ class OpenSliceDatasetTest(unittest.TestCase):
         slice_source = get_slice_dataset(ctx, slice_obj)
         self.assertIs(slice_obj, slice_source)
 
+    def test_factory_slice_source(self):
+        dataset = make_test_dataset()
+        ctx = Context(dict(target_dir="memory://target.zarr"))
+
+        def factory(_ctx):
+            self.assertIs(ctx, _ctx)
+            return dataset
+
+        slice_source = get_slice_dataset(ctx, factory)
+        self.assertIsInstance(slice_source, MemorySliceSource)
+        with slice_source as slice_ds:
+            self.assertIs(dataset, slice_ds)
+
     def test_memory_slice_source(self):
         dataset = make_test_dataset()
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        slice_zarr = get_slice_dataset(ctx, dataset)
-        self.assertIsInstance(slice_zarr, MemorySliceSource)
-        with slice_zarr as slice_ds:
+        slice_source = get_slice_dataset(ctx, dataset)
+        self.assertIsInstance(slice_source, MemorySliceSource)
+        with slice_source as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
     def test_temporary_slice_source(self):
         dataset = make_test_dataset()
         ctx = Context(dict(target_dir="memory://target.zarr", persist_mem_slices=True))
-        slice_zarr = get_slice_dataset(ctx, dataset)
-        self.assertIsInstance(slice_zarr, TemporarySliceSource)
-        with slice_zarr as slice_ds:
+        slice_source = get_slice_dataset(ctx, dataset)
+        self.assertIsInstance(slice_source, TemporarySliceSource)
+        with slice_source as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
     def test_file_obj_slice_source(self):
         slice_dir = FileObj("memory://slice.zarr")
         make_test_dataset(uri=slice_dir.uri)
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        slice_zarr = get_slice_dataset(ctx, slice_dir)
-        self.assertIsInstance(slice_zarr, PersistentSliceSource)
-        with slice_zarr as slice_ds:
+        slice_source = get_slice_dataset(ctx, slice_dir)
+        self.assertIsInstance(slice_source, PersistentSliceSource)
+        with slice_source as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
     def test_persistent_slice_source_for_zarr(self):
         slice_dir = FileObj("memory://slice.zarr")
         make_test_dataset(uri=slice_dir.uri)
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        slice_zarr = get_slice_dataset(ctx, slice_dir.uri)
-        self.assertIsInstance(slice_zarr, PersistentSliceSource)
-        with slice_zarr as slice_ds:
+        slice_source = get_slice_dataset(ctx, slice_dir.uri)
+        self.assertIsInstance(slice_source, PersistentSliceSource)
+        with slice_source as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
     # def test_persistent_slice_source_for_nc(self):
@@ -83,9 +96,9 @@ class OpenSliceDatasetTest(unittest.TestCase):
                 slice_polling=dict(timeout=0.1, interval=0.02),
             )
         )
-        slice_zarr = get_slice_dataset(ctx, slice_dir.uri)
-        self.assertIsInstance(slice_zarr, PersistentSliceSource)
-        with slice_zarr as slice_ds:
+        slice_source = get_slice_dataset(ctx, slice_dir.uri)
+        self.assertIsInstance(slice_source, PersistentSliceSource)
+        with slice_source as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
     # noinspection PyMethodMayBeStatic
@@ -97,9 +110,9 @@ class OpenSliceDatasetTest(unittest.TestCase):
                 slice_polling=dict(timeout=0.1, interval=0.02),
             )
         )
-        slice_zarr = get_slice_dataset(ctx, slice_dir.uri)
+        slice_source = get_slice_dataset(ctx, slice_dir.uri)
         with pytest.raises(FileNotFoundError, match=slice_dir.uri):
-            with slice_zarr:
+            with slice_source:
                 pass
 
     # noinspection PyMethodMayBeStatic
