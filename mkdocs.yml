@@ -1,7 +1,7 @@
 site_name: zappend
 
 nav:
-  - Index: index.md
+  - Introduction: intro.md
   - Getting Started: start.md
   - User Guide: guide.md
   - CLI Reference: cli.md
