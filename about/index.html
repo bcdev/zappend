@@ -357,9 +357,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#change-log" class="md-nav__link">
+  <a href="#changelog" class="md-nav__link">
     <span class="md-ellipsis">
-      Change Log
+      Changelog
     </span>
   </a>
   
@@ -502,9 +502,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#change-log" class="md-nav__link">
+  <a href="#changelog" class="md-nav__link">
     <span class="md-ellipsis">
-      Change Log
+      Changelog
     </span>
   </a>
   
@@ -628,7 +628,7 @@
 
 
 <h1 id="about-zappend">About zappend</h1>
-<h2 id="change-log">Change Log</h2>
+<h2 id="changelog">Changelog</h2>
 <p>You can find the complete <code>zappend</code> changelog 
 <a href="https://github.com/bcdev/zappend/blob/main/CHANGES.md">here</a>. </p>
 <h2 id="reporting">Reporting</h2>
@@ -682,12 +682,14 @@ mkdocs gh-deploy
   or 
   <a href="https://xcube.readthedocs.io/en/latest/mldatasets.html">xcube.core.mldataset.MultiLevelDataset</a>.</li>
 <li>Target and slices are allowed to live in different filesystems.</li>
-<li>The tool is configurable. The configuration defines </li>
+<li>The tool is configurable. The configuration defines <ul>
 <li>the append dimension;</li>
 <li>optional target encoding for all or individual target variables;</li>
 <li>the target path into the target filesystem;</li>
 <li>optional target storage options;</li>
 <li>optional slice storage options.</li>
+</ul>
+</li>
 <li>The target chunking of the append dimension equals the size of the append 
   dimension in each slice and vice versa. </li>
 <li>The target encoding should allow for specifying the target storage chunking, 
@@ -704,14 +706,18 @@ mkdocs gh-deploy
   appended is last. If not, refuse to append (alternative: insert but this is 
   probably difficult or error prone).</li>
 <li>Slices are appended in the order they are provided.</li>
-<li>If a slice is not yet available, wait and retry until it </li>
+<li>If a slice is not yet available, wait and retry until it <ul>
 <li>exists, and</li>
 <li>is complete.</li>
-<li>Check for each slice that it is valid. A valid slice</li>
+</ul>
+</li>
+<li>Check for each slice that it is valid. A valid slice<ul>
 <li>is self-consistent, </li>
 <li>has the same structure as target, and</li>
 <li>has an append dimension whose size is equal to the target chunking of
-    this dimension.</li>
+  this dimension.</li>
+</ul>
+</li>
 <li>Before appending a slice, lock the target so that another tool invocation 
   can recognize it, e.g., write a lock file.</li>
 <li>If the target is locked, either wait until it becomes available or exit 
@@ -726,13 +732,15 @@ mkdocs gh-deploy
   and removing any locks. </li>
 <li>The tool shall allow for continuing appending slices at the point
   it failed.</li>
-<li>The tool shall offer a CLI and a Python API.</li>
+<li>The tool shall offer a CLI and a Python API.<ul>
 <li>Using the CLI, slices are given as a variadic argument that provides the 
-    file paths into the slice filesystem.</li>
+  file paths into the slice filesystem.</li>
 <li>Using the Python API, it shall be possible to provide the slices by 
-    specifying a function that generates the slice datasets and an
-    iterable providing the arguments for the function.
-    This is similar how the Python <code>map()</code> built-in works.</li>
+  specifying a function that generates the slice datasets and an
+  iterable providing the arguments for the function.
+  This is similar how the Python <code>map()</code> built-in works.</li>
+</ul>
+</li>
 </ul>
 <h3 id="further-ideas">Further Ideas</h3>
 <ul>
@@ -740,31 +748,19 @@ mkdocs gh-deploy
 <li>Allow specifying a constant delta between coordinates of the append dimension.</li>
 <li>Verify append dimension coordinates increase or decrease monotonically. </li>
 <li>Verify coordinate deltas of append dimension to be constant. </li>
-<li>Integration with <a href="https://github.com/dcs4cop/xcube">xcube</a>:</li>
+<li>Integration with <a href="https://github.com/dcs4cop/xcube">xcube</a>:<ul>
 <li>Add xcube server API: Add endpoint to xcube server that works similar 
-    to the CLI and also uses a similar request parameters.</li>
+  to the CLI and also uses a similar request parameters.</li>
 <li>Use it in xcube data stores for the <code>write_data()</code> method, as a parameter 
-    to enforce sequential writing of Zarr datasets as a robust option when a 
-    plain write fails.</li>
+  to enforce sequential writing of Zarr datasets as a robust option when a 
+  plain write fails.</li>
+</ul>
+</li>
 </ul>
 <h2 id="license">License</h2>
-<p><code>zappend</code> is made available under the terms and conditions of the MIT License:</p>
-<p>Copyright (c) 2023 Brockmann Consult Development</p>
-<p>Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:</p>
-<p>The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.</p>
-<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.</p>
+<p><code>zappend</code> is open source made available under the terms and conditions of the 
+<a href="https://github.com/bcdev/zappend/blob/main/LICENSE">MIT License</a>.</p>
+<p>Copyright © 2024 Brockmann Consult Development</p>
 
 
 
