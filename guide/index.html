@@ -743,7 +743,11 @@ variables shall be used from the slice dataset, they can be specified using the
 <code>included_variables</code> setting, which is a list of names of variables that will 
 be included:</p>
 <pre><code class="language-json">{
-    &quot;included_variables&quot;: [&quot;chl&quot;, &quot;tsm&quot;]
+    &quot;included_variables&quot;: [
+        &quot;time&quot;, &quot;y&quot;, &quot;x&quot;,
+        &quot;chl&quot;, 
+        &quot;tsm&quot;
+    ]
 }
 </code></pre>
 <p>Often, it is easier to tell which variables should be excluded:</p>
@@ -782,7 +786,7 @@ The metadata of variables from subsequent slice datasets is ignored!</p>
 <h3 id="variable-outline">Variable Outline</h3>
 <p>To ensure a slice variable has the expected dimensionality, the <code>dims</code> 
 setting is used. The following example defines the dimensions of the data variable
-named <code>chlorophyll</code></p>
+named <code>chl</code> (Chlorophyll):</p>
 <pre><code class="language-json">{
     &quot;variables&quot;: {
         &quot;chl&quot;: { 
@@ -791,8 +795,7 @@ named <code>chlorophyll</code></p>
     }
 }
 </code></pre>
-<p>An error will be raised if a variable from a subsequent slice has different 
-dimensions.</p>
+<p>An error will be raised if a variable from a subsequent slice has different dimensions.</p>
 <h3 id="variable-attributes">Variable Attributes</h3>
 <p>Extra variable attributes can be provided using the <code>attrs</code> setting:</p>
 <pre><code class="language-json">{
@@ -807,17 +810,38 @@ dimensions.</p>
 }
 </code></pre>
 <h3 id="variable-encoding">Variable Encoding</h3>
-<p><em>This section is a work in progress.</em></p>
-<ul>
-<li>The target chunking of the append dimension equals the size of the append 
-  dimension in each slice and vice versa. </li>
-<li>The target encoding should allow for specifying the target storage chunking, 
-  data type, and compression. </li>
-<li>Detect coordinate variables and allow them to stay un-chunked.
-  This is important for coordinate variables containing or corresponding 
-  to the append-dimension.</li>
-</ul>
+<p>Encoding metadata specifies how array data is stored in the target dataset and
+includes storage data type, packing, chunking, and compression.
+Encoding metadata for a given variable is provided by the <code>encoding</code> setting.
+Since the encoding is often shared by multiple variables the wildcard 
+variable name <code>*</code> can often be of help.</p>
 <h4 id="chunking">Chunking</h4>
+<p>By default, the chunking of the coordinate variable corresponding to the append 
+dimension will be its dimension in the first slice dataset. Often, this will
+be one or a small number. Since <code>xarray</code> loads coordinates eagerly when opening
+a dataset, this can lead to performance issues if the target dataset is served
+from object storage such as S3. This is because, a separate HTTP request is 
+required for every single chunk. It is therefore very advisable to set the 
+chunks of that variable to a larger number using the <code>chunks</code> setting.
+For other variables, the chunking within the append dimension may stay small
+if desired:</p>
+<pre><code class="language-json">{
+    &quot;variables&quot;: {
+        &quot;time&quot;: { 
+            &quot;dims&quot;: [&quot;time&quot;],
+            &quot;encoding&quot;: {
+                &quot;chunks&quot;: [1024]
+            }
+        },
+        &quot;chl&quot;: { 
+            &quot;dims&quot;: [&quot;time&quot;, &quot;y&quot;, &quot;x&quot;],
+            &quot;encoding&quot;: {
+                &quot;chunks&quot;: [1, 2048, 2048]
+            }
+        }
+    }
+}
+</code></pre>
 <h4 id="missing-values">Missing Values</h4>
 <p><em>This section is a work in progress.</em></p>
 <h4 id="compression">Compression</h4>
@@ -901,12 +925,12 @@ dimensions.</p>
 <p><em>This section is a work in progress.</em></p>
 <h2 id="logging">Logging</h2>
 <p>The <code>zappend</code> logging configuration follows exactly the 
-Python <a href="https://docs.python.org/3/library/logging.config.html#logging-config-dictschema">dictionary schema</a> of the Python module <code>logging.config</code>.</p>
-<p>The logger used by the <code>zappend</code> tool is named <code>zappend</code>.
+Python <a href="https://docs.python.org/3/library/logging.config.html#logging-config-dictschema">dictionary schema</a> of the Python module <code>logging.config</code>.
+The logger used by the <code>zappend</code> tool is named <code>zappend</code>.
 Note that you can also configure the logger of other Python modules, e.g.,
 <code>xarray</code> or <code>dask</code> here.</p>
-<p>Given here is an example that logs <code>zappend</code>'s output 
-to the console using the INFO level:</p>
+<p>Given here is an example that logs <code>zappend</code>'s output to the console using 
+the INFO level:</p>
 <pre><code class="language-json">{
     &quot;logging&quot;: {
         &quot;version&quot;: 1,
