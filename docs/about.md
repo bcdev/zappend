@@ -60,6 +60,8 @@ black zappend
 pip install -r requirements-doc.txt
 
 mkdocs build
+mkdocs serve
+mkdocs gh-deploy
 ```
 
 ## Original Requirements
