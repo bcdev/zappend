@@ -10,15 +10,24 @@ from ..context import Context
 
 
 class SliceSource(ABC):
-    """Represents a source of slice datasets.
+    """Represents a source for a slice dataset.
     Instances of this class are supposed to be used as context managers.
-
     The context manager provides the dataset instance by calling the
-    ``open_dataset()`` method.
+    [get_dataset()][zappend.slice.abc.SliceSource.get_dataset] method.
+    When the context manager exits, the
+    [dispose()][zappend.slice.abc.SliceSource.dispose] method
+    is called.
 
-    When the context manager exits, the `dispose()` method is called.
+    You may implement your own slice source class and define a
+    [slice source factory][zappend.slice.common.SliceFactory] function
+    that creates instances of your slice source. Such functions can
+    be passed input to the [zappend()](zappend.api.zappend) function, usually
+    in the form of a
+    [closure](https://en.wikipedia.org/wiki/Closure_(computer_programming)) to
+    capture slice-specific information.
 
-    :param ctx: The processing context
+    Args:
+        ctx: The processing context.
     """
 
     def __init__(self, ctx: Context):
@@ -30,14 +39,9 @@ class SliceSource(ABC):
         return self._ctx
 
     def __enter__(self) -> xr.Dataset:
-        """Call ``get_dataset()`` and return its result.
-
-        :return: A slice dataset.
-        """
         return self.get_dataset()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Call ``dispose()``."""
         self.dispose()
 
     @abstractmethod
@@ -51,10 +55,11 @@ class SliceSource(ABC):
         It should return a dataset that is compatible with
         target dataset:
 
-        * slice must have same fixed dimensions
-        * append dimension must exist in slice
+        * slice must have same fixed dimensions;
+        * append dimension must exist in slice.
 
-        :return: A slice dataset.
+        Returns:
+            A slice dataset.
         """
 
     def dispose(self):

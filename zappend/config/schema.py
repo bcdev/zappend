@@ -3,23 +3,15 @@
 # https://opensource.org/licenses/MIT.
 
 import json
-import os.path
-from typing import Any
+from typing import Any, Literal
 
-import jsonschema
-import jsonschema.exceptions
-import yaml
+from .defaults import DEFAULT_APPEND_DIM
+from .defaults import DEFAULT_SLICE_POLLING_INTERVAL
+from .defaults import DEFAULT_SLICE_POLLING_TIMEOUT
+from .defaults import DEFAULT_ZARR_VERSION
 
-from .fsutil.fileobj import FileObj
-from .log import logger
 
-DEFAULT_ZARR_VERSION = 2
-DEFAULT_APPEND_DIM = "time"
-
-DEFAULT_SLICE_POLLING_INTERVAL = 2
-DEFAULT_SLICE_POLLING_TIMEOUT = 60
-
-_SLICE_POLLING_SCHEMA = {
+SLICE_POLLING_SCHEMA = {
     "description": "Defines how to poll for contributing datasets.",
     "oneOf": [
         {
@@ -51,7 +43,7 @@ _SLICE_POLLING_SCHEMA = {
     ],
 }
 
-_VARIABLE_ENCODING_SCHEMA = {
+VARIABLE_ENCODING_SCHEMA = {
     "description": "Variable storage encoding. Settings given here overwrite"
     " the encoding settings of the first"
     " contributing dataset.",
@@ -157,7 +149,7 @@ _VARIABLE_ENCODING_SCHEMA = {
     ),
 }
 
-_VARIABLES_SCHEMA = {
+VARIABLES_SCHEMA = {
     "description": (
         "Defines dimensions, encoding, and attributes"
         " for variables in the target dataset."
@@ -180,7 +172,7 @@ _VARIABLES_SCHEMA = {
                 "type": "array",
                 "items": {"type": "string", "minLength": 1},
             },
-            encoding=_VARIABLE_ENCODING_SCHEMA,
+            encoding=VARIABLE_ENCODING_SCHEMA,
             attrs={
                 "description": "Arbitrary variable metadata" " attributes.",
                 "type": "object",
@@ -191,16 +183,16 @@ _VARIABLES_SCHEMA = {
     },
 }
 
-_LOG_REF_URL = (
+LOG_REF_URL = (
     "https://docs.python.org/3/library/logging.config.html" "#logging-config-dictschema"
 )
-_LOG_HDL_CLS_URL = "https://docs.python.org/3/library/logging.handlers.html"
+LOG_HDL_CLS_URL = "https://docs.python.org/3/library/logging.handlers.html"
 
-_LOG_LEVELS = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"]
+LOG_LEVELS = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"]
 
-_LOGGING_SCHEMA = {
+LOGGING_SCHEMA = {
     "description": f"Logging configuration. For details refer to the"
-    f" [dictionary schema]({_LOG_REF_URL})"
+    f" [dictionary schema]({LOG_REF_URL})"
     f" of the Python module `logging.config`.",
     "type": "object",
     "properties": dict(
@@ -272,14 +264,14 @@ _LOGGING_SCHEMA = {
                     "class": {
                         "description": (
                             f"The fully qualified name of the handler class. See"
-                            f" [logging handlers]({_LOG_HDL_CLS_URL})."
+                            f" [logging handlers]({LOG_HDL_CLS_URL})."
                         ),
                         "type": "string",
                         "examples": ["logging.StreamHandler", "logging.FileHandler"],
                     },
                     "level": {
                         "description": "The level of the handler.",
-                        "enum": _LOG_LEVELS,
+                        "enum": LOG_LEVELS,
                     },
                     "formatter ": {
                         "description": "The id of the formatter" " for this handler.",
@@ -311,7 +303,7 @@ _LOGGING_SCHEMA = {
                 "properties": {
                     "level": {
                         "description": "The level of the logger.",
-                        "enum": _LOG_LEVELS,
+                        "enum": LOG_LEVELS,
                     },
                     "propagate ": {
                         "description": "The propagation setting of the logger.",
@@ -340,7 +332,7 @@ _LOGGING_SCHEMA = {
     "additionalProperties": True,
 }
 
-CONFIG_V1_SCHEMA = {
+CONFIG_SCHEMA_V1 = {
     "description": "Configuration for the `zappend` tool",
     "type": "object",
     "properties": dict(
@@ -386,7 +378,7 @@ CONFIG_V1_SCHEMA = {
             "type": "object",
             "additionalProperties": True,
         },
-        slice_polling=_SLICE_POLLING_SCHEMA,
+        slice_polling=SLICE_POLLING_SCHEMA,
         temp_dir={
             "description": (
                 "The URI or local path of the directory that"
@@ -422,7 +414,7 @@ CONFIG_V1_SCHEMA = {
             "minLength": 1,
             "default": DEFAULT_APPEND_DIM,
         },
-        variables=_VARIABLES_SCHEMA,
+        variables=VARIABLES_SCHEMA,
         included_variables={
             "description": (
                 "Specifies the names of variables to be included in"
@@ -467,129 +459,30 @@ CONFIG_V1_SCHEMA = {
             "type": "boolean",
             "default": False,
         },
-        logging=_LOGGING_SCHEMA,
+        logging=LOGGING_SCHEMA,
     ),
     "additionalProperties": False,
 }
 
-Config = dict[str, Any]
-ConfigLikeOne = FileObj | str | Config
-ConfigLikeMany = list[ConfigLikeOne] | tuple[ConfigLikeOne]
-ConfigLike = ConfigLikeMany | ConfigLikeOne | None
 
+# noinspection PyShadowingBuiltins
+def get_config_schema(
+    format: Literal["md"] | Literal["json"] | Literal["dict"] = "dict",
+) -> str | dict[str, Any]:
+    """Get the configuration schema in the given format.
 
-def validate_config(config_like: ConfigLike) -> Config:
-    """Validate configuration and return normalized form.
-
-    First normalizes the configuration-like value *config_like*
-    using ``normalize_config()``, then validates and returns the result.
-
-    :param config_like: A configuration-like value.
-    :return: The normalized and validated configuration dictionary.
+    Args:
+        format: One of "md" (markdown), "json" (JSON Schema), or
+            "dict" (JSON Schema object).
     """
-    config = normalize_config(config_like)
-    try:
-        jsonschema.validate(config, CONFIG_V1_SCHEMA)
-    except jsonschema.exceptions.ValidationError as e:
-        raise ValueError(
-            f"Invalid configuration: {e.message}" f" for {'.'.join(map(str, e.path))}"
-        )
-    return config
-
-
-def normalize_config(config_like: ConfigLike) -> Config:
-    """Normalize the configuration-like value *config_like*
-    into a configuration dictionary.
-
-    The configuration-like value *config_like*
-
-    * can be a dict (the configuration itself),
-    * a str or a FileObj (configuration loaded from URI),
-    * a sequence of configuration-like values.
-    * or None.
-
-    The values of a sequence will be normalized first, then all
-    resulting configuration dictionaries will be merged in to one.
-
-    :param config_like: A configuration-like value.
-    :return: The normalized configuration dictionary.
-    """
-    if isinstance(config_like, dict):
-        return config_like
-    if config_like is None:
-        return {}
-    if isinstance(config_like, FileObj):
-        return load_config(config_like)
-    if isinstance(config_like, str):
-        return load_config(FileObj(config_like))
-    if isinstance(config_like, (list, tuple)):
-        return merge_configs(*[normalize_config(c) for c in config_like])
-    raise TypeError(
-        "config_like must of type NoneType, FileObj, dict,"
-        " str, or a sequence of such values"
-    )
-
-
-def load_config(config_file: FileObj) -> Config:
-    yaml_extensions = {".yml", ".yaml", ".YML", ".YAML"}
-    logger.info(f"Reading configuration {config_file.uri}")
-    _, ext = os.path.splitext(config_file.path)
-    with config_file.fs.open(config_file.path, "rt") as f:
-        if ext in yaml_extensions:
-            config = yaml.safe_load(f)
-        else:
-            config = json.load(f)
-    if not isinstance(config, dict):
-        raise TypeError(
-            f"Invalid configuration:" f" {config_file.uri}: object expected"
-        )
-    return config
-
-
-def merge_configs(*configs: Config) -> Config:
-    if not configs:
-        return {}
-    merged_config = dict(configs[0])
-    for config in configs[1:]:
-        merged_config = _merge_dicts(merged_config, config)
-    return merged_config
-
-
-def _merge_dicts(dict_1: dict[str, Any], dict_2: dict[str, Any]) -> dict[str, Any]:
-    merged = dict(dict_1)
-    for key in dict_2.keys():
-        if key in merged:
-            merged[key] = _merge_values(merged[key], dict_2[key])
-        else:
-            merged[key] = dict_2[key]
-    return merged
-
-
-# noinspection PyUnusedLocal
-def _merge_lists(list_1: list[Any], list_2: list[Any]) -> list[Any]:
-    # alternative strategies:
-    # return list(set(list_1) + set(list_2))  # unite
-    # return list_1 + list_2  # concat
-    # return list_1  # keep
-    return list_2  # replace
-
-
-def _merge_values(value_1: Any, value_2: Any) -> Any:
-    if isinstance(value_1, dict) and isinstance(value_2, dict):
-        return _merge_dicts(value_1, value_2)
-    if isinstance(value_1, (list, tuple)) and isinstance(value_2, (list, tuple)):
-        return _merge_lists(value_1, value_2)
-    return value_2
-
-
-def schema_to_json() -> str:
-    return json.dumps(CONFIG_V1_SCHEMA, indent=2)
-
-
-def schema_to_md() -> str:
-    lines = []
-    _schema_to_md(CONFIG_V1_SCHEMA, [], lines)
-    return "\n".join(lines)
+    if format == "json":
+        return json.dumps(CONFIG_SCHEMA_V1, indent=2)
+    elif format == "md":
+        lines = []
+        _schema_to_md(CONFIG_SCHEMA_V1, [], lines)
+        return "\n".join(lines)
+    else:
+        return dict(CONFIG_SCHEMA_V1)
 
 
 def _schema_to_md(

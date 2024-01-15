@@ -16,8 +16,9 @@ class PersistentSliceSource(SliceSource):
     """
     A slice source that is persisted in some filesystem.
 
-    :param ctx: Processing context
-    :param slice_file: Slice file object
+    Args:
+        ctx: Processing context
+        slice_file: Slice file object
     """
 
     def __init__(self, ctx: Context, slice_file: FileObj):

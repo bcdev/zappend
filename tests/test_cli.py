@@ -13,7 +13,7 @@ from .helpers import make_test_dataset
 expected_help_text = """
     Usage: zappend [OPTIONS] [SLICES]...
     
-      Create or update a Zarr dataset TARGET from slice datasets SLICES.
+      Create or update a Zarr datacube TARGET from slice datasets SLICES.
     
     Options:
       -c, --config CONFIG    Configuration JSON or YAML file. If multiple are
