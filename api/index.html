@@ -1,0 +1,2612 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../cli/">
+      
+      
+        <link rel="next" href="../config/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+    
+    
+      
+        <title>API Reference - zappend</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#python-api-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="zappend" class="md-header__button md-logo" aria-label="zappend" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            zappend
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="zappend" class="md-nav__button md-logo" aria-label="zappend" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    zappend
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Index
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../start/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CLI Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#function-zappend" class="md-nav__link">
+    <span class="md-ellipsis">
+      Function zappend
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-slicesource" class="md-nav__link">
+    <span class="md-ellipsis">
+      Class SliceSource
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Class SliceSource">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zappend.slice.abc.SliceSource.ctx" class="md-nav__link">
+    <span class="md-ellipsis">
+      ctx
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.slice.abc.SliceSource.dispose" class="md-nav__link">
+    <span class="md-ellipsis">
+      dispose
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.slice.abc.SliceSource.get_dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_dataset
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      Class Context
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Class Context">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.append_dim_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      append_dim_name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.disable_rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      disable_rollback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.dry_run" class="md-nav__link">
+    <span class="md-ellipsis">
+      dry_run
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.persist_mem_slices" class="md-nav__link">
+    <span class="md-ellipsis">
+      persist_mem_slices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.slice_engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_engine
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.slice_polling" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_polling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.slice_storage_options" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_storage_options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.target_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      target_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.target_metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      target_metadata
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.temp_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      temp_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.zarr_version" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_version
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.get_dataset_metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_dataset_metadata
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-fileobj" class="md-nav__link">
+    <span class="md-ellipsis">
+      Class FileObj
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Class FileObj">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.filename" class="md-nav__link">
+    <span class="md-ellipsis">
+      filename
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.fs" class="md-nav__link">
+    <span class="md-ellipsis">
+      fs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.parent" class="md-nav__link">
+    <span class="md-ellipsis">
+      parent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.path" class="md-nav__link">
+    <span class="md-ellipsis">
+      path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.storage_options" class="md-nav__link">
+    <span class="md-ellipsis">
+      storage_options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.uri" class="md-nav__link">
+    <span class="md-ellipsis">
+      uri
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.__truediv__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __truediv__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      close
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      delete
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      exists
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.for_path" class="md-nav__link">
+    <span class="md-ellipsis">
+      for_path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.mkdir" class="md-nav__link">
+    <span class="md-ellipsis">
+      mkdir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.read" class="md-nav__link">
+    <span class="md-ellipsis">
+      read
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.write" class="md-nav__link">
+    <span class="md-ellipsis">
+      write
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Types
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zappend.slice.common.SliceObj" class="md-nav__link">
+    <span class="md-ellipsis">
+      SliceObj
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.slice.common.SliceFactory" class="md-nav__link">
+    <span class="md-ellipsis">
+      SliceFactory
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.config.ConfigItem" class="md-nav__link">
+    <span class="md-ellipsis">
+      ConfigItem
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.config.ConfigList" class="md-nav__link">
+    <span class="md-ellipsis">
+      ConfigList
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.config.ConfigLike" class="md-nav__link">
+    <span class="md-ellipsis">
+      ConfigLike
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../about/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    About
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#function-zappend" class="md-nav__link">
+    <span class="md-ellipsis">
+      Function zappend
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-slicesource" class="md-nav__link">
+    <span class="md-ellipsis">
+      Class SliceSource
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Class SliceSource">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zappend.slice.abc.SliceSource.ctx" class="md-nav__link">
+    <span class="md-ellipsis">
+      ctx
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.slice.abc.SliceSource.dispose" class="md-nav__link">
+    <span class="md-ellipsis">
+      dispose
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.slice.abc.SliceSource.get_dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_dataset
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      Class Context
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Class Context">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.append_dim_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      append_dim_name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.disable_rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      disable_rollback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.dry_run" class="md-nav__link">
+    <span class="md-ellipsis">
+      dry_run
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.persist_mem_slices" class="md-nav__link">
+    <span class="md-ellipsis">
+      persist_mem_slices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.slice_engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_engine
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.slice_polling" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_polling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.slice_storage_options" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_storage_options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.target_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      target_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.target_metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      target_metadata
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.temp_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      temp_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.zarr_version" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_version
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.context.Context.get_dataset_metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_dataset_metadata
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-fileobj" class="md-nav__link">
+    <span class="md-ellipsis">
+      Class FileObj
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Class FileObj">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.filename" class="md-nav__link">
+    <span class="md-ellipsis">
+      filename
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.fs" class="md-nav__link">
+    <span class="md-ellipsis">
+      fs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.parent" class="md-nav__link">
+    <span class="md-ellipsis">
+      parent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.path" class="md-nav__link">
+    <span class="md-ellipsis">
+      path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.storage_options" class="md-nav__link">
+    <span class="md-ellipsis">
+      storage_options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.uri" class="md-nav__link">
+    <span class="md-ellipsis">
+      uri
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.__truediv__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __truediv__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      close
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      delete
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      exists
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.for_path" class="md-nav__link">
+    <span class="md-ellipsis">
+      for_path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.mkdir" class="md-nav__link">
+    <span class="md-ellipsis">
+      mkdir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.read" class="md-nav__link">
+    <span class="md-ellipsis">
+      read
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.fsutil.fileobj.FileObj.write" class="md-nav__link">
+    <span class="md-ellipsis">
+      write
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Types
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zappend.slice.common.SliceObj" class="md-nav__link">
+    <span class="md-ellipsis">
+      SliceObj
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.slice.common.SliceFactory" class="md-nav__link">
+    <span class="md-ellipsis">
+      SliceFactory
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.config.ConfigItem" class="md-nav__link">
+    <span class="md-ellipsis">
+      ConfigItem
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.config.ConfigList" class="md-nav__link">
+    <span class="md-ellipsis">
+      ConfigList
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.config.ConfigLike" class="md-nav__link">
+    <span class="md-ellipsis">
+      ConfigLike
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="python-api-reference">Python API reference</h1>
+<p>All described objects can be imported from the <code>zappend.api</code> module.</p>
+<h2 id="function-zappend">Function <code>zappend</code></h2>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+
+  <div class="doc doc-contents first">
+  
+      <p>Create or update a Zarr dataset from dataset slices.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>slices</code></td>
+          <td>
+                <code><span title="typing.Iterable">Iterable</span>[<a class="autorefs autorefs-internal" title="zappend.slice.SliceObj" href="#zappend.slice.common.SliceObj">SliceObj</a> | <a class="autorefs autorefs-internal" title="zappend.slice.SliceFactory" href="#zappend.slice.common.SliceFactory">SliceFactory</a>]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>An iterable that yields slice objects. A slice object is
+either a <code>str</code>, <code>xarray.Dataset</code>, <code>SliceSource</code> or a factory
+function that returns a slice object. If <code>str</code> is used,
+it is interpreted as local dataset path or dataset URI.
+If a URI is used, protocol-specific parameters apply, given by
+configuration parameter <code>slice_storage_options</code>.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>config</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="zappend.config.ConfigLike" href="#zappend.config.ConfigLike">ConfigLike</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Processor configuration.
+May be a file path or URI, a <code>dict</code>, <code>None</code>, or a sequence of
+the aforementioned. If a sequence is used, subsequent configurations
+are incremental to the previous ones.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>kwargs</code></td>
+          <td>
+                <code><span title="typing.Any">Any</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Additional configuration parameters.
+Can be used to pass or override configuration values in <em>config</em>.</p>
+            </div>
+          </td>
+          <td>
+                <code>{}</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div><h2 id="class-slicesource">Class <code>SliceSource</code></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+
+  <div class="doc doc-contents first">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+  
+      <p>Represents a source for a slice dataset.
+Instances of this class are supposed to be used as context managers.
+The context manager provides the dataset instance by calling the
+<a class="autorefs autorefs-internal" href="#zappend.slice.abc.SliceSource.get_dataset">get_dataset()</a> method.
+When the context manager exits, the
+<a class="autorefs autorefs-internal" href="#zappend.slice.abc.SliceSource.dispose">dispose()</a> method
+is called.</p>
+<p>You may implement your own slice source class and define a
+<a class="autorefs autorefs-internal" href="#zappend.slice.common.SliceFactory">slice source factory</a> function
+that creates instances of your slice source. Such functions can
+be passed input to the <a href="zappend.api.zappend">zappend()</a> function, usually
+in the form of a
+<a href="https://en.wikipedia.org/wiki/Closure_(computer_programming)">closure</a> to
+capture slice-specific information.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>ctx</code></td>
+          <td>
+                <code><span title="zappend.context.Context">Context</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The processing context.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.slice.abc.SliceSource.ctx" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">ctx</span><span class="p">:</span> <span class="n">Context</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The processing context passed to the constructor.</p>
+  </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="zappend.slice.abc.SliceSource.dispose" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">dispose</span><span class="p">()</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Dispose this slice source.
+This should include cleaning up of used resources.</p>
+<p>This method is not intended to be called directly.
+Instead, instances of this class are context managers and
+should be used as such.</p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="zappend.slice.abc.SliceSource.get_dataset" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">get_dataset</span><span class="p">()</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Open this slice source and return the dataset instance.</p>
+<p>This method is not intended to be called directly.
+Instead, instances of this class are context managers and
+should be used as such.</p>
+<p>It should return a dataset that is compatible with
+target dataset:</p>
+<ul>
+<li>slice must have same fixed dimensions;</li>
+<li>append dimension must exist in slice.</li>
+</ul>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="xarray.Dataset">Dataset</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>A slice dataset.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+
+</div><h2 id="class-context">Class <code>Context</code></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+
+  <div class="doc doc-contents first">
+
+  
+      <p>Provides access to configuration values and values derived from it.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>config</code></td>
+          <td>
+                <code><span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>A validated configuration.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Raises:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>ValueError</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>If <code>target_dir</code> is missing in the configuration.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.context.Context.append_dim_name" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">append_dim_name</span><span class="p">:</span> <span class="nb">str</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The configured append dimension.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.context.Context.disable_rollback" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">disable_rollback</span><span class="p">:</span> <span class="nb">bool</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Whether to disable transaction rollbacks.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.context.Context.dry_run" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">dry_run</span><span class="p">:</span> <span class="nb">bool</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Whether to run in dry mode.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.context.Context.persist_mem_slices" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">persist_mem_slices</span><span class="p">:</span> <span class="nb">bool</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Whether to persist in-memory slice datasets.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.context.Context.slice_engine" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">slice_engine</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The configured slice engine to be used if a slice object is not a Zarr.
+If defined, it will be passed to the <code>xarray.open_dataset()</code> function.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.context.Context.slice_polling" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">slice_polling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The configured slice dataset polling.
+If slice polling is enabled, returns tuple (interval, timeout)
+in seconds, otherwise, return (None, None).</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.context.Context.slice_storage_options" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">slice_storage_options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The configured slice storage options to be used if a slice object is a Zarr.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.context.Context.target_dir" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">target_dir</span><span class="p">:</span> <span class="n">FileObj</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The configured target directory.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.context.Context.target_metadata" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">target_metadata</span><span class="p">:</span> <span class="n">DatasetMetadata</span> <span class="o">|</span> <span class="kc">None</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The metadata for the target dataset. May be <code>None</code> while the
+target dataset hasn't been created yet. Will be set, once the
+target dataset has been created from the first slice dataset.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.context.Context.temp_dir" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">temp_dir</span><span class="p">:</span> <span class="n">FileObj</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The configured directory used for temporary files such as rollback data.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.context.Context.zarr_version" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">zarr_version</span><span class="p">:</span> <span class="nb">int</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The configured Zarr version for the target dataset.</p>
+  </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="zappend.context.Context.get_dataset_metadata" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">get_dataset_metadata</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Get the dataset metadata from configuration and the given dataset.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>dataset</code></td>
+          <td>
+                <code><span title="xarray.Dataset">Dataset</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The dataset</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="zappend.metadata.DatasetMetadata">DatasetMetadata</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The dataset metadata</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+
+</div><h2 id="class-fileobj">Class <code>FileObj</code></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+
+  <div class="doc doc-contents first">
+
+  
+      <p>An object that represents a file or directory in some filesystem.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>uri</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The file or directory URI</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>storage_options</code></td>
+          <td>
+                <code>dict[str, <span title="typing.Any">Any</span>] | None</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Optional storage options specific to
+the protocol of the URI</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>fs</code></td>
+          <td>
+                <code><span title="fsspec.AbstractFileSystem">AbstractFileSystem</span> | None</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Optional fsspec filesystem instance.
+Use with care, the filesystem must be consistent with <em>uri</em>
+and <em>storage_options</em>. For internal use only.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>path</code></td>
+          <td>
+                <code>str | None</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The path info the filesystem <em>fs</em>.
+Use with care, the path must be consistent with <em>uri</em>.
+For internal use only.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.filename" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The filename part of the URI.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.fs" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">fs</span><span class="p">:</span> <span class="n">fsspec</span><span class="o">.</span><span class="n">AbstractFileSystem</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The filesystem.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.parent" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">parent</span><span class="p">:</span> <span class="n">FileObj</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The parent file object.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.path" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">path</span><span class="p">:</span> <span class="nb">str</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The path of the file or directory into the filesystem.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.storage_options" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">storage_options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Storage options for creating the filesystem object.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.uri" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">uri</span><span class="p">:</span> <span class="nb">str</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The URI.</p>
+  </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.__truediv__" class="doc doc-heading">
+          <code class="highlight language-python"><span class="fm">__truediv__</span><span class="p">(</span><span class="n">rel_path</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Overriden to call
+<a class="autorefs autorefs-internal" href="#zappend.fsutil.fileobj.FileObj.close">for_path(rel_path)</a>.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>rel_path</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Relative path to append.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.close" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">close</span><span class="p">()</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Close the filesystem used by this file object.</p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.delete" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">delete</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Delete the file or directory represented by this file object.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>recursive</code></td>
+          <td>
+                <code>bool</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Set to <code>True</code> to delete a non-empty directory.</p>
+            </div>
+          </td>
+          <td>
+                <code>False</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.exists" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">exists</span><span class="p">()</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Check if the file or directory represented by this file object exists.</p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.for_path" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">for_path</span><span class="p">(</span><span class="n">rel_path</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Gets a new file object for the given relative path.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>rel_path</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Relative path to append.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="zappend.fsutil.fileobj.FileObj">FileObj</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>A new file object</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.mkdir" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">mkdir</span><span class="p">()</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Create the directory represented by this file object.</p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.read" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">read</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Read the contents of the file represented by this file object.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>mode</code></td>
+          <td>
+                <code><span title="typing.Literal">Literal</span>[&#39;rb&#39;] | <span title="typing.Literal">Literal</span>[&#39;r&#39;]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Read mode, must be "rb" or "r"</p>
+            </div>
+          </td>
+          <td>
+                <code>&#39;rb&#39;</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>bytes | str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The contents of the file either as <code>bytes</code> if mode is "rb" or as <code>str</code></p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+                <code>bytes | str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>if mode is "r".</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="zappend.fsutil.fileobj.FileObj.write" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Write the contents of the file represented by this file object.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>data</code></td>
+          <td>
+                <code>str | bytes</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The data to write.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>mode</code></td>
+          <td>
+                <code><span title="typing.Literal">Literal</span>[&#39;wb&#39;] | <span title="typing.Literal">Literal</span>[&#39;w&#39;] | <span title="typing.Literal">Literal</span>[&#39;ab&#39;] | <span title="typing.Literal">Literal</span>[&#39;a&#39;] | None</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Write mode, must be "wb", "w", "ab", or "a".</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>int</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The number of bytes written.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+
+</div><h2 id="types">Types</h2>
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.slice.common.SliceObj" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">zappend</span><span class="o">.</span><span class="n">slice</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">SliceObj</span> <span class="o">=</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">FileObj</span> <span class="o">|</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="n">SliceSource</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  
+      <p>The possible types that can represent a slice dataset.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.slice.common.SliceFactory" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">zappend</span><span class="o">.</span><span class="n">slice</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">SliceFactory</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Context</span><span class="p">],</span> <span class="n">SliceObj</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  
+      <p>Tne type for a factory function that returns a slice object
+for a given processing context.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.config.ConfigItem" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">zappend</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">ConfigItem</span> <span class="o">=</span> <span class="n">FileObj</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.config.ConfigList" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">zappend</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">ConfigList</span> <span class="o">=</span> <span class="nb">list</span><span class="p">[</span><span class="n">ConfigItem</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ConfigItem</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.config.ConfigLike" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">zappend</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">ConfigLike</span> <span class="o">=</span> <span class="n">ConfigItem</span> <span class="o">|</span> <span class="n">ConfigList</span> <span class="o">|</span> <span class="kc">None</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+  
+      <p>The possible types used to represent processor configuration.</p>
+  </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      
+    
+  </body>
+</html>

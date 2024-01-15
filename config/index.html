@@ -1,0 +1,1047 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../api/">
+      
+      
+        <link rel="next" href="../about/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+    
+    
+      
+        <title>Configuration - zappend</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#configuration-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="zappend" class="md-header__button md-logo" aria-label="zappend" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            zappend
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Configuration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="zappend" class="md-nav__button md-logo" aria-label="zappend" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    zappend
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Index
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../start/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CLI Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration Reference
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#version" class="md-nav__link">
+    <span class="md-ellipsis">
+      version
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#target_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      target_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#target_storage_options" class="md-nav__link">
+    <span class="md-ellipsis">
+      target_storage_options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slice_engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_engine
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slice_storage_options" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_storage_options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slice_polling" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_polling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#temp_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      temp_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#temp_storage_options" class="md-nav__link">
+    <span class="md-ellipsis">
+      temp_storage_options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarr_version" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_version
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_dims" class="md-nav__link">
+    <span class="md-ellipsis">
+      fixed_dims
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#append_dim" class="md-nav__link">
+    <span class="md-ellipsis">
+      append_dim
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#included_variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      included_variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#excluded_variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      excluded_variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#persist_mem_slices" class="md-nav__link">
+    <span class="md-ellipsis">
+      persist_mem_slices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disable_rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      disable_rollback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dry_run" class="md-nav__link">
+    <span class="md-ellipsis">
+      dry_run
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      logging
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../about/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    About
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration Reference
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#version" class="md-nav__link">
+    <span class="md-ellipsis">
+      version
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#target_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      target_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#target_storage_options" class="md-nav__link">
+    <span class="md-ellipsis">
+      target_storage_options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slice_engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_engine
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slice_storage_options" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_storage_options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slice_polling" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_polling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#temp_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      temp_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#temp_storage_options" class="md-nav__link">
+    <span class="md-ellipsis">
+      temp_storage_options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zarr_version" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_version
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_dims" class="md-nav__link">
+    <span class="md-ellipsis">
+      fixed_dims
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#append_dim" class="md-nav__link">
+    <span class="md-ellipsis">
+      append_dim
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#included_variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      included_variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#excluded_variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      excluded_variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#persist_mem_slices" class="md-nav__link">
+    <span class="md-ellipsis">
+      persist_mem_slices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disable_rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      disable_rollback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dry_run" class="md-nav__link">
+    <span class="md-ellipsis">
+      dry_run
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      logging
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  <h1>Configuration</h1>
+
+<h2 id="configuration-reference">Configuration Reference</h2>
+<h3 id="version"><code>version</code></h3>
+<p>Configuration schema version. Allows the schema to evolve while still preserving backwards compatibility.
+Its value is <code>1</code>.</p>
+<h3 id="target_dir"><code>target_dir</code></h3>
+<p>Type <em>string</em>.
+The URI or local path of the target Zarr dataset. Must be a directory.</p>
+<h3 id="target_storage_options"><code>target_storage_options</code></h3>
+<p>Type <em>object</em>.
+Options for the filesystem given by the URI of <code>target_dir</code>.</p>
+<h3 id="slice_engine"><code>slice_engine</code></h3>
+<p>Type <em>string</em>.
+The name of the engine to be used for opening contributing datasets. Refer to the <code>engine</code> argument of the function <code>xarray.open_dataset()</code>.</p>
+<h3 id="slice_storage_options"><code>slice_storage_options</code></h3>
+<p>Type <em>object</em>.
+Options for the filesystem given by the protocol of the URIs of contributing datasets.</p>
+<h3 id="slice_polling"><code>slice_polling</code></h3>
+<p>Defines how to poll for contributing datasets.
+Must be one of the following:
+* No polling, fail immediately if dataset is not available.
+  Its value is <code>false</code>.
+* Poll using default values.
+  Its value is <code>true</code>.
+* Type <em>object</em>.
+  Polling parameters.
+  The keys <code>interval</code>, <code>timeout</code> are required.</p>
+<ul>
+<li><code>interval</code>:
+    Type <em>number</em>.
+    Polling interval in seconds.
+    Defaults to <code>2</code>.</li>
+<li><code>timeout</code>:
+    Type <em>number</em>.
+    Polling timeout in seconds.
+    Defaults to <code>60</code>.</li>
+</ul>
+<h3 id="temp_dir"><code>temp_dir</code></h3>
+<p>Type <em>string</em>.
+The URI or local path of the directory that will be used to temporarily store rollback information.</p>
+<h3 id="temp_storage_options"><code>temp_storage_options</code></h3>
+<p>Type <em>object</em>.
+Options for the filesystem given by the protocol of <code>temp_dir</code>.</p>
+<h3 id="zarr_version"><code>zarr_version</code></h3>
+<p>The Zarr version to be used.
+Its value is <code>2</code>.</p>
+<h3 id="fixed_dims"><code>fixed_dims</code></h3>
+<p>Type <em>object</em>.
+Specifies the fixed dimensions of the target dataset. Keys are dimension names, values are dimension sizes.</p>
+<p>The object's values are of type <em>integer</em>.</p>
+<h3 id="append_dim"><code>append_dim</code></h3>
+<p>Type <em>string</em>.
+The name of the variadic append dimension.
+Defaults to <code>"time"</code>.</p>
+<h3 id="variables"><code>variables</code></h3>
+<p>Type <em>object</em>.
+Defines dimensions, encoding, and attributes for variables in the target dataset. Object property names refer to variable names. The special name <code>*</code> refers to all variables, which is useful for defining common values.</p>
+<p>The object's values are of type <em>object</em>.
+Variable metadata.</p>
+<ul>
+<li><code>dims</code>:
+  Type <em>array</em>.
+  The names of the variable's dimensions in the given order. Each dimension must exist in contributing datasets.</li>
+</ul>
+<p>The array's items are of type <em>string</em>.
+* <code>encoding</code>:
+  Type <em>object</em>.
+  Variable storage encoding. Settings given here overwrite the encoding settings of the first contributing dataset.</p>
+<ul>
+<li><code>dtype</code>:
+    Storage data type
+    Must be one of <code>"int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float32", "float64"</code>.</li>
+<li>
+<p><code>chunks</code>:
+    Storage chunking.
+    Must be one of the following:</p>
+<ul>
+<li>Type <em>array</em>.
+  Chunk sizes in the order of the dimensions.</li>
+</ul>
+<p>The array's items are of type <em>integer</em>.
+* Disable chunking.
+  Its value is <code>null</code>.
+  * <code>fill_value</code>:
+Storage fill value.
+Must be one of the following:
+* Type <em>number</em>.
+  A number of type and unit of the given storage <code>dtype</code>.
+* Not-a-number. Can be used only if storage <code>dtype</code> is <code>float32</code> or <code>float64</code>.
+  Its value is <code>"NaN"</code>.
+* No fill value.
+  Its value is <code>null</code>.
+  * <code>scale_factor</code>:
+Type <em>number</em>.
+Scale factor for computing the in-memory value: <code>memory_value = scale_factor * storage_value + add_offset</code>.
+  * <code>add_offset</code>:
+Type <em>number</em>.
+Add offset for computing the in-memory value: <code>memory_value = scale_factor * storage_value + add_offset</code>.
+  * <code>units</code>:
+Type <em>string</em>.
+Units of the storage data type if memory data type is date/time.
+  * <code>calendar</code>:
+Type <em>string</em>.
+The calendar to be used if memory data type is date/time.
+  * <code>compressor</code>:
+Type <em>array</em> | <em>null</em>.
+Compressor definition. Set to <code>null</code> to disable data compression.
+The key <code>id</code> is required.</p>
+<ul>
+<li><code>id</code>:
+  Type <em>string</em>.</li>
+</ul>
+</li>
+<li>
+<p><code>filters</code>:
+    Type <em>array</em> | <em>null</em>.
+    Filters. Set to <code>null</code> to not use filters.</p>
+<p>The array's items are of type <em>object</em>.
+Filter definition.
+The key <code>id</code> is required.</p>
+<ul>
+<li><code>id</code>:
+  Type <em>string</em>.</li>
+</ul>
+</li>
+<li>
+<p><code>attrs</code>:
+  Type <em>object</em>.
+  Arbitrary variable metadata attributes.</p>
+</li>
+</ul>
+<h3 id="included_variables"><code>included_variables</code></h3>
+<p>Type <em>array</em>.
+Specifies the names of variables to be included in the target dataset. Defaults to all variables found in the first contributing dataset.</p>
+<p>The array's items are of type <em>string</em>.</p>
+<h3 id="excluded_variables"><code>excluded_variables</code></h3>
+<p>Type <em>array</em>.
+Specifies the names of individual variables to be excluded  from all contributing datasets.</p>
+<p>The array's items are of type <em>string</em>.</p>
+<h3 id="persist_mem_slices"><code>persist_mem_slices</code></h3>
+<p>Type <em>boolean</em>.
+Persist in-memory slices and reopen from a temporary Zarr before appending them to the target dataset. This can prevent expensive re-computation of dask chunks at the cost of additional i/o.
+Defaults to <code>false</code>.</p>
+<h3 id="disable_rollback"><code>disable_rollback</code></h3>
+<p>Type <em>boolean</em>.
+Disable rolling back dataset changes on failure. Effectively disables transactional dataset modifications, so use this setting with care.
+Defaults to <code>false</code>.</p>
+<h3 id="dry_run"><code>dry_run</code></h3>
+<p>Type <em>boolean</em>.
+If 'true', log only what would have been done, but don't apply any changes.
+Defaults to <code>false</code>.</p>
+<h3 id="logging"><code>logging</code></h3>
+<p>Type <em>object</em>.
+Logging configuration. For details refer to the <a href="https://docs.python.org/3/library/logging.config.html#logging-config-dictschema">dictionary schema</a> of the Python module <code>logging.config</code>.
+The key <code>version</code> is required.</p>
+<ul>
+<li><code>version</code>:
+  Logging schema version.
+  Its value is <code>1</code>.</li>
+<li><code>formatters</code>:
+  Type <em>object</em>.
+  Formatter definitions. Each key is a formatter id and each value is an object describing how to configure the corresponding formatter.</li>
+</ul>
+<p>The object's values are of type <em>object</em>.
+  Formatter configuration.</p>
+<ul>
+<li><code>format</code>:
+    Type <em>string</em>.
+    Format string in the given <code>style</code>.
+    Defaults to <code>"%(message)s"</code>.</li>
+<li><code>datefmt</code>:
+    Type <em>string</em>.
+    Format string in the given <code>style</code> for the date/time portion.
+    Defaults to <code>"%Y-%m-%d %H:%M:%S,uuu"</code>.</li>
+<li>
+<p><code>style</code>:
+    Determines how the format string will be merged with its data.
+    Must be one of <code>"%", "{", "$"</code>.</p>
+</li>
+<li>
+<p><code>filters</code>:
+  Type <em>object</em>.
+  Filter definitions. Each key is a filter id and each value is a dict describing how to configure the corresponding filter.</p>
+</li>
+</ul>
+<p>The object's values are of type <em>object</em>.
+  Filter configuration.
+* <code>handlers</code>:
+  Type <em>object</em>.
+  Handler definitions. Each key is a handler id and each value is an object describing how to configure the corresponding handler.</p>
+<p>The object's values are of type <em>object</em>.
+  Handler configuration. All keys other than the following are passed through as keyword arguments to the handler's constructor.
+  The key <code>class</code> is required.</p>
+<ul>
+<li><code>class</code>:
+    Type <em>string</em>.
+    The fully qualified name of the handler class. See <a href="https://docs.python.org/3/library/logging.handlers.html">logging handlers</a>.</li>
+<li><code>level</code>:
+    The level of the handler.
+    Must be one of <code>"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"</code>.</li>
+<li><code>formatter</code>:
+    Type <em>string</em>.
+    The id of the formatter for this handler.</li>
+<li>
+<p><code>filters</code>:
+    Type <em>array</em>.
+    A list of ids of the filters for this logger.</p>
+<p>The array's items are of type <em>string</em>.</p>
+</li>
+<li>
+<p><code>loggers</code>:
+  Type <em>object</em>.
+  Logger definitions. Each key is a logger name and each value is an object describing how to configure the corresponding logger. The tool's logger has the id <code>'zappend'</code>.</p>
+</li>
+</ul>
+<p>The object's values are of type <em>object</em>.
+  Logger configuration.</p>
+<ul>
+<li><code>level</code>:
+    The level of the logger.
+    Must be one of <code>"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"</code>.</li>
+<li><code>propagate</code>:
+    Type <em>boolean</em>.
+    The propagation setting of the logger.</li>
+<li>
+<p><code>filters</code>:
+    Type <em>array</em>.
+    A list of ids of the filters for this logger.</p>
+<p>The array's items are of type <em>string</em>.
+  * <code>handlers</code>:
+Type <em>array</em>.
+A list of ids of the handlers for this logger.</p>
+<p>The array's items are of type <em>string</em>.</p>
+</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      
+    
+  </body>
+</html>
