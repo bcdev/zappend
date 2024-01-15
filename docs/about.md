@@ -1,18 +1,38 @@
 # About zappend
 
-## Reporting Issues
+## Change Log
 
-_Coming soon._
+You can find the complete `zappend` changelog 
+[here](https://github.com/bcdev/zappend/blob/main/CHANGES.md). 
+
+## Reporting
+
+If you have suggestions, ideas, feature requests, or if you have identified
+a malfunction or error, then please 
+[post an issue](https://github.com/bcdev/zappend/issues). 
 
 ## Contributions
 
-_Coming soon._
+The `zappend` project welcomes contributions of any form
+as long as you respect our 
+[code of conduct](https://github.com/bcdev/zappend/blob/main/CODE_OF_CONDUCT.md)
+and follow our 
+[contribution guide](https://github.com/bcdev/zappend/blob/main/CONTRIBUTING.md).
+
+If you'd like to submit code or documentation changes, we ask you to provide a 
+pull request (PR) 
+[here](https://github.com/bcdev/zappend/pulls). 
+For code and configuration changes, your PR must be linked to a 
+corresponding issue. 
 
 ## Development
 
+Setup development environment:
+
 ```bash
-pip install -f requirements.txt
-pip install -f requirements-dev.txt
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+pip install -r requirements-docs.txt
 ```
 
 ### Testing and Coverage
@@ -21,12 +41,12 @@ pip install -f requirements-dev.txt
 and code coverage analysis.
 
 ```bash
-pytest --cov zappend tests
+pytest --cov=zappend tests
 ```
 
 ### Code Style
 
-`zappend` is formatted using the [black](https://black.readthedocs.io/) tool.
+`zappend` source code is formatted using the [black](https://black.readthedocs.io/) tool.
 
 ```bash
 black zappend
@@ -37,16 +57,17 @@ black zappend
 `zappend` documentation is build using the [mkdocs](https://www.mkdocs.org/) tool.
 
 ```bash
-pip install -f requirements-doc.txt
+pip install -r requirements-doc.txt
 
 mkdocs build
 ```
 
 ## Original Requirements
 
+### Core Requirements
+
 * Create a target Zarr dataset by appending Zarr dataset slices along a 
   given *append dimension*, usually `time`.   
-* The target and slice datasets may also be xcube multi-level datasets. 
 * The tool takes care of modifying the target dataset using the slices,
   but doesn't care how the slice datasets are created.
 * Slice datasets may be given as URIs with storage options or as 
@@ -107,7 +128,7 @@ mkdocs build
     iterable providing the arguments for the function.
     This is similar how the Python `map()` built-in works.
 
-## Future Plans
+### Further Ideas
 
 * Allow for inserting and deleting slices.
 * Allow specifying a constant delta between coordinates of the append dimension.
