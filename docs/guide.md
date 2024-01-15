@@ -57,7 +57,11 @@ be included:
 
 ```json
 {
-    "included_variables": ["chl", "tsm"]
+    "included_variables": [
+        "time", "y", "x",
+        "chl", 
+        "tsm"
+    ]
 }
 ```
 
@@ -107,7 +111,7 @@ merged into metadata of the variable in the first dataset slice.
 
 To ensure a slice variable has the expected dimensionality, the `dims` 
 setting is used. The following example defines the dimensions of the data variable
-named `chlorophyll`
+named `chl` (Chlorophyll):
 
 ```json
 {
@@ -119,8 +123,7 @@ named `chlorophyll`
 }
 ```
 
-An error will be raised if a variable from a subsequent slice has different 
-dimensions.
+An error will be raised if a variable from a subsequent slice has different dimensions.
 
 ### Variable Attributes
 
@@ -141,17 +144,42 @@ Extra variable attributes can be provided using the `attrs` setting:
 
 ### Variable Encoding
 
-_This section is a work in progress._
-
-* The target chunking of the append dimension equals the size of the append 
-  dimension in each slice and vice versa. 
-* The target encoding should allow for specifying the target storage chunking, 
-  data type, and compression. 
-* Detect coordinate variables and allow them to stay un-chunked.
-  This is important for coordinate variables containing or corresponding 
-  to the append-dimension.
+Encoding metadata specifies how array data is stored in the target dataset and
+includes storage data type, packing, chunking, and compression.
+Encoding metadata for a given variable is provided by the `encoding` setting.
+Since the encoding is often shared by multiple variables the wildcard 
+variable name `*` can often be of help.
 
 #### Chunking
+
+By default, the chunking of the coordinate variable corresponding to the append 
+dimension will be its dimension in the first slice dataset. Often, this will
+be one or a small number. Since `xarray` loads coordinates eagerly when opening
+a dataset, this can lead to performance issues if the target dataset is served
+from object storage such as S3. This is because, a separate HTTP request is 
+required for every single chunk. It is therefore very advisable to set the 
+chunks of that variable to a larger number using the `chunks` setting.
+For other variables, the chunking within the append dimension may stay small
+if desired:
+
+```json
+{
+    "variables": {
+        "time": { 
+            "dims": ["time"],
+            "encoding": {
+                "chunks": [1024]
+            }
+        },
+        "chl": { 
+            "dims": ["time", "y", "x"],
+            "encoding": {
+                "chunks": [1, 2048, 2048]
+            }
+        }
+    }
+}
+```
 
 #### Missing Values
 
@@ -234,13 +262,12 @@ _This section is a work in progress._
 
 The `zappend` logging configuration follows exactly the 
 Python [dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema) of the Python module `logging.config`.
-
 The logger used by the `zappend` tool is named `zappend`.
 Note that you can also configure the logger of other Python modules, e.g.,
 `xarray` or `dask` here.
 
-Given here is an example that logs `zappend`'s output 
-to the console using the INFO level:
+Given here is an example that logs `zappend`'s output to the console using 
+the INFO level:
 
 ```json
 {
