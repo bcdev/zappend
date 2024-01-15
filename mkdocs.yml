@@ -1,15 +1,24 @@
 site_name: zappend
 
+copyright: Copyright &copy; 2024 Brockmann Consult
+
 nav:
   - Introduction: intro.md
   - Getting Started: start.md
   - User Guide: guide.md
+  - Configuration: config.md
   - CLI Reference: cli.md
   - API Reference: api.md
-  - Configuration: config.md
   - About: about.md
 
 theme: material
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bcdev/zappend
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/zappend/
 
 plugins:
   - search
