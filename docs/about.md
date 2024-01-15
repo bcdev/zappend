@@ -1,6 +1,6 @@
 # About zappend
 
-## Change Log
+## Changelog
 
 You can find the complete `zappend` changelog 
 [here](https://github.com/bcdev/zappend/blob/main/CHANGES.md). 
@@ -79,11 +79,11 @@ mkdocs gh-deploy
   [xcube.core.mldataset.MultiLevelDataset](https://xcube.readthedocs.io/en/latest/mldatasets.html).
 * Target and slices are allowed to live in different filesystems.
 * The tool is configurable. The configuration defines 
-  - the append dimension;
-  - optional target encoding for all or individual target variables;
-  - the target path into the target filesystem;
-  - optional target storage options;
-  - optional slice storage options.
+    - the append dimension;
+    - optional target encoding for all or individual target variables;
+    - the target path into the target filesystem;
+    - optional target storage options;
+    - optional slice storage options.
 * The target chunking of the append dimension equals the size of the append 
   dimension in each slice and vice versa. 
 * The target encoding should allow for specifying the target storage chunking, 
@@ -101,13 +101,13 @@ mkdocs gh-deploy
   probably difficult or error prone).
 * Slices are appended in the order they are provided.
 * If a slice is not yet available, wait and retry until it 
-  - exists, and
-  - is complete.
+    - exists, and
+    - is complete.
 * Check for each slice that it is valid. A valid slice
-  - is self-consistent, 
-  - has the same structure as target, and
-  - has an append dimension whose size is equal to the target chunking of
-    this dimension.
+    - is self-consistent, 
+    - has the same structure as target, and
+    - has an append dimension whose size is equal to the target chunking of
+      this dimension.
 * Before appending a slice, lock the target so that another tool invocation 
   can recognize it, e.g., write a lock file.
 * If the target is locked, either wait until it becomes available or exit 
@@ -123,12 +123,12 @@ mkdocs gh-deploy
 * The tool shall allow for continuing appending slices at the point
   it failed.
 * The tool shall offer a CLI and a Python API.
-  - Using the CLI, slices are given as a variadic argument that provides the 
-    file paths into the slice filesystem.
-  - Using the Python API, it shall be possible to provide the slices by 
-    specifying a function that generates the slice datasets and an
-    iterable providing the arguments for the function.
-    This is similar how the Python `map()` built-in works.
+    - Using the CLI, slices are given as a variadic argument that provides the 
+      file paths into the slice filesystem.
+    - Using the Python API, it shall be possible to provide the slices by 
+      specifying a function that generates the slice datasets and an
+      iterable providing the arguments for the function.
+      This is similar how the Python `map()` built-in works.
 
 ### Further Ideas
 
@@ -137,33 +137,16 @@ mkdocs gh-deploy
 * Verify append dimension coordinates increase or decrease monotonically. 
 * Verify coordinate deltas of append dimension to be constant. 
 * Integration with [xcube](https://github.com/dcs4cop/xcube):
-  * Add xcube server API: Add endpoint to xcube server that works similar 
-    to the CLI and also uses a similar request parameters.
-  * Use it in xcube data stores for the `write_data()` method, as a parameter 
-    to enforce sequential writing of Zarr datasets as a robust option when a 
-    plain write fails.
+    - Add xcube server API: Add endpoint to xcube server that works similar 
+      to the CLI and also uses a similar request parameters.
+    - Use it in xcube data stores for the `write_data()` method, as a parameter 
+      to enforce sequential writing of Zarr datasets as a robust option when a 
+      plain write fails.
 
 
 ## License
 
-`zappend` is made available under the terms and conditions of the MIT License:
+`zappend` is open source made available under the terms and conditions of the 
+[MIT License](https://github.com/bcdev/zappend/blob/main/LICENSE).
 
-Copyright (c) 2023 Brockmann Consult Development
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Copyright © 2024 Brockmann Consult Development
