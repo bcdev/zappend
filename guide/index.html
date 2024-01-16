@@ -696,17 +696,48 @@
 
 
 <h1 id="user-guide">User Guide</h1>
-<p>Both the <code>zappend</code> <a href="../cli/">CLI command</a> and the <a href="../api/">Python function</a> can be run 
-without any further <a href="../config/">configuration</a> except the target dataset path and the 
-slice dataset paths that contribute to the datacube to be generated. The target dataset 
-path must point to a directory that will contain a Zarr group to be created and 
-updated. The slice dataset paths may be provided as Zarr as well or in other data 
-formats supported by the <a href="https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html">xarray.open_dataset()</a> function. 
-The target and slice dataset are allowed to live in different filesystems. 
+<p>After <a href="../start/">installation</a>, you can either use the <code>zappend</code> <a href="../cli/">CLI command</a></p>
+<div class="highlight"><pre><span></span><code>zappend<span class="w"> </span>-t<span class="w"> </span>output/mycube.zarr<span class="w"> </span>inputs/*.nc
+</code></pre></div>
+<p>or the <code>zappend</code> <a href="../api/">Python function</a></p>
+<div class="highlight"><pre><span></span><code>from<span class="w"> </span>zappend.api<span class="w"> </span>import<span class="w"> </span>zappend
+
+zappend<span class="o">(</span>os.listdir<span class="o">(</span><span class="s2">&quot;inputs&quot;</span><span class="o">)</span>,<span class="w"> </span><span class="nv">target_dir</span><span class="o">=</span><span class="s2">&quot;output/mycube.zarr&quot;</span><span class="o">)</span>
+</code></pre></div>
+<p>Both the CLI command and the Python function can be run without any further 
+configuration provided the paths of the target dataset and the source slice datasets 
+are given. The target dataset path must point to a directory that will contain a Zarr 
+group to be created and updated. The slice dataset paths may be provided as Zarr as 
+well or in other data formats supported by the <a href="https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html">xarray.open_dataset()</a> 
+function. The target and slice dataset are allowed to live in different filesystems. 
 Additional filesystem storage options may be specified via the tool's configuration.</p>
 <p>The tool takes care of generating the target dataset from slice datasets, but doesn't 
 care how the slice datasets are created. Hence, when using the Python <code>zappend()</code> 
 function, the slice datasets can be provided in various forms. More on this below.</p>
+<p>To run the <code>zappend</code> tool with <a href="../config/">configuration</a> you can pass one or more
+configuration files using JSON or YAML format</p>
+<div class="highlight"><pre><span></span><code>zappend<span class="w"> </span>-t<span class="w"> </span>output/mycube.zarr<span class="w"> </span>-c<span class="w"> </span>config.yaml<span class="w"> </span>inputs/*.nc
+</code></pre></div>
+<p>If multiple configuration files are passed, they will be merged into one by
+incrementally updating the first by subsequent ones. </p>
+<p>You can pass configuration settings to the <code>zappend</code> Python function by the optional
+<code>config</code> keyword argument. Other keyword arguments are interpreted as individual 
+configuration settings and will be merged into the one given by <code>config</code> argument,
+if any. The <code>config</code> keyword argument can be given as local file path or URL 
+(type <code>str</code>) pointing to a JSON or YAML file. It can also be given as dictionary,
+or as a sequence of the aforementioned types. Configuration sequences are again merged
+into one.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">zappend</span>
+
+<span class="n">zappend</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;inputs&quot;</span><span class="p">),</span> 
+        <span class="n">config</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;configs/base.yaml&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;configs/mycube.yaml&quot;</span><span class="p">],</span> 
+        <span class="n">target_dir</span><span class="o">=</span><span class="s2">&quot;outputs/mycube.zarr&quot;</span><span class="p">,</span>
+        <span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<p>This remainder of this guide explains the how to use the various <code>zappend</code> 
+<a href="../config/">configuration</a> settings.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>We use the term <em>Dataset</em> in the same way <code>xarray</code> does: A dataset comprises any 
