@@ -460,21 +460,21 @@
 
 
 <h1 id="the-zappend-tool">The zappend Tool</h1>
-<p><code>zappend</code> is a tool written in Python that is used for creating and updating 
-a Zarr dataset from smaller dataset slices. It is build on top of the
-awesome Python packages <a href="https://docs.xarray.dev/">xarray</a> 
-and <a href="https://zarr.readthedocs.io/">zarr</a>.</p>
+<p><code>zappend</code> is a tool written in Python that is used for robustly creating and updating 
+Zarr datacubes from smaller dataset slices. It is build on top of the awesome Python 
+packages <a href="https://docs.xarray.dev/">xarray</a> and <a href="https://zarr.readthedocs.io/">zarr</a>.</p>
 <h2 id="motivation">Motivation</h2>
-<p>The objective of <code>zappend</code> is to address recurring memory issues when 
-generating large geospatial datacubes using the 
-<a href="https://zarr.readthedocs.io/">Zarr format</a> by subsequently concatenating data
-slices along an append dimension, usually <code>time</code>. Each append step is atomic, 
-that is, the append operation is a transaction that can be rolled back, 
-in case the append operation fails. This ensures integrity of the target 
+<p>The objective of <code>zappend</code> is to address recurring memory issues when generating large 
+geospatial datacubes using the <a href="https://zarr.readthedocs.io/">Zarr format</a> 
+by subsequently concatenating data slices along an append dimension, usually <code>time</code>. 
+Each append step is atomic, that is, the append operation is a transaction that can be 
+rolled back, in case the append operation fails. This ensures integrity of the target 
 data cube. </p>
 <h2 id="features">Features</h2>
-<p>The <code>zappend</code> tool provides the following features</p>
+<p>The <code>zappend</code> tool provides the following features:</p>
 <ul>
+<li><strong>Locking</strong>: While the target dataset is being modified, a file lock is created, 
+  effectively preventing concurrent dataset modifications.</li>
 <li><strong>Transaction-based dataset appends</strong>: On failure during an append step, 
   the transaction is rolled back, so that the target dataset remains valid and 
   preserves its integrity.</li>
@@ -482,7 +482,7 @@ data cube. </p>
   any writable filesystems supported by the 
   <a href="https://filesystem-spec.readthedocs.io/">fsspec</a> package. 
   The same holds for the slice datasets to be appended.</li>
-<li><strong>Slices polling</strong>: The tool can be configured to wait for slice datasets to 
+<li><strong>Dataset polling</strong>: The tool can be configured to wait for slice datasets to 
   become available. </li>
 <li><strong>CLI and Python API</strong>: The tool can be used in a shell using the <a href="cli/"><code>zappend</code></a>
   command or from Python. When used from Python using the 
@@ -493,27 +493,25 @@ data cube. </p>
   slice dataset objects and are disposed after each slice has been processed.</li>
 </ul>
 <h2 id="how-it-works">How It Works</h2>
-<p>At its core, <code>zappend</code> calls the 
-<a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.to_zarr.html#xarray-dataset-to-zarr">to_zarr()</a>
-method of 
-<a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a> 
-for each dataset slice it receives and either creates the target dataset if it does not 
-exist yet or updates it with the current slice, if it already exists.</p>
+<p>At its core, <code>zappend</code> calls the <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.to_zarr.html#xarray-dataset-to-zarr">to_zarr()</a> method of <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a> 
+for each dataset slice it receives and either creates the target dataset if it does 
+not exist yet or updates it with the current slice, if it already exists.</p>
 <p>If there is no target dataset yet, <code>zappend</code> does the following:</p>
 <ul>
-<li>create target metadata from configuration and slice dataset;</li>
-<li>tailor slice according to target metadata and configuration;</li>
-<li>set encoding and attributes in slice according to target metadata;</li>
-<li>write target from slice.</li>
+<li>get target dataset outline and encoding from configuration and first slice dataset;</li>
+<li>tailor first slice dataset according to target dataset outline;</li>
+<li>write target from first slice using target dataset encoding.</li>
 </ul>
 <p>If target dataset exists, then <code>zappend</code> will:</p>
 <ul>
-<li>create target metadata from configuration and target dataset;</li>
-<li>create slice metadata from configuration and slice dataset;</li>
-<li>verify target and slice metadata are compatible;</li>
-<li>tailor slice according to target metadata and configuration;</li>
-<li>remove encoding and attributes from slice;</li>
-<li>update target from slice.</li>
+<li>get target dataset outline and encoding configuration and existing target dataset;</li>
+<li>for each subsequent slice dataset:<ul>
+<li>verify target and slice dataset are compatible;</li>
+<li>tailor slice dataset according to target dataset outline;</li>
+<li>remove all metadata including encoding and attributes from slice dataset;</li>
+<li>concatenate the "naked" slice dataset with the target dataset.</li>
+</ul>
+</li>
 </ul>
 
 

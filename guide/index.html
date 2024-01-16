@@ -298,31 +298,31 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#variable-dimensions" class="md-nav__link">
+  <a href="#dimensions" class="md-nav__link">
     <span class="md-ellipsis">
-      Variable Dimensions
+      Dimensions
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#variable-attributes" class="md-nav__link">
+  <a href="#attributes" class="md-nav__link">
     <span class="md-ellipsis">
-      Variable Attributes
+      Attributes
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#variable-encoding" class="md-nav__link">
+  <a href="#encoding" class="md-nav__link">
     <span class="md-ellipsis">
-      Variable Encoding
+      Encoding
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Variable Encoding">
+    <nav class="md-nav" aria-label="Encoding">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -382,6 +382,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#transactions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transactions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#target-dataset" class="md-nav__link">
     <span class="md-ellipsis">
       Target Dataset
@@ -400,18 +409,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#transaction-management" class="md-nav__link">
+  <a href="#slice-sources" class="md-nav__link">
     <span class="md-ellipsis">
-      Transaction Management
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#slice-data-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Slice Data Types
+      Slice Sources
     </span>
   </a>
   
@@ -565,31 +565,31 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#variable-dimensions" class="md-nav__link">
+  <a href="#dimensions" class="md-nav__link">
     <span class="md-ellipsis">
-      Variable Dimensions
+      Dimensions
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#variable-attributes" class="md-nav__link">
+  <a href="#attributes" class="md-nav__link">
     <span class="md-ellipsis">
-      Variable Attributes
+      Attributes
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#variable-encoding" class="md-nav__link">
+  <a href="#encoding" class="md-nav__link">
     <span class="md-ellipsis">
-      Variable Encoding
+      Encoding
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Variable Encoding">
+    <nav class="md-nav" aria-label="Encoding">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -649,6 +649,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#transactions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transactions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#target-dataset" class="md-nav__link">
     <span class="md-ellipsis">
       Target Dataset
@@ -667,18 +676,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#transaction-management" class="md-nav__link">
+  <a href="#slice-sources" class="md-nav__link">
     <span class="md-ellipsis">
-      Transaction Management
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#slice-data-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Slice Data Types
+      Slice Sources
     </span>
   </a>
   
@@ -734,10 +734,18 @@ function. Because we provided no additional configuration, the default append di
 <p>The target and slice datasets are allowed to live in filesystems other than the local
 one, if their paths are given as URIs prefixed with a filesystem protocol such as 
 <code>s3://</code> or <code>memory://</code>. Additional filesystem storage options may be specified via 
-dedicated configuration settings.</p>
+dedicated configuration settings. More on this is given
+in section <a href="#data-io"><em>Data I/O</em></a> below.</p>
+<div class="admonition note">
+<p class="admonition-title">Zarr Format v2</p>
+<p>By default, <code>zappend</code> uses the <a href="https://zarr.readthedocs.io/en/stable/spec/v2.html">Zarr storage specification 2</a>
+and has only been tested with this version. The <code>zarr_version</code> setting can be used 
+to change it, e,g, to <code>3</code>, but any other value than <code>2</code> is currently unsupported.</p>
+</div>
 <p>The tool takes care of generating the target dataset from slice datasets, but doesn't 
 care how the slice datasets are created. Hence, when using the Python <code>zappend()</code> 
-function, the slice datasets can be provided in various forms. More on this below.</p>
+function, the slice datasets can be provided in various forms. More on this is given
+in section <a href="#slice-sources"><em>Slice Sources</em></a> below.</p>
 <p>To run the <code>zappend</code> tool with <a href="../config/">configuration</a> you can pass one or more
 configuration files using JSON or YAML format</p>
 <div class="highlight"><pre><span></span><code>zappend<span class="w"> </span>-t<span class="w"> </span>output/mycube.zarr<span class="w"> </span>-c<span class="w"> </span>config.yaml<span class="w"> </span>inputs/*.nc
@@ -836,7 +844,7 @@ merged into metadata of the variable in the first dataset slice.</p>
 <p>Only metadata from the first slice dataset is used, metadata of variables from 
 subsequent slice datasets is ignored entirely.</p>
 </div>
-<h3 id="variable-dimensions">Variable Dimensions</h3>
+<h3 id="dimensions">Dimensions</h3>
 <p>To ensure a slice variable has the expected dimensionality and shape, the <code>dims</code> 
 setting is used. The following example defines the dimensions of a data variable 
 named <code>chl</code> (Chlorophyll):</p>
@@ -849,7 +857,7 @@ named <code>chl</code> (Chlorophyll):</p>
 <span class="p">}</span>
 </code></pre></div>
 <p>An error will be raised if a variable from a subsequent slice has different dimensions.</p>
-<h3 id="variable-attributes">Variable Attributes</h3>
+<h3 id="attributes">Attributes</h3>
 <p>Extra variable attributes can be provided using the <code>attrs</code> setting:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -862,7 +870,7 @@ named <code>chl</code> (Chlorophyll):</p>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<h3 id="variable-encoding">Variable Encoding</h3>
+<h3 id="encoding">Encoding</h3>
 <p>Encoding metadata specifies how array data is stored in the target dataset and includes 
 storage data type, packing, chunking, and compression. Encoding metadata for a given 
 variable is provided by the <code>encoding</code> setting. Since the encoding is often shared by 
@@ -978,61 +986,93 @@ specified. To explicitly disable compression you must set the <code>compressor</
 <a href="https://zarr.readthedocs.io/en/stable/tutorial.html#compressors"><em>Compressors</em></a> and 
 <a href="https://zarr.readthedocs.io/en/stable/tutorial.html#filters"><em>Filters</em></a>.</p>
 <h2 id="data-io">Data I/O</h2>
-<p><em>This section is a work in progress.</em></p>
+<p>This section describes the configuration of how data is read and written.</p>
+<p>All input and output can be configured to take place in different filesystem. To 
+specify a filesystem other than the local one, you can use URIs and URLs for path 
+configuration settings such <code>target_dir</code> and <code>temp_dir</code> as well as for the slice 
+dataset paths. The filesystem is given by an URI's protocol prefix, such as <code>s3://</code>,
+which specifies the S3 filesystem. Additional storage parameters may be required to 
+access the data which can be provided by the settings <code>target_storage_options</code>, 
+<code>temp_storage_options</code>, and <code>slice_storage_options</code> which must be given as dictionaries 
+or JSON objects. The supported filesystems and their storage options are given by the 
+<a href="https://filesystem-spec.readthedocs.io/">fsspec</a> package.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can use the <code>dry_run</code> setting to supress creation or modification of any files
+in the filesystem. This is useful for testing, e.g., make sure configuration is 
+valid and slice datasets can be read without errors. </p>
+</div>
+<p>While the target dataset is being modified, a file lock is created used to effectively 
+prevent concurrent dataset modifications. After successfully appending a complete slice
+dataset, the lock is removed the target. The lock file is written next to the target
+dataset, using the same filesystem and parent directory path. Its filename is the 
+filename of the target dataset suffixed by the extension <code>.lock</code>.</p>
+<h3 id="transactions">Transactions</h3>
+<p>Appending a slice dataset is an atomic operation to ensure the target dataset's 
+integrity. That is, in case a former append step failed, a rollback is performed to 
+restore the last valid state of the target dataset. The rollback takes place 
+immediately after a target dataset modification failed. The rollback include restoring 
+all changed files and removing added files. After the rollback you can analyse what
+went wrong and try to continue appending slices at the point it failed.</p>
+<p>To allow for rollbacks, a slice append operation is treated as a transaction,
+hence temporary files must be written, e.g., to record required rollback actions and to
+save backup files with the original data. The location of the temporary transaction 
+files can be configured using the optional <code>temp_dir</code> and <code>temp_storage_options</code>
+settings:</p>
+<p><div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;temp_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;memory://temp&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+The default value for <code>temp_dir</code> is your operating system's location for temporary 
+data (Python <code>tempfile.gettempdir()</code>). </p>
+<p>You can disable transaction management by specifying</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;disable_rollback&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
 <h3 id="target-dataset">Target Dataset</h3>
-<p><em>This section is a work in progress.</em></p>
-<ul>
-<li><code>target_dir</code></li>
-<li><code>target_storage_options</code></li>
-<li><code>zarr_version</code></li>
-<li><code>dry_run</code></li>
-</ul>
+<p>The <code>target_dir</code> setting is mandatory. If it is not specified in the configuration,
+it must be passed either as <code>--target</code> or <code>-t</code> option to the <code>zappend</code> command or as 
+<code>target_dir</code> keyword argument when using the <code>zappend</code> Python function.</p>
+<p>If the target path is given for another filesystem, additional storage options may be 
+passed using the optional <code>target_storage_options</code> setting. </p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;target_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s3://wqservices/cubes/chl-2023.zarr&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;target_storage_options&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;anon&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;secret&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;endpoint_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://s3.acme.org&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <h3 id="slice-datasets">Slice Datasets</h3>
-<p><em>This section is a work in progress.</em></p>
+<p>If the slice paths passed to the <code>zappend</code> tool are given as URIs 
+additional storage options may be provided for the filesystem given by the 
+URI's protocol. They may be specified using the <code>slice_storage_options</code> setting.</p>
+<p>Sometimes, the slice dataset to be processed are not yet available, e.g., 
+because another process is currently generating them. For such cases, the 
+<code>slice_polling</code> setting can be used. It provides the poll interval and the timeout 
+values in seconds. If this setting is used, and the slice dataset does not yet exist or 
+fails to open, the tool will retry to open it after the given interval. It will stop 
+doing so and exit with an error if the total time for opening the slice dataset exceeds
+the given timeout:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;slice_polling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;interval&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Or use default polling:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;slice_polling&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span>
+<span class="p">}</span>
+</code></pre></div>
 <ul>
-<li><code>slice_engine</code></li>
-<li><code>slice_storage_options</code></li>
-<li><code>slice_polling</code></li>
-<li>
-<p><code>persist_mem_slices</code></p>
-</li>
-<li>
-<p>If a slice is not yet available, wait and retry until it </p>
-<ul>
-<li>exists, and</li>
-<li>is complete.</li>
+<li><code>persist_mem_slices</code></li>
 </ul>
-</li>
-<li>Check for each slice that it is valid. A valid slice<ul>
-<li>is self-consistent, </li>
-<li>has the same structure as target, and</li>
-<li>has an append dimension whose size is equal to the target chunking of
-  this dimension.</li>
-</ul>
-</li>
-<li>Before appending a slice, lock the target so that another tool invocation 
-  can recognize it, e.g., write a lock file.</li>
-<li>If the target is locked, either wait until it becomes available or exit 
-  with an error. The behaviour is controlled by a tool option.</li>
-<li>After successfully appending a slice, remove the lock from the target.</li>
-<li>Appending a slice shall be an atomic operation to ensure target dataset 
-  integrity. That is, in case a former append step failed, a rollback must
-  be performed to restore the last valid state of the target. Rolling back<br />
-  shall take place after an append failed, or before a new slice is appended,
-  or to sanitize a target to make it usable again. Rolling back shall 
-  include restoring all changed files, removing all added files, 
-  and removing any locks. </li>
-<li>The tool shall allow for continuing appending slices at the point
-  it failed.</li>
-</ul>
-<h3 id="transaction-management">Transaction Management</h3>
-<p><em>This section is a work in progress.</em></p>
-<ul>
-<li><code>temp_dir</code></li>
-<li><code>temp_storage_options</code></li>
-<li><code>disable_rollback</code></li>
-</ul>
-<h3 id="slice-data-types">Slice Data Types</h3>
+<h3 id="slice-sources">Slice Sources</h3>
 <p><em>This section is a work in progress.</em></p>
 <h2 id="logging">Logging</h2>
 <p>The <code>zappend</code> logging output is configured using the <code>logging</code> setting.
