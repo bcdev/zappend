@@ -501,35 +501,8 @@
          <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">]),</span> 
         <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
 </code></pre></div>
-<p>Process slice paths in S3 with slice generator and <a href="../config/">configuration</a>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-<span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">zappend</span>
-
-<span class="n">config</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;target_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;target.zarr&quot;</span> <span class="p">}</span>
-
-<span class="k">def</span> <span class="nf">get_mean_time</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
-    <span class="n">time</span> <span class="o">=</span> <span class="n">slice_ds</span><span class="o">.</span><span class="n">time</span>
-    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">dt</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t0</span>
-    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t0</span> <span class="o">+</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span> 
-                                 <span class="n">dtype</span><span class="o">=</span><span class="n">slice_ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> 
-                        <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">get_mean_slice</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span> 
-    <span class="n">mean_slice_ds</span> <span class="o">=</span> <span class="n">slice_ds</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
-    <span class="n">mean_slice_ds</span> <span class="o">=</span> <span class="n">mean_slice_ds</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">mean_slice_ds</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_mean_time</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">mean_slice_ds</span> 
-
-<span class="k">def</span> <span class="nf">get_slices</span><span class="p">(</span><span class="n">slice_paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
-    <span class="k">for</span> <span class="n">slice_path</span> <span class="ow">in</span> <span class="n">slice_paths</span><span class="p">:</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="s2">&quot;s3://mybucket/eodata/&quot;</span> <span class="o">+</span> <span class="n">slice_path</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="n">get_mean_slice</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span> 
-
-<span class="n">zappend</span><span class="p">(</span><span class="n">get_slices</span><span class="p">([</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">]),</span>
-        <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
-</code></pre></div>
+<p>Slice datasets can be passed in a number of ways, please refer to the section 
+<a href="../guide/#slice-sources"><em>Slice Sources</em></a> in the <a href="../guide/">User Guide</a>.</p>
 
 
 
