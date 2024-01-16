@@ -427,11 +427,6 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-        
           <li class="md-nav__item">
   <a href="#zappendapislicesource" class="md-nav__link">
     <span class="md-ellipsis">
@@ -439,8 +434,7 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="zappend.api.SliceSource">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
   <a href="#zappendapifileobj" class="md-nav__link">
@@ -451,17 +445,17 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-        
           <li class="md-nav__item">
   <a href="#zappendapislicefactory" class="md-nav__link">
     <span class="md-ellipsis">
       zappend.api.SliceFactory
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -742,11 +736,6 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-        
           <li class="md-nav__item">
   <a href="#zappendapislicesource" class="md-nav__link">
     <span class="md-ellipsis">
@@ -754,8 +743,7 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="zappend.api.SliceSource">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
   <a href="#zappendapifileobj" class="md-nav__link">
@@ -766,17 +754,17 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-        
           <li class="md-nav__item">
   <a href="#zappendapislicefactory" class="md-nav__link">
     <span class="md-ellipsis">
       zappend.api.SliceFactory
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1196,7 +1184,7 @@ using the <code>persist_mem_slice</code> setting: </p>
 <p>If the flag is set, in-memory slices will be persisted to a temporary Zarr before 
 appending them to the target dataset. It may prevent expensive re-computation of chunks 
 at the cost of additional i/o. It therefore defaults to <code>false</code>.</p>
-<h3 id="zappendapislicesource"><code>zappend.api.SliceSource</code></h3>
+<h4 id="zappendapislicesource"><code>zappend.api.SliceSource</code></h4>
 <p>Often, you want to perform some custom cleanup after a slice has been processed, i.e.,
 appended to the target dataset. In this case you can write your own 
 <code>zappend.api.SliceSource</code> by implementing its <code>get_dataset()</code> and <code>dispose()</code>
@@ -1209,7 +1197,7 @@ class, which combines a URI with dedicated filesystem storage options.</p>
 
 <span class="n">slice_obj</span> <span class="o">=</span> <span class="n">FileObj</span><span class="p">(</span><span class="n">slice_uri</span><span class="p">,</span> <span class="n">storage_options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> 
 </code></pre></div>
-<h3 id="zappendapislicefactory"><code>zappend.api.SliceFactory</code></h3>
+<h4 id="zappendapislicefactory"><code>zappend.api.SliceFactory</code></h4>
 <p>A slice factory is a function that provides receives a processing context of type
 <code>zappend.api.Context</code> and yields a slice dataset object of one of the types
 described above. Since a slice factory cannot have additional arguments, it is 
@@ -1219,12 +1207,12 @@ to capture slice-specific information.</p>
 dataset. A <code>SliceSource</code> is used to close the datasets after the slice has been 
 processed. A slice factory is defined for each slice path which returns the<br />
 slice source object:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">SliceFactory</span>
 <span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">SliceSource</span>
 <span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">zappend</span>
-
-<span class="n">config</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;target_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;target.zarr&quot;</span> <span class="p">}</span>
 
 <span class="k">def</span> <span class="nf">get_mean_time</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
     <span class="n">time</span> <span class="o">=</span> <span class="n">slice_ds</span><span class="o">.</span><span class="n">time</span>
@@ -1260,14 +1248,14 @@ slice source object:</p>
             <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span> <span class="o">=</span> <span class="kc">None</span>
 
-<span class="k">def</span> <span class="nf">get_slices</span><span class="p">(</span><span class="n">slice_paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="k">def</span> <span class="nf">get_slices</span><span class="p">(</span><span class="n">slice_paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">SliceFactory</span><span class="p">]:</span>
     <span class="k">for</span> <span class="n">slice_path</span> <span class="ow">in</span> <span class="n">slice_paths</span><span class="p">:</span>
         <span class="k">def</span> <span class="nf">get_slice_source</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">MySliceSource</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">slice_path</span><span class="p">)</span>
         <span class="k">yield</span> <span class="n">get_slice_source</span>
 
 <span class="n">zappend</span><span class="p">(</span><span class="n">get_slices</span><span class="p">([</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">]),</span>
-        <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">target_dir</span><span class="o">=</span><span class="s2">&quot;target.zarr&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="logging">Logging</h2>
 <p>The <code>zappend</code> logging output is configured using the <code>logging</code> setting.
