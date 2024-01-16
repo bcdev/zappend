@@ -415,6 +415,54 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Slice Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xarraydataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      xarray.Dataset
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappendapislicesource" class="md-nav__link">
+    <span class="md-ellipsis">
+      zappend.api.SliceSource
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="zappend.api.SliceSource">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zappendapifileobj" class="md-nav__link">
+    <span class="md-ellipsis">
+      zappend.api.FileObj
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappendapislicefactory" class="md-nav__link">
+    <span class="md-ellipsis">
+      zappend.api.SliceFactory
+    </span>
+  </a>
+  
 </li>
         
       </ul>
@@ -679,6 +727,54 @@
   <a href="#slice-sources" class="md-nav__link">
     <span class="md-ellipsis">
       Slice Sources
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Slice Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xarraydataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      xarray.Dataset
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappendapislicesource" class="md-nav__link">
+    <span class="md-ellipsis">
+      zappend.api.SliceSource
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="zappend.api.SliceSource">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#zappendapifileobj" class="md-nav__link">
+    <span class="md-ellipsis">
+      zappend.api.FileObj
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappendapislicefactory" class="md-nav__link">
+    <span class="md-ellipsis">
+      zappend.api.SliceFactory
     </span>
   </a>
   
@@ -1069,11 +1165,110 @@ the given timeout:</p>
 <span class="w">    </span><span class="nt">&quot;slice_polling&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span>
 <span class="p">}</span>
 </code></pre></div>
-<ul>
-<li><code>persist_mem_slices</code></li>
-</ul>
 <h3 id="slice-sources">Slice Sources</h3>
-<p><em>This section is a work in progress.</em></p>
+<p>Using the <code>zappend</code> command, slice dataset are provided as local filesystem paths 
+or by paths into other filesystems in case the slice datasets are provided by a URI.
+This section describes additional options to pass slice datasets to the <code>slices</code>
+argument of the <a href="../api/"><code>zappend</code></a> Python function.</p>
+<h4 id="xarraydataset"><code>xarray.Dataset</code></h4>
+<p>In-memory slice objects can be passed as <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a> objects. 
+Such objects may originate from opening datasets from some storage </p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+
+<span class="n">slice_obj</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">slice_store</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span> 
+</code></pre></div>
+<p>or by composing, aggregating, resampling slice datasets from other datasets and 
+data variables. To allow for out-of-core computation of large datasets <a href="https://docs.dask.org/en/stable/array.html">Dask arrays</a>
+are used by both <code>xarray</code> and <code>zarr</code>. As a dask array may represent complex and/or 
+expensive processing graphs, high CPU loads and memory consumption are common issues
+for computed slice datasets, especially if the specified target dataset chunking is 
+different from the slice dataset chunking. This may cause that Dask graphs are 
+computed multiple times if the source chunking overlaps multiple target chunks, 
+potentially causing large resource overheads while recomputing and/or reloading same 
+source chunks multiple times.</p>
+<p>In such cases it can help to "terminate" such computations for each slice by 
+persisting the computed dataset first and then to reopen it. This can be specified 
+using the <code>persist_mem_slice</code> setting: </p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;persist_mem_slice&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If the flag is set, in-memory slices will be persisted to a temporary Zarr before 
+appending them to the target dataset. It may prevent expensive re-computation of chunks 
+at the cost of additional i/o. It therefore defaults to <code>false</code>.</p>
+<h3 id="zappendapislicesource"><code>zappend.api.SliceSource</code></h3>
+<p>Often, you want to perform some custom cleanup after a slice has been processed, i.e.,
+appended to the target dataset. In this case you can write your own 
+<code>zappend.api.SliceSource</code> by implementing its <code>get_dataset()</code> and <code>dispose()</code>
+methods. Slice source instances are supposed to be created by <em>slice factories</em>,
+see below.</p>
+<h4 id="zappendapifileobj"><code>zappend.api.FileObj</code></h4>
+<p>An alternative to providing the slice dataset as path or URI is using the <code>FileObj</code> 
+class, which combines a URI with dedicated filesystem storage options.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">FileObj</span>
+
+<span class="n">slice_obj</span> <span class="o">=</span> <span class="n">FileObj</span><span class="p">(</span><span class="n">slice_uri</span><span class="p">,</span> <span class="n">storage_options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> 
+</code></pre></div>
+<h3 id="zappendapislicefactory"><code>zappend.api.SliceFactory</code></h3>
+<p>A slice factory is a function that provides receives a processing context of type
+<code>zappend.api.Context</code> and yields a slice dataset object of one of the types
+described above. Since a slice factory cannot have additional arguments, it is 
+normally defined as a <a href="https://en.wikipedia.org/wiki/Closure_(computer_programming)">closure</a> 
+to capture slice-specific information.</p>
+<p>In the following example, the actual slice dataset is computed from averaging another 
+dataset. A <code>SliceSource</code> is used to close the datasets after the slice has been 
+processed. A slice factory is defined for each slice path which returns the<br />
+slice source object:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">SliceSource</span>
+<span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">zappend</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;target_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;target.zarr&quot;</span> <span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">get_mean_time</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">slice_ds</span><span class="o">.</span><span class="n">time</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t0</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t0</span> <span class="o">+</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span> 
+                                 <span class="n">dtype</span><span class="o">=</span><span class="n">slice_ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> 
+                        <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_mean_slice</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span> 
+    <span class="n">mean_slice_ds</span> <span class="o">=</span> <span class="n">slice_ds</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+    <span class="n">mean_slice_ds</span> <span class="o">=</span> <span class="n">mean_slice_ds</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">mean_slice_ds</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_mean_time</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mean_slice_ds</span> 
+
+<span class="k">class</span> <span class="nc">MySliceSource</span><span class="p">(</span><span class="n">SliceSource</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">slice_path</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slice_path</span> <span class="o">=</span> <span class="n">slice_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">get_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span> <span class="o">=</span> <span class="n">get_mean_slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span>
+
+    <span class="k">def</span> <span class="nf">dispose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">def</span> <span class="nf">get_slices</span><span class="p">(</span><span class="n">slice_paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+    <span class="k">for</span> <span class="n">slice_path</span> <span class="ow">in</span> <span class="n">slice_paths</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">get_slice_source</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">MySliceSource</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">slice_path</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">get_slice_source</span>
+
+<span class="n">zappend</span><span class="p">(</span><span class="n">get_slices</span><span class="p">([</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">]),</span>
+        <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div>
 <h2 id="logging">Logging</h2>
 <p>The <code>zappend</code> logging output is configured using the <code>logging</code> setting.
 Its configuration follows exactly the 
