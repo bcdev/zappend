@@ -3,7 +3,7 @@ site_name: zappend
 copyright: Copyright &copy; 2024 Brockmann Consult
 
 nav:
-  - Introduction: intro.md
+  - Overview: index.md
   - Getting Started: start.md
   - User Guide: guide.md
   - Configuration: config.md
@@ -12,6 +12,11 @@ nav:
   - About: about.md
 
 theme: material
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
 
 extra:
   social:
