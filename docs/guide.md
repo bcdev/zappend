@@ -404,7 +404,7 @@ You can disable transaction management by specifying
 }
 ```
 
-### Target Dataset 
+### Target Dataset
 
 The `target_dir` setting is mandatory. If it is not specified in the configuration,
 it must be passed either as `--target` or `-t` option to the `zappend` command or as 
@@ -425,7 +425,7 @@ passed using the optional `target_storage_options` setting.
 }
 ```
 
-### Slice Datasets 
+### Slice Datasets
 
 If the slice paths passed to the `zappend` tool are given as URIs 
 additional storage options may be provided for the filesystem given by the 
