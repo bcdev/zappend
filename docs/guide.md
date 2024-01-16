@@ -455,8 +455,6 @@ Or use default polling:
     "slice_polling": true 
 }
 ```
- 
-
 
 
 ### Slice Sources
@@ -501,7 +499,7 @@ If the flag is set, in-memory slices will be persisted to a temporary Zarr befor
 appending them to the target dataset. It may prevent expensive re-computation of chunks 
 at the cost of additional i/o. It therefore defaults to `false`.
 
-### `zappend.api.SliceSource`
+#### `zappend.api.SliceSource`
 
 Often, you want to perform some custom cleanup after a slice has been processed, i.e.,
 appended to the target dataset. In this case you can write your own 
@@ -520,7 +518,7 @@ from zappend.api import FileObj
 slice_obj = FileObj(slice_uri, storage_options=dict(...)) 
 ```
 
-### `zappend.api.SliceFactory`
+#### `zappend.api.SliceFactory`
 
 A slice factory is a function that provides receives a processing context of type
 `zappend.api.Context` and yields a slice dataset object of one of the types
@@ -534,12 +532,12 @@ processed. A slice factory is defined for each slice path which returns the
 slice source object:
 
 ```python
+from typing import Iterable
 import numpy as np
 import xarray as xr
+from zappend.api import SliceFactory
 from zappend.api import SliceSource
 from zappend.api import zappend
-
-config = { "target_dir": "target.zarr" }
 
 def get_mean_time(slice_ds: xr.Dataset) -> xr.DataArray:
     time = slice_ds.time
@@ -575,17 +573,15 @@ class MySliceSource(SliceSource):
             self.mean_ds.close()
             self.mean_ds = None
         
-def get_slices(slice_paths: list[str]):
+def get_slices(slice_paths: list[str]) -> Iterable[SliceFactory]:
     for slice_path in slice_paths:
         def get_slice_source(ctx):
             return MySliceSource(ctx, slice_path)
         yield get_slice_source
         
 zappend(get_slices(["slice-1.nc", "slice-2.nc", "slice-3.nc"]),
-        config=config)
+        target_dir="target.zarr")
 ```
-
-
 
 ## Logging
 
