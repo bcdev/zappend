@@ -6,18 +6,20 @@ from typing import Iterable, Any
 
 from .config import ConfigLike
 from .context import Context
+from .fsutil import FileObj
 from .processor import Processor
 from .slice import SliceFactory
 from .slice import SliceObj
 from .slice import SliceSource
 
 __all__ = [
-    "zappend",
     "ConfigLike",
     "Context",
+    "FileObj",
     "SliceSource",
     "SliceFactory",
     "SliceObj",
+    "zappend",
 ]
 
 

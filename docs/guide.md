@@ -456,12 +456,135 @@ Or use default polling:
 }
 ```
  
-* `persist_mem_slices`
+
 
 
 ### Slice Sources
 
-_This section is a work in progress._
+Using the `zappend` command, slice dataset are provided as local filesystem paths 
+or by paths into other filesystems in case the slice datasets are provided by a URI.
+This section describes additional options to pass slice datasets to the `slices`
+argument of the [`zappend`](api.md) Python function.
+
+#### `xarray.Dataset`
+
+In-memory slice objects can be passed as [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html) objects. 
+Such objects may originate from opening datasets from some storage 
+
+```python
+import xarray as xr
+
+slice_obj = xr.open_dataset(slice_store, ...) 
+```
+
+or by composing, aggregating, resampling slice datasets from other datasets and 
+data variables. To allow for out-of-core computation of large datasets [Dask arrays](https://docs.dask.org/en/stable/array.html)
+are used by both `xarray` and `zarr`. As a dask array may represent complex and/or 
+expensive processing graphs, high CPU loads and memory consumption are common issues
+for computed slice datasets, especially if the specified target dataset chunking is 
+different from the slice dataset chunking. This may cause that Dask graphs are 
+computed multiple times if the source chunking overlaps multiple target chunks, 
+potentially causing large resource overheads while recomputing and/or reloading same 
+source chunks multiple times.
+
+In such cases it can help to "terminate" such computations for each slice by 
+persisting the computed dataset first and then to reopen it. This can be specified 
+using the `persist_mem_slice` setting: 
+
+```json
+{
+    "persist_mem_slice": true
+}
+```
+
+If the flag is set, in-memory slices will be persisted to a temporary Zarr before 
+appending them to the target dataset. It may prevent expensive re-computation of chunks 
+at the cost of additional i/o. It therefore defaults to `false`.
+
+### `zappend.api.SliceSource`
+
+Often, you want to perform some custom cleanup after a slice has been processed, i.e.,
+appended to the target dataset. In this case you can write your own 
+`zappend.api.SliceSource` by implementing its `get_dataset()` and `dispose()`
+methods. Slice source instances are supposed to be created by _slice factories_,
+see below.
+
+#### `zappend.api.FileObj`
+
+An alternative to providing the slice dataset as path or URI is using the `FileObj` 
+class, which combines a URI with dedicated filesystem storage options.
+
+```python
+from zappend.api import FileObj
+
+slice_obj = FileObj(slice_uri, storage_options=dict(...)) 
+```
+
+### `zappend.api.SliceFactory`
+
+A slice factory is a function that provides receives a processing context of type
+`zappend.api.Context` and yields a slice dataset object of one of the types
+described above. Since a slice factory cannot have additional arguments, it is 
+normally defined as a [closure](https://en.wikipedia.org/wiki/Closure_(computer_programming)) 
+to capture slice-specific information.
+
+In the following example, the actual slice dataset is computed from averaging another 
+dataset. A `SliceSource` is used to close the datasets after the slice has been 
+processed. A slice factory is defined for each slice path which returns the  
+slice source object:
+
+```python
+import numpy as np
+import xarray as xr
+from zappend.api import SliceSource
+from zappend.api import zappend
+
+config = { "target_dir": "target.zarr" }
+
+def get_mean_time(slice_ds: xr.Dataset) -> xr.DataArray:
+    time = slice_ds.time
+    t0 = time[0]
+    dt = time[-1] - t0
+    return xr.DataArray(np.array([t0 + dt / 2], 
+                                 dtype=slice_ds.time.dtype), 
+                        dims="time")
+
+def get_mean_slice(slice_ds: xr.Dataset) -> xr.Dataset: 
+    mean_slice_ds = slice_ds.mean("time")
+    mean_slice_ds = mean_slice_ds.expand_dims("time", axis=0)
+    mean_slice_ds.coords["time"] = get_mean_time(slice_ds)
+    return mean_slice_ds 
+    
+class MySliceSource(SliceSource):
+    def __init__(self, ctx, slice_path):
+        super().__init__(ctx)
+        self.slice_path = slice_path
+        self.ds = None
+        self.mean_ds = None
+
+    def get_dataset(self):
+        self.ds = xr.open_dataset(self.slice_path)
+        self.mean_ds = get_mean_slice(self.ds)
+        return self.mean_ds
+
+    def dispose(self):
+        if self.ds is not None:
+            self.ds.close()
+            self.ds = None
+        if self.mean_ds is not None:
+            self.mean_ds.close()
+            self.mean_ds = None
+        
+def get_slices(slice_paths: list[str]):
+    for slice_path in slice_paths:
+        def get_slice_source(ctx):
+            return MySliceSource(ctx, slice_path)
+        yield get_slice_source
+        
+zappend(get_slices(["slice-1.nc", "slice-2.nc", "slice-3.nc"]),
+        config=config)
+```
+
 
 
 ## Logging

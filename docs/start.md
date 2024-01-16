@@ -46,14 +46,22 @@ from zappend.api import zappend
 zappend(["slice-1.nc", "slice-2.nc", "slice-3.nc"], target_dir="target.zarr")
 ```
 
-Process list of local slice paths with [configuration](config.md):
+Process list of slices stored in S3 [configuration](config.md) in `config`:
 
 ```python
 from zappend.api import zappend
 
-config = { "target_dir": "target.zarr" }
+config = { 
+    "target_dir": "target.zarr",
+    "slice_storage_options": {
+        "key": "...",               
+        "secret": "...",               
+    } 
+}
 
-zappend(["slice-1.nc", "slice-2.nc", "slice-3.nc"], config=config)
+zappend((f"s3:/mybucket/data/{name}" 
+         for name in ["slice-1.nc", "slice-2.nc", "slice-3.nc"]), 
+        config=config)
 ```
 
 Process slice paths in S3 with slice generator and [configuration](config.md):
