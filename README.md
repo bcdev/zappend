@@ -7,7 +7,8 @@
 
 # zappend
 
-A tool written in Python for creating and updating a Zarr datacubes from smaller slices.
+A tool written in Python for robustly creating and updating Zarr datacubes 
+from smaller slices.
 
 The objective of zappend is to address recurring memory issues when 
 generating large geospatial data cubes using the 

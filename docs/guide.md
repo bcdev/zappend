@@ -27,11 +27,18 @@ function. Because we provided no additional configuration, the default append di
 The target and slice datasets are allowed to live in filesystems other than the local
 one, if their paths are given as URIs prefixed with a filesystem protocol such as 
 `s3://` or `memory://`. Additional filesystem storage options may be specified via 
-dedicated configuration settings.
+dedicated configuration settings. More on this is given
+in section [_Data I/O_](#data-io) below.
+
+!!! note "Zarr Format v2"
+    By default, `zappend` uses the [Zarr storage specification 2](https://zarr.readthedocs.io/en/stable/spec/v2.html)
+    and has only been tested with this version. The `zarr_version` setting can be used 
+    to change it, e,g, to `3`, but any other value than `2` is currently unsupported.
 
 The tool takes care of generating the target dataset from slice datasets, but doesn't 
 care how the slice datasets are created. Hence, when using the Python `zappend()` 
-function, the slice datasets can be provided in various forms. More on this below.
+function, the slice datasets can be provided in various forms. More on this is given
+in section [_Slice Sources_](#slice-sources) below.
 
 To run the `zappend` tool with [configuration](config.md) you can pass one or more
 configuration files using JSON or YAML format
@@ -157,7 +164,7 @@ merged into metadata of the variable in the first dataset slice.
     Only metadata from the first slice dataset is used, metadata of variables from 
     subsequent slice datasets is ignored entirely.
 
-### Variable Dimensions
+### Dimensions
 
 To ensure a slice variable has the expected dimensionality and shape, the `dims` 
 setting is used. The following example defines the dimensions of a data variable 
@@ -175,7 +182,7 @@ named `chl` (Chlorophyll):
 
 An error will be raised if a variable from a subsequent slice has different dimensions.
 
-### Variable Attributes
+### Attributes
 
 Extra variable attributes can be provided using the `attrs` setting:
 
@@ -192,7 +199,7 @@ Extra variable attributes can be provided using the `attrs` setting:
 }
 ```
 
-### Variable Encoding
+### Encoding
 
 Encoding metadata specifies how array data is stored in the target dataset and includes 
 storage data type, packing, chunking, and compression. Encoding metadata for a given 
@@ -342,58 +349,117 @@ The usage of compressors and filters is best explained in dedicated sections of 
 
 ## Data I/O
 
-_This section is a work in progress._
+This section describes the configuration of how data is read and written.
+
+All input and output can be configured to take place in different filesystem. To 
+specify a filesystem other than the local one, you can use URIs and URLs for path 
+configuration settings such `target_dir` and `temp_dir` as well as for the slice 
+dataset paths. The filesystem is given by an URI's protocol prefix, such as `s3://`,
+which specifies the S3 filesystem. Additional storage parameters may be required to 
+access the data which can be provided by the settings `target_storage_options`, 
+`temp_storage_options`, and `slice_storage_options` which must be given as dictionaries 
+or JSON objects. The supported filesystems and their storage options are given by the 
+[fsspec](https://filesystem-spec.readthedocs.io/) package.
+
+!!! tip
+    You can use the `dry_run` setting to supress creation or modification of any files
+    in the filesystem. This is useful for testing, e.g., make sure configuration is 
+    valid and slice datasets can be read without errors. 
+
+
+While the target dataset is being modified, a file lock is created used to effectively 
+prevent concurrent dataset modifications. After successfully appending a complete slice
+dataset, the lock is removed the target. The lock file is written next to the target
+dataset, using the same filesystem and parent directory path. Its filename is the 
+filename of the target dataset suffixed by the extension `.lock`.
+
+### Transactions
+
+Appending a slice dataset is an atomic operation to ensure the target dataset's 
+integrity. That is, in case a former append step failed, a rollback is performed to 
+restore the last valid state of the target dataset. The rollback takes place 
+immediately after a target dataset modification failed. The rollback include restoring 
+all changed files and removing added files. After the rollback you can analyse what
+went wrong and try to continue appending slices at the point it failed.
+
+To allow for rollbacks, a slice append operation is treated as a transaction,
+hence temporary files must be written, e.g., to record required rollback actions and to
+save backup files with the original data. The location of the temporary transaction 
+files can be configured using the optional `temp_dir` and `temp_storage_options`
+settings:
+
+```json
+{
+    "temp_dir": "memory://temp"
+}
+```
+The default value for `temp_dir` is your operating system's location for temporary 
+data (Python `tempfile.gettempdir()`). 
+
+You can disable transaction management by specifying
+
+```json
+{
+    "disable_rollback": true
+}
+```
 
 ### Target Dataset 
 
-_This section is a work in progress._
+The `target_dir` setting is mandatory. If it is not specified in the configuration,
+it must be passed either as `--target` or `-t` option to the `zappend` command or as 
+`target_dir` keyword argument when using the `zappend` Python function.
 
-* `target_dir`
-* `target_storage_options`
-* `zarr_version`
-* `dry_run`
+If the target path is given for another filesystem, additional storage options may be 
+passed using the optional `target_storage_options` setting. 
+
+```json
+{
+    "target_dir": "s3://wqservices/cubes/chl-2023.zarr",
+    "target_storage_options": {
+        "anon": false,
+        "key": "...",
+        "secret": "...",
+        "endpoint_url": "https://s3.acme.org"
+    }
+}
+```
 
 ### Slice Datasets 
 
-_This section is a work in progress._
+If the slice paths passed to the `zappend` tool are given as URIs 
+additional storage options may be provided for the filesystem given by the 
+URI's protocol. They may be specified using the `slice_storage_options` setting.
+
+Sometimes, the slice dataset to be processed are not yet available, e.g., 
+because another process is currently generating them. For such cases, the 
+`slice_polling` setting can be used. It provides the poll interval and the timeout 
+values in seconds. If this setting is used, and the slice dataset does not yet exist or 
+fails to open, the tool will retry to open it after the given interval. It will stop 
+doing so and exit with an error if the total time for opening the slice dataset exceeds
+the given timeout:
+
+```json
+{
+    "slice_polling": {
+        "interval": 2,
+        "timeout": 600
+    } 
+}
+```
+
+Or use default polling:
+
+```json
+{
+    "slice_polling": true 
+}
+```
  
-* `slice_engine`
-* `slice_storage_options`
-* `slice_polling`
 * `persist_mem_slices`
 
-* If a slice is not yet available, wait and retry until it 
-    - exists, and
-    - is complete.
-* Check for each slice that it is valid. A valid slice
-    - is self-consistent, 
-    - has the same structure as target, and
-    - has an append dimension whose size is equal to the target chunking of
-      this dimension.
-* Before appending a slice, lock the target so that another tool invocation 
-  can recognize it, e.g., write a lock file.
-* If the target is locked, either wait until it becomes available or exit 
-  with an error. The behaviour is controlled by a tool option.
-* After successfully appending a slice, remove the lock from the target.
-* Appending a slice shall be an atomic operation to ensure target dataset 
-  integrity. That is, in case a former append step failed, a rollback must
-  be performed to restore the last valid state of the target. Rolling back  
-  shall take place after an append failed, or before a new slice is appended,
-  or to sanitize a target to make it usable again. Rolling back shall 
-  include restoring all changed files, removing all added files, 
-  and removing any locks. 
-* The tool shall allow for continuing appending slices at the point
-  it failed.
 
-### Transaction Management
-
-_This section is a work in progress._
-
-* `temp_dir`
-* `temp_storage_options`
-* `disable_rollback`
-
-### Slice Data Types
+### Slice Sources
 
 _This section is a work in progress._
 
