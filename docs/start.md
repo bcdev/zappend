@@ -2,7 +2,9 @@
 
 ## Installation
 
-```bash
+Installing `zappend` into a Python v3.10+ environment:
+
+```shell
 pip install zappend
 ```
 
@@ -10,26 +12,26 @@ pip install zappend
 
 Get usage help:
 
-```bash
+```shell
 zappend --help
 ```
 
 Get [configuration](config.md) help: 
 
-```bash
+```shell
 zappend --help-config md
 ```
 
 Process list of local slice paths:
 
-```bash
+```shell
 zappend --target target.zarr slice-1.nc slice-2.nc slice-3.nc
 ```
 
 Process list of local slice paths with [configuration](config.md) in
 `config.yaml`:
 
-```bash
+```shell
 zappend --config config.yaml slice-1.nc slice-2.nc slice-3.nc
 ```
 

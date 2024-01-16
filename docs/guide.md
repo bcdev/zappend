@@ -1,17 +1,62 @@
 # User Guide
 
-Both the `zappend` [CLI command](cli.md) and the [Python function](api.md) can be run 
-without any further [configuration](config.md) except the target dataset path and the 
-slice dataset paths that contribute to the datacube to be generated. The target dataset 
-path must point to a directory that will contain a Zarr group to be created and 
-updated. The slice dataset paths may be provided as Zarr as well or in other data 
-formats supported by the [xarray.open_dataset()](https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html) function. 
-The target and slice dataset are allowed to live in different filesystems. 
+After [installation](start.md), you can either use the `zappend` [CLI command](cli.md)
+
+```shell
+zappend -t output/mycube.zarr inputs/*.nc
+```
+
+or the `zappend` [Python function](api.md)
+
+```bash
+from zappend.api import zappend
+
+zappend(os.listdir("inputs"), target_dir="output/mycube.zarr")
+```
+
+Both the CLI command and the Python function can be run without any further 
+configuration provided the paths of the target dataset and the source slice datasets 
+are given. The target dataset path must point to a directory that will contain a Zarr 
+group to be created and updated. The slice dataset paths may be provided as Zarr as 
+well or in other data formats supported by the [xarray.open_dataset()](https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html) 
+function. The target and slice dataset are allowed to live in different filesystems. 
 Additional filesystem storage options may be specified via the tool's configuration.
 
 The tool takes care of generating the target dataset from slice datasets, but doesn't 
 care how the slice datasets are created. Hence, when using the Python `zappend()` 
 function, the slice datasets can be provided in various forms. More on this below.
+
+To run the `zappend` tool with [configuration](config.md) you can pass one or more
+configuration files using JSON or YAML format
+
+```shell
+zappend -t output/mycube.zarr -c config.yaml inputs/*.nc
+```
+
+If multiple configuration files are passed, they will be merged into one by
+incrementally updating the first by subsequent ones. 
+
+You can pass configuration settings to the `zappend` Python function by the optional
+`config` keyword argument. Other keyword arguments are interpreted as individual 
+configuration settings and will be merged into the one given by `config` argument,
+if any. The `config` keyword argument can be given as local file path or URL 
+(type `str`) pointing to a JSON or YAML file. It can also be given as dictionary,
+or as a sequence of the aforementioned types. Configuration sequences are again merged
+into one.
+
+```python
+import os
+from zappend.api import zappend
+
+zappend(os.listdir("inputs"), 
+        config=["configs/base.yaml",
+                "configs/mycube.yaml"], 
+        target_dir="outputs/mycube.zarr",
+        dry_run=True)
+```
+
+This remainder of this guide explains the how to use the various `zappend` 
+[configuration](config.md) settings.
 
 !!! note
     We use the term _Dataset_ in the same way `xarray` does: A dataset comprises any 
