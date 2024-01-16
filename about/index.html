@@ -191,11 +191,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../intro/" class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Introduction
+    Overview
   </span>
   
 
@@ -582,27 +582,27 @@ For code and configuration changes, your PR must be linked to a
 corresponding issue. </p>
 <h2 id="development">Development</h2>
 <p>Setup development environment:</p>
-<pre><code class="language-bash">pip install -r requirements.txt
-pip install -r requirements-dev.txt
-pip install -r requirements-docs.txt
-</code></pre>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-dev.txt
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-docs.txt
+</code></pre></div>
 <h3 id="testing-and-coverage">Testing and Coverage</h3>
 <p><code>zappend</code> uses <a href="https://docs.pytest.org/">pytest</a> for unit-level testing 
 and code coverage analysis.</p>
-<pre><code class="language-bash">pytest --cov=zappend tests
-</code></pre>
+<div class="highlight"><pre><span></span><code>pytest<span class="w"> </span>--cov<span class="o">=</span>zappend<span class="w"> </span>tests
+</code></pre></div>
 <h3 id="code-style">Code Style</h3>
 <p><code>zappend</code> source code is formatted using the <a href="https://black.readthedocs.io/">black</a> tool.</p>
-<pre><code class="language-bash">black zappend
-</code></pre>
+<div class="highlight"><pre><span></span><code>black<span class="w"> </span>zappend
+</code></pre></div>
 <h3 id="documentation">Documentation</h3>
 <p><code>zappend</code> documentation is build using the <a href="https://www.mkdocs.org/">mkdocs</a> tool.</p>
-<pre><code class="language-bash">pip install -r requirements-doc.txt
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-doc.txt
 
-mkdocs build
-mkdocs serve
-mkdocs gh-deploy
-</code></pre>
+mkdocs<span class="w"> </span>build
+mkdocs<span class="w"> </span>serve
+mkdocs<span class="w"> </span>gh-deploy
+</code></pre></div>
 <h2 id="license">License</h2>
 <p><code>zappend</code> is open source made available under the terms and conditions of the 
 <a href="https://github.com/bcdev/zappend/blob/main/LICENSE">MIT License</a>.</p>

@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../intro/">
+        <link rel="prev" href="..">
       
       
         <link rel="next" href="../guide/">
@@ -193,11 +193,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../intro/" class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Introduction
+    Overview
   </span>
   
 
@@ -463,64 +463,64 @@
 
 <h1 id="getting-started">Getting Started</h1>
 <h2 id="installation">Installation</h2>
-<pre><code class="language-bash">pip install zappend
-</code></pre>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>zappend
+</code></pre></div>
 <h2 id="using-the-cli">Using the CLI</h2>
 <p>Get usage help:</p>
-<pre><code class="language-bash">zappend --help
-</code></pre>
+<div class="highlight"><pre><span></span><code>zappend<span class="w"> </span>--help
+</code></pre></div>
 <p>Get <a href="../config/">configuration</a> help: </p>
-<pre><code class="language-bash">zappend --help-config md
-</code></pre>
+<div class="highlight"><pre><span></span><code>zappend<span class="w"> </span>--help-config<span class="w"> </span>md
+</code></pre></div>
 <p>Process list of local slice paths:</p>
-<pre><code class="language-bash">zappend --target target.zarr slice-1.nc slice-2.nc slice-3.nc
-</code></pre>
+<div class="highlight"><pre><span></span><code>zappend<span class="w"> </span>--target<span class="w"> </span>target.zarr<span class="w"> </span>slice-1.nc<span class="w"> </span>slice-2.nc<span class="w"> </span>slice-3.nc
+</code></pre></div>
 <p>Process list of local slice paths with <a href="../config/">configuration</a> in
 <code>config.yaml</code>:</p>
-<pre><code class="language-bash">zappend --config config.yaml slice-1.nc slice-2.nc slice-3.nc
-</code></pre>
+<div class="highlight"><pre><span></span><code>zappend<span class="w"> </span>--config<span class="w"> </span>config.yaml<span class="w"> </span>slice-1.nc<span class="w"> </span>slice-2.nc<span class="w"> </span>slice-3.nc
+</code></pre></div>
 <h2 id="using-the-python-api">Using the Python API</h2>
 <p>Process list of local slice paths:</p>
-<pre><code class="language-python">from zappend.api import zappend
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">zappend</span>
 
-zappend([&quot;slice-1.nc&quot;, &quot;slice-2.nc&quot;, &quot;slice-3.nc&quot;], target_dir=&quot;target.zarr&quot;)
-</code></pre>
+<span class="n">zappend</span><span class="p">([</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">],</span> <span class="n">target_dir</span><span class="o">=</span><span class="s2">&quot;target.zarr&quot;</span><span class="p">)</span>
+</code></pre></div>
 <p>Process list of local slice paths with <a href="../config/">configuration</a>:</p>
-<pre><code class="language-python">from zappend.api import zappend
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">zappend</span>
 
-config = { &quot;target_dir&quot;: &quot;target.zarr&quot; }
+<span class="n">config</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;target_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;target.zarr&quot;</span> <span class="p">}</span>
 
-zappend([&quot;slice-1.nc&quot;, &quot;slice-2.nc&quot;, &quot;slice-3.nc&quot;], config=config)
-</code></pre>
+<span class="n">zappend</span><span class="p">([</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div>
 <p>Process slice paths in S3 with slice generator and <a href="../config/">configuration</a>:</p>
-<pre><code class="language-python">import numpy as np
-import xarray as xr
-from zappend.api import zappend
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">zappend</span>
 
-config = { &quot;target_dir&quot;: &quot;target.zarr&quot; }
+<span class="n">config</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;target_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;target.zarr&quot;</span> <span class="p">}</span>
 
-def get_mean_time(slice_ds: xr.Dataset) -&gt; xr.DataArray:
-    time = slice_ds.time
-    t0 = time[0]
-    dt = time[-1] - t0
-    return xr.DataArray(np.array([t0 + dt / 2], 
-                                 dtype=slice_ds.time.dtype), 
-                        dims=&quot;time&quot;)
+<span class="k">def</span> <span class="nf">get_mean_time</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">slice_ds</span><span class="o">.</span><span class="n">time</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t0</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t0</span> <span class="o">+</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span> 
+                                 <span class="n">dtype</span><span class="o">=</span><span class="n">slice_ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> 
+                        <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
 
-def get_mean_slice(slice_ds: xr.Dataset) -&gt; xr.Dataset: 
-    mean_slice_ds = slice_ds.mean(&quot;time&quot;)
-    mean_slice_ds = mean_slice_ds.expand_dims(&quot;time&quot;, axis=0)
-    mean_slice_ds.coords[&quot;time&quot;] = get_mean_time(slice_ds)
-    return mean_slice_ds 
+<span class="k">def</span> <span class="nf">get_mean_slice</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span> 
+    <span class="n">mean_slice_ds</span> <span class="o">=</span> <span class="n">slice_ds</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+    <span class="n">mean_slice_ds</span> <span class="o">=</span> <span class="n">mean_slice_ds</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">mean_slice_ds</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_mean_time</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mean_slice_ds</span> 
 
-def get_slices(slice_paths: list[str]):
-    for slice_path in slice_paths:
-        ds = xr.open_dataset(&quot;s3://mybucket/eodata/&quot; + slice_path)
-        yield get_mean_slice(ds) 
+<span class="k">def</span> <span class="nf">get_slices</span><span class="p">(</span><span class="n">slice_paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+    <span class="k">for</span> <span class="n">slice_path</span> <span class="ow">in</span> <span class="n">slice_paths</span><span class="p">:</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="s2">&quot;s3://mybucket/eodata/&quot;</span> <span class="o">+</span> <span class="n">slice_path</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">get_mean_slice</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span> 
 
-zappend(get_slices([&quot;slice-1.nc&quot;, &quot;slice-2.nc&quot;, &quot;slice-3.nc&quot;]),
-        config=config)
-</code></pre>
+<span class="n">zappend</span><span class="p">(</span><span class="n">get_slices</span><span class="p">([</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">]),</span>
+        <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div>
 
 
 

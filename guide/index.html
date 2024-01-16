@@ -193,11 +193,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../intro/" class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Introduction
+    Overview
   </span>
   
 
@@ -298,9 +298,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#variable-outline" class="md-nav__link">
+  <a href="#variable-dimensions" class="md-nav__link">
     <span class="md-ellipsis">
-      Variable Outline
+      Variable Dimensions
     </span>
   </a>
   
@@ -335,18 +335,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#missing-values" class="md-nav__link">
+  <a href="#missing-data" class="md-nav__link">
     <span class="md-ellipsis">
-      Missing Values
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#compression" class="md-nav__link">
-    <span class="md-ellipsis">
-      Compression
+      Missing Data
     </span>
   </a>
   
@@ -356,6 +347,15 @@
   <a href="#data-packing" class="md-nav__link">
     <span class="md-ellipsis">
       Data Packing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compression" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compression
     </span>
   </a>
   
@@ -556,9 +556,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#variable-outline" class="md-nav__link">
+  <a href="#variable-dimensions" class="md-nav__link">
     <span class="md-ellipsis">
-      Variable Outline
+      Variable Dimensions
     </span>
   </a>
   
@@ -593,18 +593,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#missing-values" class="md-nav__link">
+  <a href="#missing-data" class="md-nav__link">
     <span class="md-ellipsis">
-      Missing Values
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#compression" class="md-nav__link">
-    <span class="md-ellipsis">
-      Compression
+      Missing Data
     </span>
   </a>
   
@@ -614,6 +605,15 @@
   <a href="#data-packing" class="md-nav__link">
     <span class="md-ellipsis">
       Data Packing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compression" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compression
     </span>
   </a>
   
@@ -701,64 +701,60 @@ without any further <a href="../config/">configuration</a> except the target dat
 slice dataset paths that contribute to the datacube to be generated. The target dataset 
 path must point to a directory that will contain a Zarr group to be created and 
 updated. The slice dataset paths may be provided as Zarr as well or in other data 
-formats supported by the<br />
-<a href="https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html">xarray.open_dataset()</a>
-function. The target and slice dataset are allowed to live in different filesystems. 
+formats supported by the <a href="https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html">xarray.open_dataset()</a> function. 
+The target and slice dataset are allowed to live in different filesystems. 
 Additional filesystem storage options may be specified via the tool's configuration.</p>
 <p>The tool takes care of generating the target dataset from slice datasets, but doesn't 
 care how the slice datasets are created. Hence, when using the Python <code>zappend()</code> 
 function, the slice datasets can be provided in various forms. More on this below.</p>
-<blockquote>
-<p>[!NOTE]
-We use the term <em>Dataset</em> in the same way <code>xarray</code> does: A dataset
-comprises any number of multidimensional <em>Data Variables</em>, and 
-usually 1-dimensional <em>Coordinate Variables</em> that provide the labels for 
-the dimensions used by the data variables. A variable comprises the actual 
-data array as well as metadata describing the data dimensions, 
-units, and encoding, such as chunking and compression.</p>
-</blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We use the term <em>Dataset</em> in the same way <code>xarray</code> does: A dataset comprises any 
+number of multidimensional <em>Data Variables</em>, and usually 1-dimensional 
+<em>Coordinate Variables</em> that provide the labels for the dimensions used by the data 
+variables. A variable comprises the actual data array as well as metadata describing 
+the data dimensions, units, and encoding, such as chunking and compression.</p>
+</div>
 <h2 id="dataset-outline">Dataset Outline</h2>
-<p>If no further configuration is supplied, then the target dataset's outline
-and data encoding is fully prescribed by the first slice dataset provided.
-By default, the dimension along subsequent slice datasets are concatenated
-is <code>time</code>. If you use a different append dimension, the <code>append_dim</code> 
-setting can be used to specify its name:</p>
-<pre><code class="language-json">{
-    &quot;append_dim&quot;: &quot;depth&quot;
-}
-</code></pre>
+<p>If no further configuration is supplied, then the target dataset's outline and data 
+encoding is fully prescribed by the first slice dataset provided. By default, the 
+dimension along subsequent slice datasets are concatenated is <code>time</code>. If you use a 
+different append dimension, the <code>append_dim</code> setting can be used to specify its name:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;append_dim&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;depth&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>All other non-variadic dimensions can and should be specified using the
 <code>fixed_dims</code> setting which is a mapping from dimension name to the 
 fixed dimension sizes, e.g.:</p>
-<pre><code class="language-json">{
-    &quot;fixed_dims&quot;: {
-        &quot;x&quot;: 16384,
-        &quot;y&quot;: 8192
-    }
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;fixed_dims&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">16384</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8192</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>By default, without further configuration, all data variables seen in the first
 dataset slice will be included in the target dataset. If only a subset of 
 variables shall be used from the slice dataset, they can be specified using the
 <code>included_variables</code> setting, which is a list of names of variables that will 
 be included:</p>
-<pre><code class="language-json">{
-    &quot;included_variables&quot;: [
-        &quot;time&quot;, &quot;y&quot;, &quot;x&quot;,
-        &quot;chl&quot;, 
-        &quot;tsm&quot;
-    ]
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;included_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">&quot;time&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;x&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;chl&quot;</span><span class="p">,</span><span class="w"> </span>
+<span class="w">        </span><span class="s2">&quot;tsm&quot;</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>Often, it is easier to tell which variables should be excluded:</p>
-<pre><code class="language-json">{
-    &quot;excluded_variables&quot;: [&quot;GridCellId&quot;]
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;excluded_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;GridCellId&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="variable-metadata">Variable Metadata</h2>
-<p>Without any additional configuration, <code>zappend</code> uses the outline, attributes, 
-and encoding information of data variables for the target dataset from the 
-data variables of the first slice dataset. 
+<p>Without any additional configuration, <code>zappend</code> uses the dimensions, attributes, 
+and encoding information from the data variables of the first slice dataset. 
 Encoding information is used only to the extent applicable to the Zarr format.
 Non-applicable encoding information will be reported by a warning log record 
 but is otherwise ignored. </p>
@@ -770,96 +766,162 @@ information retrieved from the data variables with same name included in the
 first dataset slice.</p>
 <p>A special "variable name" is the wildcard <code>*</code> that can be used to define default
 values for all variables:</p>
-<pre><code class="language-json">{
-    &quot;variables&quot;: {
-        &quot;*&quot;: { }
-    }
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;*&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>If <code>*</code> is specified, the effective variable metadata applied is gained by merging a 
 given specific metadata, into the common metadata given by <code>*</code>, which is eventually 
 merged into metadata of the variable in the first dataset slice.</p>
-<blockquote>
-<p>[!NOTE]
-The metadata of variables from subsequent slice datasets is ignored!</p>
-</blockquote>
-<h3 id="variable-outline">Variable Outline</h3>
-<p>To ensure a slice variable has the expected dimensionality, the <code>dims</code> 
-setting is used. The following example defines the dimensions of the data variable
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only metadata from the first slice dataset is used, metadata of variables from 
+subsequent slice datasets is ignored entirely.</p>
+</div>
+<h3 id="variable-dimensions">Variable Dimensions</h3>
+<p>To ensure a slice variable has the expected dimensionality and shape, the <code>dims</code> 
+setting is used. The following example defines the dimensions of a data variable 
 named <code>chl</code> (Chlorophyll):</p>
-<pre><code class="language-json">{
-    &quot;variables&quot;: {
-        &quot;chl&quot;: { 
-            &quot;dims&quot;: [&quot;time&quot;, &quot;y&quot;, &quot;x&quot;]
-        }
-    }
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;chl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;dims&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>An error will be raised if a variable from a subsequent slice has different dimensions.</p>
 <h3 id="variable-attributes">Variable Attributes</h3>
 <p>Extra variable attributes can be provided using the <code>attrs</code> setting:</p>
-<pre><code class="language-json">{
-    &quot;variables&quot;: {
-        &quot;chl&quot;: { 
-            &quot;attrs&quot;: {
-                &quot;units&quot;: &quot;mg/m^3&quot;,
-                &quot;long_name&quot;: &quot;chlorophyll_concentration&quot;
-            }
-        }
-    }
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;chl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;attrs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;units&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mg/m^3&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;long_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;chlorophyll_concentration&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <h3 id="variable-encoding">Variable Encoding</h3>
-<p>Encoding metadata specifies how array data is stored in the target dataset and
-includes storage data type, packing, chunking, and compression.
-Encoding metadata for a given variable is provided by the <code>encoding</code> setting.
-Since the encoding is often shared by multiple variables the wildcard 
-variable name <code>*</code> can often be of help.</p>
+<p>Encoding metadata specifies how array data is stored in the target dataset and includes 
+storage data type, packing, chunking, and compression. Encoding metadata for a given 
+variable is provided by the <code>encoding</code> setting. Since the encoding is often shared by 
+multiple variables the wildcard variable name <code>*</code> can often be of help.</p>
+<div class="admonition tip">
+<p class="admonition-title">Verify encoding is as expected</p>
+<p>To verify that <code>zappend</code> uses the expected encoding for your variables create a 
+target dataset for testing from your first slice dataset and open it using 
+<code>ds = xarray.open_zarr(target_dir, decode_cf=False)</code>. Then inspect dataset <code>ds</code> 
+using the Python console or Jupyter Notebook (attribute <code>ds.&lt;var&gt;.encoding</code>).
+You can also inspect the Zarr directly by opening the <code>&lt;target_dir&gt;/&lt;var&gt;/.zarray</code>
+or <code>&lt;target_dir&gt;/.zmetadata</code> metadata JSON files.    </p>
+</div>
 <h4 id="chunking">Chunking</h4>
 <p>By default, the chunking of the coordinate variable corresponding to the append 
-dimension will be its dimension in the first slice dataset. Often, this will
-be one or a small number. Since <code>xarray</code> loads coordinates eagerly when opening
-a dataset, this can lead to performance issues if the target dataset is served
-from object storage such as S3. This is because, a separate HTTP request is 
-required for every single chunk. It is therefore very advisable to set the 
-chunks of that variable to a larger number using the <code>chunks</code> setting.
-For other variables, the chunking within the append dimension may stay small
-if desired:</p>
-<pre><code class="language-json">{
-    &quot;variables&quot;: {
-        &quot;time&quot;: { 
-            &quot;dims&quot;: [&quot;time&quot;],
-            &quot;encoding&quot;: {
-                &quot;chunks&quot;: [1024]
-            }
-        },
-        &quot;chl&quot;: { 
-            &quot;dims&quot;: [&quot;time&quot;, &quot;y&quot;, &quot;x&quot;],
-            &quot;encoding&quot;: {
-                &quot;chunks&quot;: [1, 2048, 2048]
-            }
-        }
-    }
-}
-</code></pre>
-<h4 id="missing-values">Missing Values</h4>
-<p><em>This section is a work in progress.</em></p>
-<h4 id="compression">Compression</h4>
-<p><em>This section is a work in progress.</em></p>
+dimension will be its dimension in the first slice dataset. Often, this will be one or 
+a small number. Since <code>xarray</code> loads coordinates eagerly when opening a dataset, this 
+can lead to performance issues if the target dataset is served from object storage such 
+as S3. This is because, a separate HTTP request is required for every single chunk. It 
+is therefore very advisable to set the chunks of that variable to a larger number using 
+the <code>chunks</code> setting. For other variables, the chunking within the append dimension may 
+stay small if desired:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;dims&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span>
+<span class="w">            </span><span class="nt">&quot;encoding&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;chunks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1024</span><span class="p">]</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;chl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;dims&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;x&quot;</span><span class="p">],</span>
+<span class="w">            </span><span class="nt">&quot;encoding&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;chunks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2048</span><span class="p">,</span><span class="w"> </span><span class="mi">2048</span><span class="p">]</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="missing-data">Missing Data</h4>
+<p>To indicate missing data in a variable data array, a dedicated no-data or missing value 
+can be specified by the <code>fill_value</code> setting. The value is given in a variable's storage 
+type and storage units, see next section <em>Data Packing</em>.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;chl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;encoding&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;fill_value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-999</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If the <code>fill_value</code> is not specified, the default is <code>NaN</code> (given as string <code>"NaN"</code> 
+in JSON) if the storage data type is floating point; it is <code>None</code> (<code>null</code> in JSON) 
+if the storage data types is integer, which effectively means, no fill value is used. 
+You can also explicitly set <code>fill_value</code> to <code>null</code> (<code>None</code> in Python) to not use one.</p>
+<p>Setting the <code>fill_value</code> for a variable can be important for saving storage space and 
+improving data I/O performance in many cases, because <code>zappend</code> does not write empty 
+array chunks - chunks that comprise missing data only, i.e., 
+<code>slice.to_zarr(target_dir, write_empty_chunks=False, ...)</code>.</p>
 <h4 id="data-packing">Data Packing</h4>
-<p><em>This section is a work in progress.</em></p>
-<ul>
-<li>
-<p>The target encoding should also allow for packing floating point data into 
-  integer data with fewer bits using scaling factor and offset.</p>
-</li>
-<li>
-<p>If the target exists, the slice will be appended. Check if the slice to be 
-  appended is last. If not, refuse to append (alternative: insert but this is 
-  probably difficult or error prone).</p>
-</li>
-<li>Slices are appended in the order they are provided.</li>
-</ul>
+<p><em>Data packing</em> refers to a simple lossy data compression method where 32- or 64-bit 
+floating point values are linearly scaled so that their value range can be fully or 
+partially represented by a lower precision integer data type. Packed values usually
+also give higher compression rates when using a <code>compressor</code>, see next section.</p>
+<p>Data packing is specified using the <code>scale_factor</code> and <code>add_offset</code> settings together
+with the storage data type setting <code>dtype</code>. The settings should be given as a triple:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;chl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;encoding&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;dtype&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;int16&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;scale_factor&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.005</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;add_offset&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The in-memory value in its physical units for a given encoded value in storage is 
+computed according to </p>
+<div class="highlight"><pre><span></span><code><span class="n">memory_value</span> <span class="o">=</span> <span class="n">scale_factor</span> <span class="o">*</span> <span class="n">storage_value</span> <span class="o">+</span> <span class="n">add_offset</span>
+</code></pre></div>
+<p>Hence, the encoded value is computed from an in-memory value in physical units as</p>
+<div class="highlight"><pre><span></span><code><span class="n">storage_value</span> <span class="o">=</span> <span class="p">(</span><span class="n">memory_value</span> <span class="o">-</span> <span class="n">add_offset</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale_factor</span>
+</code></pre></div>
+<p>You can compute <code>scale_factor</code> and <code>add_offset</code> from given data range in physical units
+according to</p>
+<div class="highlight"><pre><span></span><code>  <span class="n">add_offset</span> <span class="o">=</span> <span class="n">memory_value_min</span>
+  <span class="n">scale_factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">memory_value_max</span> <span class="o">-</span> <span class="n">memory_value_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">num_bits</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+<p>with <code>num_bits</code> being the number of bits for the integer type to be used.</p>
+<h4 id="compression">Compression</h4>
+<p>Data compression is specified by the <code>compressor</code> setting, optionally paired with the
+<code>filters</code> setting: </p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;chl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;encoding&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;compressor&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">                </span><span class="nt">&quot;filters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>By default, <code>zappend</code> uses default the default <code>blosc</code> compressor of Zarr, if not 
+specified. To explicitly disable compression you must set the <code>compressor</code> to <code>None</code> 
+(<code>null</code> in JSON).</p>
+<p>The usage of compressors and filters is best explained in dedicated sections of the 
+<a href="https://zarr.readthedocs.io/en/stable/tutorial.html">Zarr Tutorial</a>, namely 
+<a href="https://zarr.readthedocs.io/en/stable/tutorial.html#compressors"><em>Compressors</em></a> and 
+<a href="https://zarr.readthedocs.io/en/stable/tutorial.html#filters"><em>Filters</em></a>.</p>
 <h2 id="data-io">Data I/O</h2>
 <p><em>This section is a work in progress.</em></p>
 <ul>
@@ -924,37 +986,36 @@ if desired:</p>
 <h2 id="slice-data-types">Slice Data Types</h2>
 <p><em>This section is a work in progress.</em></p>
 <h2 id="logging">Logging</h2>
-<p>The <code>zappend</code> logging configuration follows exactly the 
-Python <a href="https://docs.python.org/3/library/logging.config.html#logging-config-dictschema">dictionary schema</a> of the Python module <code>logging.config</code>.
-The logger used by the <code>zappend</code> tool is named <code>zappend</code>.
-Note that you can also configure the logger of other Python modules, e.g.,
+<p>The <code>zappend</code> logging configuration follows exactly the <a href="https://docs.python.org/3/library/logging.config.html#logging-config-dictschema">dictionary schema</a> of the 
+Python module <code>logging.config</code>. The logger used by the <code>zappend</code> tool is named 
+<code>zappend</code>. Note that you can also configure the logger of other Python modules, e.g.,
 <code>xarray</code> or <code>dask</code> here.</p>
 <p>Given here is an example that logs <code>zappend</code>'s output to the console using 
 the INFO level:</p>
-<pre><code class="language-json">{
-    &quot;logging&quot;: {
-        &quot;version&quot;: 1,
-        &quot;formatters&quot;: {
-            &quot;normal&quot;: {
-                &quot;format&quot;: &quot;%(asctime)s %(levelname)s %(message)s&quot;,
-                &quot;style&quot;: &quot;%&quot;
-            }
-        },
-        &quot;handlers&quot;: {
-            &quot;console&quot;: {
-                &quot;class&quot;: &quot;logging.StreamHandler&quot;,
-                &quot;formatter&quot;: &quot;normal&quot;
-            }
-        },
-        &quot;loggers&quot;: {
-            &quot;zappend&quot;: {
-                &quot;level&quot;: &quot;INFO&quot;,
-                &quot;handlers&quot;: [&quot;console&quot;]
-            }
-        }
-    }
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;logging&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;formatters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;normal&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;%(asctime)s %(levelname)s %(message)s&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;style&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;%&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;handlers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;console&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;logging.StreamHandler&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;formatter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;normal&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;loggers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;zappend&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;handlers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;console&quot;</span><span class="p">]</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 
 
 
