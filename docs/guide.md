@@ -14,13 +14,20 @@ from zappend.api import zappend
 zappend(os.listdir("inputs"), target_dir="output/mycube.zarr")
 ```
 
+Both invocations will create the Zarr dataset `output/mycube.zarr` by concatenating
+the "slice" datasets provided in the `inputs` directory along their `time` dimension. 
 Both the CLI command and the Python function can be run without any further 
 configuration provided the paths of the target dataset and the source slice datasets 
 are given. The target dataset path must point to a directory that will contain a Zarr 
 group to be created and updated. The slice dataset paths may be provided as Zarr as 
 well or in other data formats supported by the [xarray.open_dataset()](https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html) 
-function. The target and slice dataset are allowed to live in different filesystems. 
-Additional filesystem storage options may be specified via the tool's configuration.
+function. Because we provided no additional configuration, the default append dimension
+`time` is used above.
+
+The target and slice datasets are allowed to live in filesystems other than the local
+one, if their paths are given as URIs prefixed with a filesystem protocol such as 
+`s3://` or `memory://`. Additional filesystem storage options may be specified via 
+dedicated configuration settings.
 
 The tool takes care of generating the target dataset from slice datasets, but doesn't 
 care how the slice datasets are created. Hence, when using the Python `zappend()` 
@@ -337,14 +344,22 @@ The usage of compressors and filters is best explained in dedicated sections of 
 
 _This section is a work in progress._
 
-* `dry_run`
+### Target Dataset 
+
+_This section is a work in progress._
 
 * `target_dir`
 * `target_storage_options`
 * `zarr_version`
+* `dry_run`
 
+### Slice Datasets 
+
+_This section is a work in progress._
+ 
 * `slice_engine`
 * `slice_storage_options`
+* `slice_polling`
 * `persist_mem_slices`
 
 * If a slice is not yet available, wait and retry until it 
@@ -370,13 +385,7 @@ _This section is a work in progress._
 * The tool shall allow for continuing appending slices at the point
   it failed.
 
-### Slice Polling
-
-_This section is a work in progress._
-
-* `slice_polling`
-
-### Transactions
+### Transaction Management
 
 _This section is a work in progress._
 
@@ -384,17 +393,19 @@ _This section is a work in progress._
 * `temp_storage_options`
 * `disable_rollback`
 
-## Slice Data Types
+### Slice Data Types
 
 _This section is a work in progress._
 
 
 ## Logging
 
-The `zappend` logging configuration follows exactly the [dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema) of the 
-Python module `logging.config`. The logger used by the `zappend` tool is named 
+The `zappend` logging output is configured using the `logging` setting.
+Its configuration follows exactly the 
+[dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema)
+of the Python module `logging.config`. The logger used by the `zappend` tool is named 
 `zappend`. Note that you can also configure the logger of other Python modules, e.g.,
-`xarray` or `dask` here.
+`xarray` or `dask` using an entry in the `loggers` setting.
 
 Given here is an example that logs `zappend`'s output to the console using 
 the INFO level:
