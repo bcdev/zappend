@@ -14,9 +14,10 @@ class TemporarySliceSource(MemorySliceSource):
     """A slice source that persists the in-memory dataset and returns
      the re-opened dataset instance.
 
-    :param ctx: Processing context
-    :param slice_ds: The slice dataset
-    :param slice_index: An index for slice identification
+    Args:
+        ctx: Processing context
+        slice_ds: The slice dataset
+        slice_index: An index for slice identification
     """
 
     def __init__(self, ctx: Context, slice_ds: xr.Dataset, slice_index: int):

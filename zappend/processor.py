@@ -24,12 +24,13 @@ from .tailoring import tailor_slice_dataset
 class Processor:
     """This class implements the actual `zappend` process.
 
-    :param config: Processor configuration.
-        May be a file path or URI, a ``dict``, ``None``, or a sequence of
-        the aforementioned. If a sequence is used, subsequent configurations
-        are incremental to the previous ones.
-    :param kwargs: Additional configuration parameters.
-        Can be used to pass or override configuration values in *config*.
+    Args:
+        config: Processor configuration.
+            May be a file path or URI, a ``dict``, ``None``, or a sequence of
+            the aforementioned. If a sequence is used, subsequent configurations
+            are incremental to the previous ones.
+        kwargs: Additional configuration parameters.
+            Can be used to pass or override configuration values in *config*.
     """
 
     def __init__(self, config: ConfigLike = None, **kwargs):
@@ -43,7 +44,8 @@ class Processor:
         """Process the given *slices*.
         Passes each slice in *slices* to the ``process_slice()`` method.
 
-        :param slices: Slice objects.
+        Args:
+            slices: Slice objects.
         """
         for slice_index, slice_obj in enumerate(slices):
             self.process_slice(slice_obj, slice_index=slice_index)
@@ -74,8 +76,9 @@ class Processor:
         * remove encoding and attributes from slice
         * update target from slice
 
-        :param slice_obj: The slice object.
-        :param slice_index: An index identifying the slice.
+        Args:
+            slice_obj: The slice object.
+            slice_index: An index identifying the slice.
         """
 
         ctx = Context(self._config)
