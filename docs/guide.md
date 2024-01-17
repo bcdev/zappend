@@ -520,7 +520,7 @@ slice_obj = FileObj(slice_uri, storage_options=dict(...))
 
 #### `zappend.api.SliceFactory`
 
-A slice factory is a function that provides receives a processing context of type
+A slice factory is a function that receives a processing context of type
 `zappend.api.Context` and yields a slice dataset object of one of the types
 described above. Since a slice factory cannot have additional arguments, it is 
 normally defined as a [closure](https://en.wikipedia.org/wiki/Closure_(computer_programming)) 
