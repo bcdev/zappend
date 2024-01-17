@@ -482,7 +482,7 @@ expensive processing graphs, high CPU loads and memory consumption are common is
 for computed slice datasets, especially if the specified target dataset chunking is 
 different from the slice dataset chunking. This may cause Dask graphs to be 
 computed multiple times if the source chunking overlaps multiple target chunks, 
-potentially causing large resource overheads while recomputing and/or reloading same 
+potentially causing large resource overheads while recomputing and/or reloading the same
 source chunks multiple times.
 
 In such cases it can help to "terminate" such computations for each slice by 
