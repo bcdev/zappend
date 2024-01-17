@@ -54,7 +54,7 @@ black zappend
 
 ### Documentation
 
-`zappend` documentation is build using the [mkdocs](https://www.mkdocs.org/) tool.
+`zappend` documentation is built using the [mkdocs](https://www.mkdocs.org/) tool.
 
 ```bash
 pip install -r requirements-doc.txt
