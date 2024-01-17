@@ -46,7 +46,7 @@ checklist are addressed in your PR.
 
 ## Code style
 
-Most of the code is compliant to [PEP-8](https://pep8.org/) and formatted using
+Most of the code is compliant with [PEP-8](https://pep8.org/) and formatted using
 default settings of [black](https://black.readthedocs.io/).
 Since black is un-opinionated regarding the order of imports, we use the 
 following three import blocks separated by an empty line:
