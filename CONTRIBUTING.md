@@ -20,36 +20,24 @@ checklist are addressed in your PR.
 
 **PR checklist**
 
-* Use language [TypeScript](https://www.typescriptlang.org/) using the same
-  [configuration](../extendit/tsconfig.json) as we do.
-* Format code using [prettier](https://prettier.io/) using the same 
-  [configuration](../extendit/.prettierrc.json) as we do. Check also section
-  [coding style](#coding-style) below.
-* Inspect code using [eslint](https://eslint.org/) using the same 
-  [configuration](../extendit/.eslintrc.cjs) as we do.
-  `npm run lint` must run without errors.
+* Format code using [black](https://black.readthedocs.io/) with default settings.
+  Check also section [code style](#code-style) below.
 * Your change shall not break existing unit tests.
-  `npm run test` must run without errors.
-* Add unit tests for any new code not yet covered by tests
-  using [vitest](https://vitest.dev/). 
-  If you add new modules make sure you add a test module 
-  `<name>.test.ts` for each next to it.
-* Make sure test coverage is at 100% for any change.
-  Use `npm run coverage` to verify.
-* If you add or change new public API components, add or change API 
-  documentation accordingly using 
-  [TSDoc](https://tsdoc.org/). 
-  `npm run typedoc` must run without errors.
+  `pytest` must run without errors.
+* Add unit tests for any new code not yet covered by tests.
+* Make sure test coverage is close to 100% for any change.
+  Use `pytest --cov=zappend --cov-report=html` to verify.
 * If your change affects the current project documentation,
-  (currently only the [README](../extendit/README.md) file)
   please adjust it and include the change in the PR.
+  Run `mkdocs serve` to verify.
 
 ## Code style
 
-Most of the code is compliant with [PEP-8](https://pep8.org/) and formatted using
-default settings of [black](https://black.readthedocs.io/).
-Since black is un-opinionated regarding the order of imports, we use the 
-following three import blocks separated by an empty line:
+The `zappend` code compliant to [PEP-8](https://pep8.org/) except for a line 
+length of 88 characters as recommended by [black](https://black.readthedocs.io/).
+Since back is un-opinionated regarding the order of imports, 
+we use the following three import blocks separated by an empty 
+line:
 
 1. Python standard library imports, e.g., `os`, `typing`, etc
 2. 3rd-party imports, e.g., `xarray`, `zarr`, etc
