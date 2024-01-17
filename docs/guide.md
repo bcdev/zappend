@@ -369,7 +369,7 @@ or JSON objects. The supported filesystems and their storage options are given b
 
 While the target dataset is being modified, a file lock is created used to effectively 
 prevent concurrent dataset modifications. After successfully appending a complete slice
-dataset, the lock is removed the target. The lock file is written next to the target
+dataset, the lock is removed from the target. The lock file is written next to the target
 dataset, using the same filesystem and parent directory path. Its filename is the 
 filename of the target dataset suffixed by the extension `.lock`.
 
