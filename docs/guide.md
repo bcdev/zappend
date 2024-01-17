@@ -480,7 +480,7 @@ data variables. To allow for out-of-core computation of large datasets [Dask arr
 are used by both `xarray` and `zarr`. As a dask array may represent complex and/or 
 expensive processing graphs, high CPU loads and memory consumption are common issues
 for computed slice datasets, especially if the specified target dataset chunking is 
-different from the slice dataset chunking. This may cause that Dask graphs are 
+different from the slice dataset chunking. This may cause Dask graphs to be 
 computed multiple times if the source chunking overlaps multiple target chunks, 
 potentially causing large resource overheads while recomputing and/or reloading same 
 source chunks multiple times.
