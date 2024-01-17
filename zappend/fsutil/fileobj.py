@@ -19,15 +19,16 @@ from .path import split_filename
 class FileObj:
     """An object that represents a file or directory in some filesystem.
 
-    :param uri: The file or directory URI
-    :param storage_options: Optional storage options specific to
-        the protocol of the URI
-    :param fs: Optional fsspec filesystem instance.
-        Use with care, the filesystem must be consistent with *uri*
-        and *storage_options*. For internal use only.
-    :param path: The path info the filesystem *fs*.
-        Use with care, the path must be consistent with *uri*.
-        For internal use only.
+    Args:
+        uri: The file or directory URI
+        storage_options: Optional storage options specific to
+            the protocol of the URI
+        fs: Optional fsspec filesystem instance.
+            Use with care, the filesystem must be consistent with *uri*
+            and *storage_options*. For internal use only.
+        path: The path info the filesystem *fs*.
+            Use with care, the path must be consistent with *uri*.
+            For internal use only.
     """
 
     def __init__(
@@ -43,7 +44,6 @@ class FileObj:
         self._path = path
 
     def __del__(self):
-        """Call ``close()``."""
         self.close()
 
     def __str__(self):
@@ -103,15 +103,14 @@ class FileObj:
                 pass
             self._fs = None
 
-    def __truediv__(self, rel_path: str):
-        return self.for_path(rel_path)
-
     @property
     def filename(self) -> str:
+        """The filename part of the URI."""
         return split_filename(self.path)[1]
 
     @property
     def parent(self) -> "FileObj":
+        """The parent file object."""
         if "::" in self.uri:
             # If uri is a chained URL, use path of first component
             first_uri, rest = self.uri.split("::", maxsplit=1)
@@ -142,7 +141,24 @@ class FileObj:
             fs=self.fs,
         )
 
+    def __truediv__(self, rel_path: str):
+        """Overriden to call
+        [for_path(rel_path)][zappend.fsutil.fileobj.FileObj.close].
+
+        Args:
+            rel_path: Relative path to append.
+        """
+        return self.for_path(rel_path)
+
     def for_path(self, rel_path: str) -> "FileObj":
+        """Gets a new file object for the given relative path.
+
+        Args:
+            rel_path: Relative path to append.
+
+        Returns:
+            A new file object
+        """
         if not isinstance(rel_path, str):
             raise TypeError("rel_path must have type str")
         if rel_path.startswith("/"):
@@ -175,14 +191,25 @@ class FileObj:
     # Basic filesystem operations
 
     def exists(self) -> bool:
+        """Check if the file or directory represented by this file object exists."""
         self._resolve()
         return self._fs.exists(self._path)
 
     def mkdir(self):
+        """Create the directory represented by this file object."""
         self._resolve()
         self._fs.mkdir(self._path, create_parents=False)
 
     def read(self, mode: Literal["rb"] | Literal["r"] = "rb") -> bytes | str:
+        """Read the contents of the file represented by this file object.
+
+        Args:
+            mode: Read mode, must be "rb" or "r"
+
+        Returns:
+            The contents of the file either as `bytes` if mode is "rb" or as `str`
+            if mode is "r".
+        """
         self._resolve()
         with self._fs.open(self._path, mode=mode) as f:
             return f.read()
@@ -192,6 +219,15 @@ class FileObj:
         data: str | bytes,
         mode: Literal["wb"] | Literal["w"] | Literal["ab"] | Literal["a"] | None = None,
     ) -> int:
+        """Write the contents of the file represented by this file object.
+
+        Args:
+            data: The data to write.
+            mode: Write mode, must be "wb", "w", "ab", or "a".
+
+        Returns:
+            The number of bytes written.
+        """
         self._resolve()
         if mode is None:
             mode = "w" if isinstance(data, str) else "wb"
@@ -199,6 +235,11 @@ class FileObj:
             return f.write(data)
 
     def delete(self, recursive: bool = False) -> bool:
+        """Delete the file or directory represented by this file object.
+
+        Args:
+            recursive: Set to `True` to delete a non-empty directory.
+        """
         self._resolve()
         return self._fs.rm(self._path, recursive=recursive)
 

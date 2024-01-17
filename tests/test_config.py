@@ -9,9 +9,7 @@ import fsspec
 import pytest
 import yaml
 
-from zappend.config import CONFIG_V1_SCHEMA
-from zappend.config import schema_to_json
-from zappend.config import schema_to_md
+from zappend.config import get_config_schema
 from zappend.config import merge_configs
 from zappend.config import normalize_config
 from zappend.config import validate_config
@@ -208,8 +206,22 @@ class ConfigNormalizeTest(unittest.TestCase):
         with pytest.raises(TypeError):
             normalize_config(bytes())
 
-    def test_schema(self):
-        schema = CONFIG_V1_SCHEMA
+    def test_merge_config(self):
+        self.assertEqual({}, merge_configs())
+        self.assertEqual({}, merge_configs({}))
+        self.assertEqual({}, merge_configs({}, {}))
+        self.assertEqual({"a": 1}, merge_configs({"a": 1}))
+        self.assertEqual({"a": 2}, merge_configs({"a": 1}, {"a": 2}))
+        self.assertEqual({"a": None}, merge_configs({"a": 1}, {"a": None}))
+        self.assertEqual({"a": 2}, merge_configs({"a": None}, {"a": 2}))
+        self.assertEqual({"a": [3, 4]}, merge_configs({"a": [1, 2]}, {"a": [3, 4]}))
+        self.assertEqual(
+            {"a": {"b": 3, "c": 4}},
+            merge_configs({"a": {"b": 2, "c": 4}}, {"a": {"b": 3}}),
+        )
+
+    def test_get_config_schema(self):
+        schema = get_config_schema()
         self.assertIn("properties", schema)
         self.assertIsInstance(schema["properties"], dict)
         self.assertEqual(
@@ -236,28 +248,14 @@ class ConfigNormalizeTest(unittest.TestCase):
             set(schema["properties"].keys()),
         )
 
-    def test_merge_config(self):
-        self.assertEqual({}, merge_configs())
-        self.assertEqual({}, merge_configs({}))
-        self.assertEqual({}, merge_configs({}, {}))
-        self.assertEqual({"a": 1}, merge_configs({"a": 1}))
-        self.assertEqual({"a": 2}, merge_configs({"a": 1}, {"a": 2}))
-        self.assertEqual({"a": None}, merge_configs({"a": 1}, {"a": None}))
-        self.assertEqual({"a": 2}, merge_configs({"a": None}, {"a": 2}))
-        self.assertEqual({"a": [3, 4]}, merge_configs({"a": [1, 2]}, {"a": [3, 4]}))
-        self.assertEqual(
-            {"a": {"b": 3, "c": 4}},
-            merge_configs({"a": {"b": 2, "c": 4}}, {"a": {"b": 3}}),
-        )
-
-    def test_schema_to_json(self):
+    def test_get_config_schema_json(self):
         # Smoke test is sufficient here
-        text = schema_to_json()
+        text = get_config_schema(format="json")
         self.assertIsInstance(text, str)
         self.assertTrue(len(text) > 0)
 
-    def test_schema_to_md(self):
+    def test_get_config_schema_md(self):
         # Smoke test is sufficient here
-        text = schema_to_md()
+        text = get_config_schema(format="md")
         self.assertIsInstance(text, str)
         self.assertTrue(len(text) > 0)

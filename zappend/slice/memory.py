@@ -12,9 +12,10 @@ from .abc import SliceSource
 class MemorySliceSource(SliceSource):
     """A slice source that uses the in-memory dataset passed in.
 
-    :param ctx: Processing context
-    :param slice_ds: The slice dataset
-    :param slice_index: An index for slice identification (logging only)
+    Args:
+        ctx: Processing context
+        slice_ds: The slice dataset
+        slice_index: An index for slice identification (logging only)
     """
 
     def __init__(self, ctx: Context, slice_ds: xr.Dataset, slice_index: int):

@@ -1,0 +1,40 @@
+site_name: zappend
+
+copyright: Copyright &copy; 2024 Brockmann Consult
+
+nav:
+  - Overview: index.md
+  - Getting Started: start.md
+  - User Guide: guide.md
+  - Configuration: config.md
+  - CLI Reference: cli.md
+  - API Reference: api.md
+  - About: about.md
+
+theme: material
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bcdev/zappend
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/zappend/
+
+plugins:
+  - search
+  - autorefs
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_toc_entry: false
+            show_root_heading: false
+            show_source: false
+            heading_level: 3
+            annotations_path: brief
+

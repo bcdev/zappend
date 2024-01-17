@@ -41,7 +41,7 @@ def zappend(
     dry_run: bool,
     help_config: str | None,
 ):
-    """Create or update a Zarr dataset TARGET from slice datasets SLICES."""
+    """Create or update a Zarr datacube TARGET from slice datasets SLICES."""
 
     if help_config:
         return _show_config_help(help_config)
@@ -59,12 +59,11 @@ def zappend(
         raise click.ClickException(f"{e}") from e
 
 
-def _show_config_help(config_help_format: str):
-    from zappend.config import schema_to_json
-    from zappend.config import schema_to_md
+def _show_config_help(config_help_format):
+    from zappend.config import get_config_schema
 
-    to_text = schema_to_json if config_help_format == "json" else schema_to_md
-    print(to_text() + "\n")
+    text = get_config_schema(format=config_help_format)
+    print(text + "\n")
 
 
 if __name__ == "__main__":
