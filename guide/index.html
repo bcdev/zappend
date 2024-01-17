@@ -1088,7 +1088,7 @@ valid and slice datasets can be read without errors. </p>
 </div>
 <p>While the target dataset is being modified, a file lock is created used to effectively 
 prevent concurrent dataset modifications. After successfully appending a complete slice
-dataset, the lock is removed the target. The lock file is written next to the target
+dataset, the lock is removed from the target. The lock file is written next to the target
 dataset, using the same filesystem and parent directory path. Its filename is the 
 filename of the target dataset suffixed by the extension <code>.lock</code>.</p>
 <h3 id="transactions">Transactions</h3>
@@ -1131,7 +1131,7 @@ passed using the optional <code>target_storage_options</code> setting. </p>
 <span class="p">}</span>
 </code></pre></div>
 <h3 id="slice-datasets">Slice Datasets</h3>
-<p>If the slice paths passed to the <code>zappend</code> tool are given as URIs 
+<p>If the slice paths passed to the <code>zappend</code> tool are given as URIs,
 additional storage options may be provided for the filesystem given by the 
 URI's protocol. They may be specified using the <code>slice_storage_options</code> setting.</p>
 <p>Sometimes, the slice dataset to be processed are not yet available, e.g., 
@@ -1170,9 +1170,9 @@ data variables. To allow for out-of-core computation of large datasets <a href="
 are used by both <code>xarray</code> and <code>zarr</code>. As a dask array may represent complex and/or 
 expensive processing graphs, high CPU loads and memory consumption are common issues
 for computed slice datasets, especially if the specified target dataset chunking is 
-different from the slice dataset chunking. This may cause that Dask graphs are 
+different from the slice dataset chunking. This may cause Dask graphs to be 
 computed multiple times if the source chunking overlaps multiple target chunks, 
-potentially causing large resource overheads while recomputing and/or reloading same 
+potentially causing large resource overheads while recomputing and/or reloading the same
 source chunks multiple times.</p>
 <p>In such cases it can help to "terminate" such computations for each slice by 
 persisting the computed dataset first and then to reopen it. This can be specified 
@@ -1198,7 +1198,7 @@ class, which combines a URI with dedicated filesystem storage options.</p>
 <span class="n">slice_obj</span> <span class="o">=</span> <span class="n">FileObj</span><span class="p">(</span><span class="n">slice_uri</span><span class="p">,</span> <span class="n">storage_options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> 
 </code></pre></div>
 <h4 id="zappendapislicefactory"><code>zappend.api.SliceFactory</code></h4>
-<p>A slice factory is a function that provides receives a processing context of type
+<p>A slice factory is a function that receives a processing context of type
 <code>zappend.api.Context</code> and yields a slice dataset object of one of the types
 described above. Since a slice factory cannot have additional arguments, it is 
 normally defined as a <a href="https://en.wikipedia.org/wiki/Closure_(computer_programming)">closure</a> 
