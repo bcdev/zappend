@@ -2,8 +2,10 @@
 
 ### Enhancements
 
+* The new utility functions `to_slice_factories` and `to_slice_factory`
+  exported by `zappend.api` ease passing specific inputs for slice sources. [#22]
 * Allow passing slice object factories to the `zappend()` function.
-  Main use case is to return instances of `zappend.slice.SliceSource` 
+  Main use case is to return instances of `zappend.api.SliceSource` 
   implement by users. [#13]
 * Introduced new configuration flag `persist_mem_slices`. 
   If set, in-memory `xr.Dataset` instances will be first persisted to a 

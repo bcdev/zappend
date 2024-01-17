@@ -8,13 +8,24 @@ from .config import ConfigLike
 from .processor import Processor
 from .slice import SliceFactory
 from .slice import SliceObj
+from .slice import to_slice_factories
+from .slice import to_slice_factory
+
+__all__ = [
+    "ConfigLike",
+    "SliceFactory",
+    "SliceObj",
+    "zappend",
+    "to_slice_factories",
+    "to_slice_factory",
+]
 
 
 def zappend(
     slices: Iterable[SliceObj | SliceFactory], config: ConfigLike = None, **kwargs
 ):
     """
-    Create or update a Zarr dataset from dataset slices.
+    Robustly create or update a Zarr dataset from dataset slices.
 
     :param slices: An iterable that yields slice objects. A slice object is
         either a ``str``, ``xarray.Dataset``, ``SliceSource`` or a factory

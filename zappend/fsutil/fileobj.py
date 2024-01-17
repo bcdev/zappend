@@ -56,6 +56,9 @@ class FileObj:
                 f"FileObj({self.uri!r}," f" storage_options={self._storage_options!r})"
             )
 
+    def __eq__(self, other):
+        return self is other or isinstance(other, FileObj) and self.uri == other.uri
+
     @property
     def uri(self) -> str:
         """The URI."""
@@ -81,8 +84,11 @@ class FileObj:
     def close(self):
         """Close the filesystem used by this file object."""
         if self._fs is not None:
-            if hasattr(self._fs, "close") and callable(self._fs.close):
+            try:
+                # noinspection PyUnresolvedReferences
                 self._fs.close()
+            except AttributeError:
+                pass
             self._fs = None
 
     def __truediv__(self, rel_path: str):

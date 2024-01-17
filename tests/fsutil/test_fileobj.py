@@ -33,6 +33,11 @@ class FileObjTest(unittest.TestCase):
             ),
         )
 
+    def test_eq(self):
+        self.assertFalse(FileObj("memory://test.zarr") == FileObj("s3://test.zarr"))
+        self.assertFalse(FileObj("memory://test.zarr") == 13)
+        self.assertTrue(FileObj("memory://test.zarr") == FileObj("memory://test.zarr"))
+
     def test_memory_protocol(self):
         zarr_dir = FileObj("memory://test.zarr")
         self.assertEqual("memory://test.zarr", zarr_dir.uri)
