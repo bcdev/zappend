@@ -44,7 +44,7 @@ def get_slice_dataset(
     * `xarray.Dataset`: An in-memory xarray dataset instance.
     * A callable that receives the processing context *ctx* as input
       and returns a slice object. The primary usage is to return custom
-      slice sources of type `zappend.slice.SliceSource`.
+      slice sources of type [SliceSource][zappend.slice.abc.SliceSource].
 
     Args:
         ctx: The processing context
@@ -82,10 +82,10 @@ def get_slice_dataset(
 
 def to_slice_factories(
     slice_callable: Callable[[...], SliceObj] | Type[SliceSource],
-    slice_args: Iterable[tuple[Sequence[Any], dict[str, Any]]],
+    slice_inputs: Iterable[Any],
 ) -> Iterator[SliceFactory]:
     """Utility function that generates slice factories for the given callable
-    `slice_callable` and iterable of arguments `slice_args`.
+    `slice_callable` and iterable of slice inputs `slice_inputs`.
 
     If the callable defines an argument named `ctx`, the current processing context
     of type [Context][zappend.api.Context] will be passed to it. If it is defined as
@@ -93,7 +93,7 @@ def to_slice_factories(
 
     The slice factories are returned as an iterator that generates a new slice
     factory (closure) using the [to_slice_factory()][zappend.api.to_slice_factory] for
-    each item in `slice_args`. An item may be one of following:
+    each item in `slice_inputs`. An item may be one of following:
 
     * A 2-element tuple of the form `(args, kwargs)`, where `args` is a list or tuple
       positional arguments and `kwargs` is a dictionary of keyword arguments;
@@ -101,28 +101,28 @@ def to_slice_factories(
     * A dictionary of keyword arguments;
     * Any other type is interpreted as single positional argument.
 
-    All items in `slice_args` should have the same type that matches the signature
+    All items in `slice_inputs` should have the same type that matches the signature
     of `slice_callable`.
 
     Args:
         slice_callable: A callable that returns a slice object.
             Can also be the class of a custom [SliceSource][zappend.api.SliceSource].
-        slice_args: An iterable that yields the arguments passed to the
+        slice_inputs: An iterable that yields the inputs passed to the
             given `slice_callable`.
     Returns:
         An iterator that returns a slice factory for each item in
         `slice_args`.
     """
 
-    for slice_arg in slice_args:
-        slice_args, slice_kwargs = _normalize_arg(slice_arg)
-        yield to_slice_factory(slice_callable, *slice_args, **slice_kwargs)
+    for slice_arg in slice_inputs:
+        slice_inputs, slice_kwargs = _normalize_arg(slice_arg)
+        yield to_slice_factory(slice_callable, *slice_inputs, **slice_kwargs)
 
 
 def to_slice_factory(
     slice_callable: Callable[[...], SliceObj] | Type[SliceSource],
-    *slice_args,
-    **slice_kwargs,
+    *slice_args: Any,
+    **slice_kwargs: Any,
 ) -> SliceFactory:
     """Utility function that generates a slice factory (closure) for the given callable
     and arguments.

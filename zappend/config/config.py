@@ -17,9 +17,13 @@ from .schema import CONFIG_SCHEMA_V1
 
 
 ConfigItem = FileObj | str | dict[str, Any]
+"""The possible types used to represent zappend configuration."""
+
 ConfigList = list[ConfigItem] | tuple[ConfigItem]
+"""A sequence of possible zappend configuration types."""
+
 ConfigLike = ConfigItem | ConfigList | None
-"""The possible types used to represent processor configuration."""
+"""Type for a zappend configuration-like object."""
 
 
 def validate_config(config_like: ConfigLike) -> dict[str, Any]:

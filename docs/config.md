@@ -98,12 +98,12 @@ Variable metadata.
   * `chunks`:
     Storage chunking.
     Must be one of the following:
-    * Type _array_.
-      Chunk sizes in the order of the dimensions.
-      
-      The array's items are of type _integer_.
-    * Disable chunking.
-      Its value is `null`.
+      * Type _array_.
+        Chunk sizes in the order of the dimensions.
+        The array's items are of type _integer_.
+      * Disable chunking.
+        Its value is `null`.
+    
   * `fill_value`:
     Storage fill value.
     Must be one of the following:
