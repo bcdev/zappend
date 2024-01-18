@@ -2,15 +2,21 @@
 
 ### Enhancements
 
-* The new utility functions `to_slice_factories` and `to_slice_factory`
-  exported by `zappend.api` ease passing specific inputs for slice sources. [#22]
-* Allow passing slice object factories to the `zappend()` function.
-  Main use case is to return instances of `zappend.api.SliceSource` 
-  implement by users. [#13]
+* Introduced _slice factories_
+    - Allow passing slice object factories to the `zappend()` function.
+      Main use case is to return instances of a custom `zappend.api.SliceSource` 
+      implemented by users. [#13]
+
+    - The utility functions `to_slice_factories` and `to_slice_factory`
+      exported by `zappend.api` ease passing inputs  specific for a custom
+      `SliceSource` or other callables that can produce a slice object. [#22]
+
 * Introduced new configuration flag `persist_mem_slices`. 
   If set, in-memory `xr.Dataset` instances will be first persisted to a 
   temporary Zarr, then reopened, and then appended to the target dataset. [#11]
+
 * Improved readability of generated configuration documentation.
+
 * Using `requirements-dev.txt` for development package dependencies.
 
 ### Fixes
