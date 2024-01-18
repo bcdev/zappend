@@ -1,4 +1,4 @@
-## Version 0.1.2 (2024-18-01)
+## Version 0.2.0 (2024-18-01)
 
 ### Enhancements
 
