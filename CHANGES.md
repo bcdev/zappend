@@ -15,6 +15,8 @@
   If set, in-memory `xr.Dataset` instances will be first persisted to a 
   temporary Zarr, then reopened, and then appended to the target dataset. [#11]
 
+* Added initial documentation. [#17]
+
 * Improved readability of generated configuration documentation.
 
 * Using `requirements-dev.txt` for development package dependencies.
