@@ -33,6 +33,39 @@ class FileObjTest(unittest.TestCase):
             ),
         )
 
+    def test_equality(self):
+        self.assertTrue(FileObj("file://test.zarr") == FileObj("file://test.zarr"))
+        self.assertTrue(FileObj("s3://test.zarr") == FileObj("s3://test.zarr"))
+        self.assertTrue(
+            FileObj("s3://test.zarr", storage_options={"anon": True})
+            == FileObj("s3://test.zarr", storage_options={"anon": True})
+        )
+        self.assertFalse(FileObj("file://test.zarr") == FileObj("s3://test.zarr"))
+        self.assertFalse(
+            FileObj("s3://test.zarr")
+            == FileObj("s3://test.zarr", storage_options={"anon": True})
+        )
+        self.assertFalse(
+            FileObj("s3://test.zarr", storage_options=None)
+            == FileObj("s3://test.zarr", storage_options={})
+        )
+        self.assertFalse(
+            FileObj("s3://test.zarr", storage_options={"anon": False})
+            == FileObj("s3://test.zarr", storage_options={"anon": True})
+        )
+        self.assertFalse(FileObj("file://test.zarr") == 13)
+
+    def test_hash(self):
+        files = [
+            FileObj("file://test.zarr"),
+            FileObj("s3://test.zarr"),
+            FileObj("s3://test.zarr", storage_options={}),
+            FileObj("s3://test.zarr", storage_options={"anon": False}),
+        ]
+        self.assertEqual(4, len(set(files)))
+        self.assertEqual(4, len(set(hash(f) for f in files)))
+        self.assertEqual(list(hash(f) for f in files), list(hash(f) for f in files))
+
     def test_memory_protocol(self):
         zarr_dir = FileObj("memory://test.zarr")
         self.assertEqual("memory://test.zarr", zarr_dir.uri)
