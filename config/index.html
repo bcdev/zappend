@@ -808,36 +808,42 @@ Variable metadata.</p>
     Must be one of the following:</p>
 <ul>
 <li>Type <em>array</em>.
-  Chunk sizes in the order of the dimensions.</li>
+    Chunk sizes in the order of the dimensions.
+    The array's items are of type <em>integer</em>.</li>
+<li>Disable chunking.
+    Its value is <code>null</code>.</li>
 </ul>
-<p>The array's items are of type <em>integer</em>.
-* Disable chunking.
-  Its value is <code>null</code>.
-  * <code>fill_value</code>:
-Storage fill value.
-Must be one of the following:
-* Type <em>number</em>.
-  A number of type and unit of the given storage <code>dtype</code>.
-* Not-a-number. Can be used only if storage <code>dtype</code> is <code>float32</code> or <code>float64</code>.
-  Its value is <code>"NaN"</code>.
-* No fill value.
-  Its value is <code>null</code>.
-  * <code>scale_factor</code>:
-Type <em>number</em>.
-Scale factor for computing the in-memory value: <code>memory_value = scale_factor * storage_value + add_offset</code>.
-  * <code>add_offset</code>:
-Type <em>number</em>.
-Add offset for computing the in-memory value: <code>memory_value = scale_factor * storage_value + add_offset</code>.
-  * <code>units</code>:
-Type <em>string</em>.
-Units of the storage data type if memory data type is date/time.
-  * <code>calendar</code>:
-Type <em>string</em>.
-The calendar to be used if memory data type is date/time.
-  * <code>compressor</code>:
-Type <em>array</em> | <em>null</em>.
-Compressor definition. Set to <code>null</code> to disable data compression.
-The key <code>id</code> is required.</p>
+</li>
+<li>
+<p><code>fill_value</code>:
+    Storage fill value.
+    Must be one of the following:</p>
+<ul>
+<li>Type <em>number</em>.
+  A number of type and unit of the given storage <code>dtype</code>.</li>
+<li>Not-a-number. Can be used only if storage <code>dtype</code> is <code>float32</code> or <code>float64</code>.
+  Its value is <code>"NaN"</code>.</li>
+<li>No fill value.
+  Its value is <code>null</code>.</li>
+</ul>
+</li>
+<li><code>scale_factor</code>:
+    Type <em>number</em>.
+    Scale factor for computing the in-memory value: <code>memory_value = scale_factor * storage_value + add_offset</code>.</li>
+<li><code>add_offset</code>:
+    Type <em>number</em>.
+    Add offset for computing the in-memory value: <code>memory_value = scale_factor * storage_value + add_offset</code>.</li>
+<li><code>units</code>:
+    Type <em>string</em>.
+    Units of the storage data type if memory data type is date/time.</li>
+<li><code>calendar</code>:
+    Type <em>string</em>.
+    The calendar to be used if memory data type is date/time.</li>
+<li>
+<p><code>compressor</code>:
+    Type <em>array</em> | <em>null</em>.
+    Compressor definition. Set to <code>null</code> to disable data compression.
+    The key <code>id</code> is required.</p>
 <ul>
 <li><code>id</code>:
   Type <em>string</em>.</li>
