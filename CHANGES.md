@@ -20,10 +20,10 @@
 * Fixed problem where info about closing slice was logged twice. [#9]
 
 
-## Version 0.1.1
+## Version 0.1.1 (from 2024-01-10)
 
 Metadata fixes in `setup.cfg`. No actual code changes.
 
-## Version 0.1.0
+## Version 0.1.0 (from 2024-01-10)
 
-*Initial version from 2024-01-10.*
+*The initial release.*

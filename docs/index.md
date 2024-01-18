@@ -1,3 +1,5 @@
+<!--- Align following section with README.md -->
+
 # The zappend Tool
 
 `zappend` is a tool written in Python that is used for robustly creating and updating 
