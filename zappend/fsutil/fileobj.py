@@ -2,6 +2,7 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
+import json
 from typing import Any, Literal
 
 import fsspec
@@ -56,6 +57,20 @@ class FileObj:
                 f"FileObj({self.uri!r}," f" storage_options={self._storage_options!r})"
             )
 
+    def __eq__(self, other) -> bool:
+        return self is other or (
+            isinstance(other, FileObj)
+            and self._uri == other._uri
+            and self._storage_options == other._storage_options
+        )
+
+    def __hash__(self) -> int:
+        hash_code = hash(self._uri)
+        if self._storage_options is not None:
+            so_json = json.dumps(self._storage_options, sort_keys=True)
+            hash_code += 16 * hash(so_json)
+        return hash_code
+
     @property
     def uri(self) -> str:
         """The URI."""
@@ -81,8 +96,11 @@ class FileObj:
     def close(self):
         """Close the filesystem used by this file object."""
         if self._fs is not None:
-            if hasattr(self._fs, "close") and callable(self._fs.close):
+            try:
+                # noinspection PyUnresolvedReferences
                 self._fs.close()
+            except AttributeError:
+                pass
             self._fs = None
 
     @property

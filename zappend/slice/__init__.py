@@ -3,6 +3,8 @@
 # https://opensource.org/licenses/MIT.
 
 from .abc import SliceSource
-from .common import SliceFactory
-from .common import SliceObj
-from .common import get_slice_dataset
+from .factory import SliceFactory
+from .factory import SliceObj
+from .factory import get_slice_dataset
+from .factory import to_slice_factories
+from .factory import to_slice_factory
