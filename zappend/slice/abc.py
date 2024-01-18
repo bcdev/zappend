@@ -19,12 +19,17 @@ class SliceSource(ABC):
     is called.
 
     You may implement your own slice source class and define a
-    [slice source factory][zappend.slice.common.SliceFactory] function
+    [slice factory][zappend.slice.factory.SliceFactory] function
     that creates instances of your slice source. Such functions can
-    be passed input to the [zappend()](zappend.api.zappend) function, usually
+    be passed input to the [zappend()][zappend.api.zappend] function, usually
     in the form of a
     [closure](https://en.wikipedia.org/wiki/Closure_(computer_programming)) to
     capture slice-specific information.
+
+    The utility functions
+    [to_slice_factories()][zappend.slice.factory.to_slice_factories] and
+    [to_slice_factory()][zappend.slice.factory.to_slice_factory] ease passing slice
+    specific inputs to your custom slice source.
 
     Args:
         ctx: The processing context.

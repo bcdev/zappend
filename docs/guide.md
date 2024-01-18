@@ -501,7 +501,7 @@ at the cost of additional i/o. It therefore defaults to `false`.
 
 #### `zappend.api.SliceSource`
 
-Often, you want to perform some custom cleanup after a slice has been processed, i.e.,
+Often you want to perform some custom cleanup after a slice has been processed and
 appended to the target dataset. In this case you can write your own 
 `zappend.api.SliceSource` by implementing its `get_dataset()` and `dispose()`
 methods. Slice source instances are supposed to be created by _slice factories_,
@@ -520,7 +520,7 @@ slice_obj = FileObj(slice_uri, storage_options=dict(...))
 
 #### `zappend.api.SliceFactory`
 
-A slice factory is a function that receives a processing context of type
+A slice factory is a 1-argument function that receives a processing context of type
 `zappend.api.Context` and yields a slice dataset object of one of the types
 described above. Since a slice factory cannot have additional arguments, it is 
 normally defined as a [closure](https://en.wikipedia.org/wiki/Closure_(computer_programming)) 
@@ -528,8 +528,8 @@ to capture slice-specific information.
 
 In the following example, the actual slice dataset is computed from averaging another 
 dataset. A `SliceSource` is used to close the datasets after the slice has been 
-processed. A slice factory is defined for each slice path which returns the  
-slice source object:
+processed. Slice factories are created from the custom slice source and the slice paths
+using the utility function [to_slice_factories()][zappend.slice.factory.to_slice_factories]:
 
 ```python
 from typing import Iterable
@@ -537,6 +537,7 @@ import numpy as np
 import xarray as xr
 from zappend.api import SliceFactory
 from zappend.api import SliceSource
+from zappend.api import to_slice_factories
 from zappend.api import zappend
 
 def get_mean_time(slice_ds: xr.Dataset) -> xr.DataArray:
@@ -573,13 +574,7 @@ class MySliceSource(SliceSource):
             self.mean_ds.close()
             self.mean_ds = None
         
-def get_slices(slice_paths: list[str]) -> Iterable[SliceFactory]:
-    for slice_path in slice_paths:
-        def get_slice_source(ctx):
-            return MySliceSource(ctx, slice_path)
-        yield get_slice_source
-        
-zappend(get_slices(["slice-1.nc", "slice-2.nc", "slice-3.nc"]),
+zappend(to_slice_factories(MySliceSource, ["slice-1.nc", "slice-2.nc", "slice-3.nc"]),
         target_dir="target.zarr")
 ```
 

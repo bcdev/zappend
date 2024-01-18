@@ -4,7 +4,9 @@
 
 from typing import Iterable, Any
 
+from .config import ConfigItem
 from .config import ConfigLike
+from .config import ConfigList
 from .context import Context
 from .fsutil import FileObj
 from .processor import Processor
@@ -16,7 +18,9 @@ from .slice import to_slice_factory
 
 
 __all__ = [
+    "ConfigItem",
     "ConfigLike",
+    "ConfigList",
     "Context",
     "FileObj",
     "SliceSource",

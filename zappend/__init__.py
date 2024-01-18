@@ -2,6 +2,4 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from .api import zappend
-
-version = "0.1.2.dev0"
+version = "0.2.0"

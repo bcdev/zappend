@@ -2,41 +2,55 @@
 
 All described objects can be imported from the `zappend.api` module.
 
-## Function `zappend`
+## Function `zappend()`
 
 ::: zappend.api.zappend
+    options:
+        show_root_heading: true
+
+## Function `to_slice_factories()`
+
+::: zappend.api.to_slice_factories
+    options:
+        show_root_heading: true
+
+## Function `to_slice_factory()`
+
+::: zappend.api.to_slice_factory
+    options:
+        show_root_heading: true
 
 ## Class `SliceSource`
 
-::: zappend.slice.abc.SliceSource
+::: zappend.api.SliceSource
 
 ## Class `Context`
 
-::: zappend.context.Context
+::: zappend.api.Context
 
 ## Class `FileObj`
 
-::: zappend.fsutil.fileobj.FileObj
+::: zappend.api.FileObj
 
 ## Types
 
-::: zappend.slice.common.SliceObj
+::: zappend.api.SliceObj
     options:
         show_root_heading: true
 
-::: zappend.slice.common.SliceFactory
+::: zappend.api.SliceFactory
     options:
         show_root_heading: true
 
 
-::: zappend.config.ConfigItem
+::: zappend.api.ConfigItem
     options:
         show_root_heading: true
 
-::: zappend.config.ConfigList
+::: zappend.api.ConfigList
     options:
         show_root_heading: true
 
-::: zappend.config.ConfigLike
+::: zappend.api.ConfigLike
     options:
         show_root_heading: true
