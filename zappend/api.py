@@ -38,8 +38,9 @@ def zappend(
     """
     Robustly create or update a Zarr dataset from dataset slices.
 
-    It concatenates the dataset slices from given `slices` along a given append
-    dimension, e.g., `"time"` (the default) for geospatial satellite observations.
+    The `zappend` function concatenates the dataset slices from given `slices` along a
+    given append dimension, e.g., `"time"` (the default) for geospatial satellite
+    observations.
     Each append step is atomic, that is, the append operation is a transaction
     that can be rolled back, in case the append operation fails.
     This ensures integrity of the  target data cube `target_dir` given in `config`
