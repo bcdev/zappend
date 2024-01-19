@@ -1,5 +1,8 @@
 # Command Line Interface Reference
 
+After installation, the `zappend` command can be used from the terminal. 
+The following are the command's options and arguments:
+
 ```
 Usage: zappend [OPTIONS] [SLICES]...
 
