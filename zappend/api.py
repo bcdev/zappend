@@ -38,6 +38,13 @@ def zappend(
     """
     Robustly create or update a Zarr dataset from dataset slices.
 
+    It concatenates the dataset slices from given `slices` along a given append
+    dimension, e.g., `"time"` (the default) for geospatial satellite observations.
+    Each append step is atomic, that is, the append operation is a transaction
+    that can be rolled back, in case the append operation fails.
+    This ensures integrity of the  target data cube `target_dir` given in `config`
+    or `kwargs`.
+
     Args:
         slices: An iterable that yields slice objects. A slice object is
             either a ``str``, ``xarray.Dataset``, ``SliceSource`` or a factory

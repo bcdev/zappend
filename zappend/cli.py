@@ -41,7 +41,14 @@ def zappend(
     dry_run: bool,
     help_config: str | None,
 ):
-    """Create or update a Zarr datacube TARGET from slice datasets SLICES."""
+    """Create or update a Zarr datacube TARGET from slice datasets SLICES.
+
+    It concatenates the dataset SLICES along a given append dimension, e.g., `"time"`
+    (the default) for geospatial satellite observations. Each append step is atomic,
+    that is, the append operation is a transaction that can be rolled back, in case
+    the append operation fails. This ensures integrity of the target data cube given
+    by TARGET or in CONFIG.
+    """
 
     if help_config:
         return _show_config_help(help_config)

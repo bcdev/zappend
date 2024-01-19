@@ -1,4 +1,9 @@
-## Version 0.2.0 (2024-18-01)
+## Version 0.2.1 (in development)
+
+* Enhanced documentation including docstrings of several Python API objects.
+
+
+## Version 0.2.0 (from 2024-18-01)
 
 ### Enhancements
 

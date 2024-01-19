@@ -67,7 +67,10 @@ class Context:
 
     @property
     def append_dim_name(self) -> str:
-        """The configured append dimension."""
+        """The name of the append dimension along which slice datasets will be
+        concatenated.
+        If not configured, it defaults to `"time"`.
+        """
         return self._config.get("append_dim") or DEFAULT_APPEND_DIM
 
     @property
@@ -83,7 +86,8 @@ class Context:
 
     @property
     def target_dir(self) -> FileObj:
-        """The configured target directory."""
+        """The configured directory that represents the target datacube
+        in Zarr format."""
         return self._target_dir
 
     @property

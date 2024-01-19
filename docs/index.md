@@ -10,7 +10,8 @@ packages [xarray](https://docs.xarray.dev/) and [zarr](https://zarr.readthedocs.
 
 The objective of `zappend` is to address recurring memory issues when generating large 
 geospatial datacubes using the [Zarr format](https://zarr.readthedocs.io/) 
-by subsequently concatenating data slices along an append dimension, usually `time`. 
+by subsequently concatenating data slices along an append dimension, e.g., `time` 
+(the default) for geospatial satellite observations.  
 Each append step is atomic, that is, the append operation is a transaction that can be 
 rolled back, in case the append operation fails. This ensures integrity of the target 
 data cube. 
