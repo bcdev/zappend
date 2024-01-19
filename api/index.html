@@ -1302,6 +1302,12 @@
   <div class="doc doc-contents first">
   
       <p>Robustly create or update a Zarr dataset from dataset slices.</p>
+<p>It concatenates the dataset slices from given <code>slices</code> along a given append
+dimension, e.g., <code>"time"</code> (the default) for geospatial satellite observations.
+Each append step is atomic, that is, the append operation is a transaction
+that can be rolled back, in case the append operation fails.
+This ensures integrity of the  target data cube <code>target_dir</code> given in <code>config</code>
+or <code>kwargs</code>.</p>
 
 
 
@@ -1655,10 +1661,11 @@ specific inputs to your custom slice source.</p>
   <div class="doc doc-contents ">
   
       <p>Dispose this slice source.
-This should include cleaning up of used resources.</p>
+This should include cleaning up of any temporary resources.</p>
 <p>This method is not intended to be called directly.
-Instead, instances of this class are context managers and
-should be used as such.</p>
+Instead, instances of this class are context managers and should be used with
+the Python <code>with</code> statement.</p>
+<p>This method is called exactly once for each instance of this class.</p>
 
   </div>
 
@@ -1681,10 +1688,13 @@ should be used as such.</p>
 
   <div class="doc doc-contents ">
   
-      <p>Open this slice source and return the dataset instance.</p>
+      <p>Open this slice source, do some processing and return a dataset of type
+<a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a>
+as result.</p>
 <p>This method is not intended to be called directly.
-Instead, instances of this class are context managers and
-should be used as such.</p>
+Instead, instances of this class are context managers and should be used with
+the Python <code>with</code> statement.</p>
+<p>This method is called exactly once for each instance of this class.</p>
 <p>It should return a dataset that is compatible with
 target dataset:</p>
 <ul>
@@ -1821,7 +1831,9 @@ target dataset:</p>
 
   <div class="doc doc-contents ">
   
-      <p>The configured append dimension.</p>
+      <p>The name of the append dimension along which slice datasets will be
+concatenated.
+If not configured, it defaults to <code>"time"</code>.</p>
   </div>
 
 </div>
@@ -1971,7 +1983,8 @@ in seconds, otherwise, return (None, None).</p>
 
   <div class="doc doc-contents ">
   
-      <p>The configured target directory.</p>
+      <p>The configured directory that represents the target datacube
+in Zarr format.</p>
   </div>
 
 </div>
