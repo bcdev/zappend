@@ -51,7 +51,7 @@ class VariableEncoding:
         self.filters = filters
         if unknown_settings:
             logger.warning(
-                "Ignoring unknown encoding settings: %s",
+                "Ignoring unknown encoding setting(s): %s",
                 ", ".join(unknown_settings.keys()),
             )
 
