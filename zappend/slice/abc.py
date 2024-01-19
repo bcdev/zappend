@@ -51,11 +51,15 @@ class SliceSource(ABC):
 
     @abstractmethod
     def get_dataset(self) -> xr.Dataset:
-        """Open this slice source and return the dataset instance.
+        """Open this slice source, do some processing and return a dataset of type
+        [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html)
+        as result.
 
         This method is not intended to be called directly.
-        Instead, instances of this class are context managers and
-        should be used as such.
+        Instead, instances of this class are context managers and should be used with
+        the Python `with` statement.
+
+        This method is called exactly once for each instance of this class.
 
         It should return a dataset that is compatible with
         target dataset:
@@ -69,10 +73,12 @@ class SliceSource(ABC):
 
     def dispose(self):
         """Dispose this slice source.
-        This should include cleaning up of used resources.
+        This should include cleaning up of any temporary resources.
 
         This method is not intended to be called directly.
-        Instead, instances of this class are context managers and
-        should be used as such.
+        Instead, instances of this class are context managers and should be used with
+        the Python `with` statement.
+
+        This method is called exactly once for each instance of this class.
         """
         self._ctx = None
