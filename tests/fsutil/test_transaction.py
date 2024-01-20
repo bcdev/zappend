@@ -92,10 +92,10 @@ class TransactionTest(unittest.TestCase):
                     )
 
                 if fail:
-                    raise OSError("disk full")
+                    raise OSError("disk full (this is a test!)")
         except OSError as e:
             if fail:
-                self.assertEqual("disk full", f"{e}")
+                self.assertEqual("disk full (this is a test!)", f"{e}")
             else:
                 raise
 

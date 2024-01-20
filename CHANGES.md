@@ -1,5 +1,7 @@
 ## Version 0.2.1 (in development)
 
+* Using `sizes` instead of `dims` attribute of `xarray.Dataset` in implementation 
+  code. [#25] 
 * Enhanced documentation including docstrings of several Python API objects.
 
 
