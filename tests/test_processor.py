@@ -28,7 +28,7 @@ class TestProcessor(unittest.TestCase):
         ds = xr.open_zarr(
             target_dir.uri, storage_options=target_dir.storage_options, decode_cf=True
         )
-        self.assertEqual({"time": 1, "y": 10, "x": 20}, ds.dims)
+        self.assertEqual({"time": 1, "y": 10, "x": 20}, ds.sizes)
         self.assertEqual({"x", "y", "time", "chl", "tsm"}, set(ds.variables))
 
         self.assertEqual((20,), ds.x.encoding.get("chunks"))
@@ -53,7 +53,7 @@ class TestProcessor(unittest.TestCase):
         )
 
         self.assertEqual({"x", "y", "time", "chl", "tsm"}, set(ds.variables))
-        self.assertEqual({"time": 2, "y": 10, "x": 20}, ds.dims)
+        self.assertEqual({"time": 2, "y": 10, "x": 20}, ds.sizes)
 
         self.assertEqual((20,), ds.x.encoding.get("chunks"))
         self.assertEqual((10,), ds.y.encoding.get("chunks"))
@@ -91,7 +91,7 @@ class TestProcessor(unittest.TestCase):
         )
 
         self.assertEqual({"x", "y", "time", "chl", "tsm"}, set(ds.variables))
-        self.assertEqual({"time": many, "y": 10, "x": 20}, ds.dims)
+        self.assertEqual({"time": many, "y": 10, "x": 20}, ds.sizes)
 
         self.assertEqual((20,), ds.x.encoding.get("chunks"))
         self.assertEqual((10,), ds.y.encoding.get("chunks"))
@@ -129,7 +129,7 @@ class TestProcessor(unittest.TestCase):
         )
 
         self.assertEqual({"x", "y", "time", "chl", "tsm"}, set(ds.variables))
-        self.assertEqual({"time": 4, "y": 10, "x": 20}, ds.dims)
+        self.assertEqual({"time": 4, "y": 10, "x": 20}, ds.sizes)
 
         self.assertEqual((20,), ds.x.encoding.get("chunks"))
         self.assertEqual((10,), ds.y.encoding.get("chunks"))

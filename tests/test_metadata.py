@@ -18,7 +18,7 @@ class DatasetMetadataDimsTest(unittest.TestCase):
         ds = xr.Dataset({"a": xr.DataArray(np.zeros((2, 3, 4)), dims=("z", "y", "x"))})
         self.assertEqual(
             {"z": 2, "y": 3, "x": 4},
-            DatasetMetadata.from_dataset(ds, {"append_dim": "z"}).dims,
+            DatasetMetadata.from_dataset(ds, {"append_dim": "z"}).sizes,
         )
 
     def test_dims_with_fixed_dims_given(self):
@@ -27,7 +27,7 @@ class DatasetMetadataDimsTest(unittest.TestCase):
             {"z": 2, "y": 3, "x": 4},
             DatasetMetadata.from_dataset(
                 ds, {"append_dim": "z", "fixed_dims": {"y": 3, "x": 4}}
-            ).dims,
+            ).sizes,
         )
 
     # noinspection PyMethodMayBeStatic
@@ -84,7 +84,7 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
         self.assertEqual(
             {
                 "attrs": {},
-                "dims": {"time": 2, "x": 4, "y": 3},
+                "sizes": {"time": 2, "x": 4, "y": 3},
                 "variables": {
                     "a": {
                         "attrs": {},
@@ -133,7 +133,7 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
         self.assertEqual(
             {
                 "attrs": {},
-                "dims": {"time": 2, "x": 4, "y": 3},
+                "sizes": {"time": 2, "x": 4, "y": 3},
                 "variables": {
                     "a": {
                         "attrs": {"title": "A", "units": "m/s"},
@@ -159,7 +159,7 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
         self.assertEqual(
             {
                 "attrs": {},
-                "dims": {"time": 2, "x": 4, "y": 3},
+                "sizes": {"time": 2, "x": 4, "y": 3},
                 "variables": {
                     "a": {
                         "attrs": {},
@@ -199,7 +199,7 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
         self.assertEqual(
             {
                 "attrs": {},
-                "dims": {"time": 2, "x": 4, "y": 3},
+                "sizes": {"time": 2, "x": 4, "y": 3},
                 "variables": {
                     "a": {
                         "attrs": {},
@@ -246,7 +246,7 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
         self.assertEqual(
             {
                 "attrs": {},
-                "dims": {"time": 2, "x": 4, "y": 3},
+                "sizes": {"time": 2, "x": 4, "y": 3},
                 "variables": {
                     "a": {
                         "attrs": {},

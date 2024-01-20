@@ -196,7 +196,7 @@ class RollbackStoreZarrTest(unittest.TestCase):
         slice_1 = make_test_dataset(shape=(1, 50, 100), chunks=(1, 50, 50))
         # drop variables w.o. "time" dim
         slice_1 = slice_1.drop_vars(
-            [k for k, v in slice_1.variables.items() if "time" not in v.dims]
+            [k for k, v in slice_1.variables.items() if "time" not in v.sizes]
         )
         slice_1.attrs = {}
         for k, v in slice_1.variables.items():
@@ -247,7 +247,7 @@ class RollbackStoreZarrTest(unittest.TestCase):
         slice_2 = make_test_dataset(shape=(1, 50, 100), chunks=(1, 50, 50))
         # drop variables w.o. "time" dim
         slice_2 = slice_2.drop_vars(
-            [k for k, v in slice_2.variables.items() if "time" not in v.dims]
+            [k for k, v in slice_2.variables.items() if "time" not in v.sizes]
         )
         for k, v in slice_2.variables.items():
             v.encoding = {}
@@ -291,10 +291,12 @@ class RollbackStoreZarrTest(unittest.TestCase):
         )
 
     def assert_dataset_ok(
-        self, expected_dims: dict[str, int], expected_chunks: dict[str, tuple[int, ...]]
+        self,
+        expected_sizes: dict[str, int],
+        expected_chunks: dict[str, tuple[int, ...]],
     ):
         ds = xr.open_zarr(self.target_dir.uri)
-        self.assertEqual(expected_dims, ds.dims)
+        self.assertEqual(expected_sizes, ds.sizes)
         self.assertEqual(
             expected_chunks,
             {k: ds[k].encoding.get("chunks") for k in ds.variables.keys()},

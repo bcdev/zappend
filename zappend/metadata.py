@@ -91,17 +91,17 @@ class VariableMetadata:
 class DatasetMetadata:
     def __init__(
         self,
-        dims: dict[str, int],
+        sizes: dict[str, int],
         variables: dict[str, VariableMetadata],
         attrs: dict[str, Any],
     ):
-        self.dims = dims
+        self.sizes = sizes
         self.variables = variables
         self.attrs = attrs
 
     def to_dict(self):
         return dict(
-            dims=self.dims,
+            sizes=self.sizes,
             variables={k: v.to_dict() for k, v in self.variables.items()},
             attrs=self.attrs,
         )
@@ -109,10 +109,10 @@ class DatasetMetadata:
     def assert_compatible_slice(
         self, slice_metadata: "DatasetMetadata", append_dim: str
     ):
-        for dim_name, dim_size in self.dims.items():
-            if dim_name not in slice_metadata.dims:
+        for dim_name, dim_size in self.sizes.items():
+            if dim_name not in slice_metadata.sizes:
                 raise ValueError(f"Missing dimension" f" {dim_name!r} in slice dataset")
-            slice_dim_size = slice_metadata.dims[dim_name]
+            slice_dim_size = slice_metadata.sizes[dim_name]
             if dim_name != append_dim and dim_size != slice_dim_size:
                 raise ValueError(
                     f"Wrong size for dimension {dim_name!r}"
@@ -137,7 +137,7 @@ class DatasetMetadata:
     def from_dataset(cls, dataset: xr.Dataset, config: dict[str, Any] | None = None):
         config = config or {}
 
-        dims = _get_effective_dims(
+        sizes = _get_effective_sizes(
             dataset,
             config.get("fixed_dims"),
             config.get("append_dim") or DEFAULT_APPEND_DIM,
@@ -152,10 +152,10 @@ class DatasetMetadata:
 
         attrs = merge_configs(dataset.attrs, config.get("attrs") or {})
 
-        return DatasetMetadata(dims=dims, variables=variables, attrs=attrs)
+        return DatasetMetadata(sizes=sizes, variables=variables, attrs=attrs)
 
 
-def _get_effective_dims(
+def _get_effective_sizes(
     dataset: xr.Dataset,
     config_fixed_dims: dict[str, int] | None,
     config_append_dim: str,
@@ -170,19 +170,19 @@ def _get_effective_dims(
                 raise ValueError(
                     f"Fixed dimension {dim_name!r}" f" not found in dataset"
                 )
-            ds_dim_size = dataset.dims[dim_name]
+            ds_dim_size = dataset.sizes[dim_name]
             if fixed_dim_size != ds_dim_size:
                 raise ValueError(
                     f"Wrong size for fixed dimension {dim_name!r}"
                     f" in dataset: expected {fixed_dim_size},"
                     f" found {ds_dim_size}"
                 )
-    if config_append_dim not in dataset.dims:
+    if config_append_dim not in dataset.sizes:
         raise ValueError(
             f"Append dimension" f" {config_append_dim!r} not found in dataset"
         )
 
-    return {str(k): v for k, v in dataset.dims.items()}
+    return {str(k): v for k, v in dataset.sizes.items()}
 
 
 def _get_effective_variables(
@@ -248,12 +248,12 @@ def _get_effective_variables(
             if config_var_dims is None:
                 raise ValueError(f"Missing dimensions" f" of variable {var_name!r}")
             for dim in config_var_dims:
-                if dim not in dataset.dims:
+                if dim not in dataset.sizes:
                     raise ValueError(
                         f"Dimension {dim!r} of variable"
                         f" {var_name!r} not found in dataset"
                     )
-            config_var_def["shape"] = tuple(dataset.dims[k] for k in config_var_dims)
+            config_var_def["shape"] = tuple(dataset.sizes[k] for k in config_var_dims)
             encoding: dict | None = config_var_def.get("encoding")
             if encoding is None or encoding.get("dtype") is None:
                 raise ValueError(

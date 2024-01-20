@@ -25,6 +25,6 @@ class ApiTest(unittest.TestCase):
         slices = [make_test_dataset(), make_test_dataset(), make_test_dataset()]
         zappend(slices, target_dir=target_dir)
         ds = xr.open_zarr(target_dir)
-        self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.dims)
+        self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
         self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
         self.assertEqual({"time", "y", "x"}, set(ds.coords))
