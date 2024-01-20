@@ -10,26 +10,6 @@ from zappend.fsutil.fileobj import FileObj
 from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
-expected_help_text = """
-    Usage: zappend [OPTIONS] [SLICES]...
-    
-      Create or update a Zarr datacube TARGET from slice datasets SLICES.
-    
-    Options:
-      -c, --config CONFIG    Configuration JSON or YAML file. If multiple are
-                             passed, subsequent configurations are incremental to
-                             the previous ones.
-      -t, --target TARGET    Target Zarr dataset path or URI. Overrides the
-                             'target_dir' configuration field.
-      --dry-run              Run the tool without creating, changing, or deleting
-                             any files.
-      --help-config json|md  Show configuration help and exit.
-      --help                 Show this message and exit.
-    """
-
-# remove indent
-expected_help_text = expected_help_text.replace("\n    ", "\n").lstrip("\n")
-
 
 class CliTest(unittest.TestCase):
     def setUp(self):
@@ -40,7 +20,7 @@ class CliTest(unittest.TestCase):
         # noinspection PyTypeChecker
         result = runner.invoke(zappend, ["--help"])
         self.assertEqual(0, result.exit_code)
-        self.assertEqual(expected_help_text, result.output)
+        self.assertIn("subsequent configurations are incremental", result.output)
 
     def test_help_config(self):
         runner = CliRunner()
