@@ -28,8 +28,8 @@ class SliceSource(ABC):
 
     The utility functions
     [to_slice_factories()][zappend.slice.factory.to_slice_factories] and
-    [to_slice_factory()][zappend.slice.factory.to_slice_factory] ease passing slice
-    specific inputs to your custom slice source.
+    [to_slice_factory()][zappend.slice.factory.to_slice_factory] ease passing
+    slice-specific inputs to your custom slice source.
 
     Args:
         ctx: The processing context.

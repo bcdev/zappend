@@ -34,10 +34,9 @@ The `zappend` tool provides the following features:
 * **CLI and Python API**: The tool can be used in a shell using the [`zappend`](cli.md)
   command or from Python. When used from Python using the 
   [`zappend()`](api.md) function, slice datasets can be passed as local file paths, 
-  URIs, or as in-memory datasets of type 
-  [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html).
-  Users can implement their own _slice sources_ and provide them to the that provide 
-  slice dataset objects and are disposed after each slice has been processed.
+  URIs, as datasets of type 
+  [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html), or as custom 
+  [zappend.api.SliceSource](https://bcdev.github.io/zappend/api/#class-slicesource) objects.
 
 ## How It Works
 
