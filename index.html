@@ -490,10 +490,9 @@ data cube. </p>
 <li><strong>CLI and Python API</strong>: The tool can be used in a shell using the <a href="cli/"><code>zappend</code></a>
   command or from Python. When used from Python using the 
   <a href="api/"><code>zappend()</code></a> function, slice datasets can be passed as local file paths, 
-  URIs, or as in-memory datasets of type 
-  <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a>.
-  Users can implement their own <em>slice sources</em> and provide them to the that provide 
-  slice dataset objects and are disposed after each slice has been processed.</li>
+  URIs, as datasets of type 
+  <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a>, or as custom 
+  <a href="https://bcdev.github.io/zappend/api/#class-slicesource">zappend.api.SliceSource</a> objects.</li>
 </ul>
 <h2 id="how-it-works">How It Works</h2>
 <p>At its core, <code>zappend</code> calls the <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.to_zarr.html#xarray-dataset-to-zarr">to_zarr()</a> method of <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a> 
