@@ -24,12 +24,12 @@ for a given processing context.
 """
 
 
-def get_slice_dataset(
+def open_slice_source(
     ctx: Context,
     slice_obj: SliceObj | SliceFactory | Any,
     slice_index: int = 0,
 ) -> SliceSource:
-    """Get the slice source for given slice object `slice_obj`.
+    """Open the slice source for given slice object `slice_obj`.
 
     The intended and only use of the returned slice source is as context
     manager. When used as context manager the slice source yields a slice

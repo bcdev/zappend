@@ -10,7 +10,7 @@ import xarray as xr
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.slice.abc import SliceSource
-from zappend.slice.factory import get_slice_dataset
+from zappend.slice.factory import open_slice_source
 from zappend.slice.factory import import_attribute
 from zappend.slice.factory import to_slice_factories
 from zappend.slice.factory import normalize_slice_arg
@@ -22,7 +22,7 @@ from .helpers import make_test_dataset
 from .test_context import CustomSliceSource
 
 
-class GetSliceDatasetTest(unittest.TestCase):
+class OpenSliceSourceTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
 
@@ -33,7 +33,7 @@ class GetSliceDatasetTest(unittest.TestCase):
                 slice_source="tests.test_context.CustomSliceSource",
             )
         )
-        slice_source = get_slice_dataset(ctx, 7)
+        slice_source = open_slice_source(ctx, 7)
         self.assertIsInstance(slice_source, CustomSliceSource)
         self.assertEqual(7, slice_source.index)
 
@@ -44,7 +44,7 @@ class GetSliceDatasetTest(unittest.TestCase):
                 slice_source="tests.test_context.new_custom_slice_source",
             )
         )
-        slice_source = get_slice_dataset(ctx, 13)
+        slice_source = open_slice_source(ctx, 13)
         self.assertIsInstance(slice_source, CustomSliceSource)
         self.assertEqual(13, slice_source.index)
 
@@ -63,13 +63,13 @@ class GetSliceDatasetTest(unittest.TestCase):
                 " 'false_slice_source_function', but got <class 'int'>"
             ),
         ):
-            get_slice_dataset(ctx, "test.nc")
+            open_slice_source(ctx, "test.nc")
 
     def test_slice_source_slice_source(self):
         dataset = make_test_dataset()
         ctx = Context(dict(target_dir="memory://target.zarr"))
         slice_obj = MemorySliceSource(ctx, dataset, 0)
-        slice_source = get_slice_dataset(ctx, slice_obj)
+        slice_source = open_slice_source(ctx, slice_obj)
         self.assertIs(slice_obj, slice_source)
 
     def test_slice_factory_slice_source(self):
@@ -80,7 +80,7 @@ class GetSliceDatasetTest(unittest.TestCase):
             self.assertIs(ctx, _ctx)
             return dataset
 
-        slice_source = get_slice_dataset(ctx, factory)
+        slice_source = open_slice_source(ctx, factory)
         self.assertIsInstance(slice_source, MemorySliceSource)
         with slice_source as slice_ds:
             self.assertIs(dataset, slice_ds)
@@ -88,7 +88,7 @@ class GetSliceDatasetTest(unittest.TestCase):
     def test_memory_slice_source(self):
         dataset = make_test_dataset()
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        slice_source = get_slice_dataset(ctx, dataset)
+        slice_source = open_slice_source(ctx, dataset)
         self.assertIsInstance(slice_source, MemorySliceSource)
         with slice_source as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
@@ -96,7 +96,7 @@ class GetSliceDatasetTest(unittest.TestCase):
     def test_temporary_slice_source(self):
         dataset = make_test_dataset()
         ctx = Context(dict(target_dir="memory://target.zarr", persist_mem_slices=True))
-        slice_source = get_slice_dataset(ctx, dataset)
+        slice_source = open_slice_source(ctx, dataset)
         self.assertIsInstance(slice_source, TemporarySliceSource)
         with slice_source as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
@@ -105,7 +105,7 @@ class GetSliceDatasetTest(unittest.TestCase):
         slice_dir = FileObj("memory://slice.zarr")
         make_test_dataset(uri=slice_dir.uri)
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        slice_source = get_slice_dataset(ctx, slice_dir)
+        slice_source = open_slice_source(ctx, slice_dir)
         self.assertIsInstance(slice_source, PersistentSliceSource)
         with slice_source as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
@@ -114,7 +114,7 @@ class GetSliceDatasetTest(unittest.TestCase):
         slice_dir = FileObj("memory://slice.zarr")
         make_test_dataset(uri=slice_dir.uri)
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        slice_source = get_slice_dataset(ctx, slice_dir.uri)
+        slice_source = open_slice_source(ctx, slice_dir.uri)
         self.assertIsInstance(slice_source, PersistentSliceSource)
         with slice_source as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
@@ -140,7 +140,7 @@ class GetSliceDatasetTest(unittest.TestCase):
                 slice_polling=dict(timeout=0.1, interval=0.02),
             )
         )
-        slice_source = get_slice_dataset(ctx, slice_dir.uri)
+        slice_source = open_slice_source(ctx, slice_dir.uri)
         self.assertIsInstance(slice_source, PersistentSliceSource)
         with slice_source as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
@@ -154,7 +154,7 @@ class GetSliceDatasetTest(unittest.TestCase):
                 slice_polling=dict(timeout=0.1, interval=0.02),
             )
         )
-        slice_source = get_slice_dataset(ctx, slice_dir.uri)
+        slice_source = open_slice_source(ctx, slice_dir.uri)
         with pytest.raises(FileNotFoundError, match=slice_dir.uri):
             with slice_source:
                 pass
@@ -164,7 +164,7 @@ class GetSliceDatasetTest(unittest.TestCase):
         ctx = Context(dict(target_dir="memory://target.zarr"))
         with pytest.raises(TypeError, match="slice_obj must be a str, "):
             # noinspection PyTypeChecker
-            get_slice_dataset(ctx, 42)
+            open_slice_source(ctx, 42)
 
 
 class YieldSlicesTest(unittest.TestCase):
