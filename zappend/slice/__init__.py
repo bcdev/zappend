@@ -8,3 +8,4 @@ from .factory import SliceObj
 from .factory import get_slice_dataset
 from .factory import to_slice_factories
 from .factory import to_slice_factory
+from .factory import to_slice_source_type

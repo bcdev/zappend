@@ -50,22 +50,10 @@ class Context:
         temp_storage_options = config.get("temp_storage_options")
         self._temp_dir = FileObj(temp_dir_uri, storage_options=temp_storage_options)
 
-        from .slice.factory import import_slice_source
+        from .slice.factory import to_slice_source_type
 
         slice_source = config.get("slice_source")
-        if slice_source is not None:
-            if isinstance(slice_source, str):
-                self._slice_source = import_slice_source(slice_source)
-            elif callable(slice_source):
-                self._slice_source = slice_source
-            else:
-                raise TypeError(
-                    "slice_source must a callable"
-                    " or the fully qualified name of a callable"
-                )
-
-        else:
-            self._slice_source = None
+        self._slice_source = to_slice_source_type(slice_source)
 
     def get_dataset_metadata(self, dataset: xr.Dataset) -> DatasetMetadata:
         """Get the dataset metadata from configuration and the given dataset.

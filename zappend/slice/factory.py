@@ -228,11 +228,16 @@ def normalize_slice_arg(arg: Any) -> tuple[tuple[...], dict[str, Any]]:
     return args, kwargs
 
 
-def import_slice_source(name: str) -> Callable[..., SliceObj]:
-    slice_factory = import_attribute(name)
-    if callable(slice_factory):
-        return slice_factory
-    raise TypeError(f"slice factory {name!r} must be a callable")
+def to_slice_source_type(slice_source_type: str | Type) -> Callable | None:
+    if not slice_source_type:
+        return None
+    if isinstance(slice_source_type, str):
+        slice_source_type = import_attribute(slice_source_type)
+    if not callable(slice_source_type):
+        raise TypeError(
+            "slice_source must a callable or the fully qualified name of a callable"
+        )
+    return slice_source_type
 
 
 def import_attribute(name: str) -> Any:
