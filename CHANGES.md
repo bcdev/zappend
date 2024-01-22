@@ -1,5 +1,7 @@
 ## Version 0.2.1 (in development)
 
+### Enhancements
+
 * Allow for passing custom slice sources via the configuration.
   The new configuration setting `slice_source` is the name of a class 
   derived from `zappend.api.SliceSource` or a function that creates an instance 
@@ -13,6 +15,10 @@
 
 * Enhanced documentation including docstrings of several Python API objects.
 
+### Fixes
+
+* Now logging ignored encodings on level DEBUG instead of WARNING because they 
+  occur very likely when processing NetCDF files.
 
 ## Version 0.2.0 (from 2024-18-01)
 

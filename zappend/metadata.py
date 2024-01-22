@@ -50,8 +50,8 @@ class VariableEncoding:
         self.compressor = compressor
         self.filters = filters
         if unknown_settings:
-            logger.warning(
-                "Ignoring unknown encoding setting(s): %s",
+            logger.debug(
+                "Ignoring non-applicable encoding setting(s): %s",
                 ", ".join(unknown_settings.keys()),
             )
 
