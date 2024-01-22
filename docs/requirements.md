@@ -70,9 +70,13 @@ of the `zappend` tool.
 ## Further Ideas
 
 * Allow for inserting and deleting slices.
+* Allow for updating slices.
+  [#29](https://github.com/bcdev/zappend/issues/29)
 * Allow specifying a constant delta between coordinates of the append dimension.
+  and verify coordinate deltas of append dimension to be constant. 
+  [#21](https://github.com/bcdev/zappend/issues/21)
 * Verify append dimension coordinates increase or decrease monotonically. 
-* Verify coordinate deltas of append dimension to be constant. 
+  [#20](https://github.com/bcdev/zappend/issues/20)
 * Integration with [xcube](https://github.com/dcs4cop/xcube):
     - Add xcube server API: Add endpoint to xcube server that works similar 
       to the CLI and also uses a similar request parameters.
