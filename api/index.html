@@ -26,6 +26,9 @@
     
       <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
       
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
       
 
 
@@ -55,7 +58,14 @@
   </head>
   
   
-    <body dir="ltr">
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="light-green" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -106,6 +116,32 @@
         </div>
       </div>
     </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="light-green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
     
     
       <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
@@ -511,6 +547,15 @@
   <a href="#zappend.api.Context.slice_polling" class="md-nav__link">
     <span class="md-ellipsis">
       slice_polling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.api.Context.slice_source" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_source
     </span>
   </a>
   
@@ -1009,6 +1054,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#zappend.api.Context.slice_source" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_source
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#zappend.api.Context.slice_storage_options" class="md-nav__link">
     <span class="md-ellipsis">
       slice_storage_options
@@ -1397,21 +1451,24 @@ Can be used to pass or override configuration values in <em>config</em>.</p>
   
       <p>Utility function that generates slice factories for the given callable
 <code>slice_callable</code> and iterable of slice inputs <code>slice_inputs</code>.</p>
-<p>If the callable defines an argument named <code>ctx</code>, the current processing context
-of type [Context][zappend.api.Context] will be passed to it. If it is defined as
+<p>If the callable defines an argument named <code>ctx</code>, the current processing
+context of type [Context][zappend.api.Context] will be passed to it. If it
+is defined as
 a positional argument, it must be the first one in <code>slice_callable</code>.</p>
 <p>The slice factories are returned as an iterator that generates a new slice
-factory (closure) using the <a class="autorefs autorefs-internal" href="#zappend.api.to_slice_factory">to_slice_factory()</a> for
-each item in <code>slice_inputs</code>. An item may be one of following:</p>
+factory (closure) using the
+<a class="autorefs autorefs-internal" href="#zappend.api.to_slice_factory">to_slice_factory()</a> for each item in
+<code>slice_inputs</code>. An item may be one of following:</p>
 <ul>
-<li>A 2-element tuple of the form <code>(args, kwargs)</code>, where <code>args</code> is a list or tuple
-  positional arguments and <code>kwargs</code> is a dictionary of keyword arguments;</li>
-<li>A list of positional arguments;</li>
-<li>A dictionary of keyword arguments;</li>
+<li><code>tuple</code>: a pair of the form <code>(args, kwargs)</code>, where <code>args</code> is a list
+  or tuple of positional arguments and <code>kwargs</code> is a dictionary of keyword
+  arguments;</li>
+<li><code>list</code>: positional arguments only;</li>
+<li><code>dict</code>: keyword arguments only;</li>
 <li>Any other type is interpreted as single positional argument.</li>
 </ul>
-<p>All items in <code>slice_inputs</code> should have the same type that matches the signature
-of <code>slice_callable</code>.</p>
+<p>All items in <code>slice_inputs</code> should have the same type that matches the
+signature of <code>slice_callable</code>.</p>
 
 
 
@@ -1433,8 +1490,8 @@ of <code>slice_callable</code>.</p>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>A callable that returns a slice object.
-Can also be the class of a custom [SliceSource][zappend.api.SliceSource].</p>
+              <p>A callable that returns a slice object. Can also be
+the class of a custom [SliceSource][zappend.api.SliceSource].</p>
             </div>
           </td>
           <td>
@@ -1480,11 +1537,11 @@ given <code>slice_callable</code>.</p>
 
   <div class="doc doc-contents first">
   
-      <p>Utility function that generates a slice factory (closure) for the given callable
-and arguments.</p>
-<p>If the callable defines an argument named <code>ctx</code>, the current processing context
-of type [Context][zappend.api.Context] will be passed to it. If <code>ctx</code> is defined as
-a positional argument, it must be the first one.</p>
+      <p>Utility function that generates a slice factory (closure) for the given
+callable and arguments.</p>
+<p>If the callable defines an argument named <code>ctx</code>, the current processing
+context of type [Context][zappend.api.Context] will be passed to it.
+If <code>ctx</code> is defined as a positional argument, it must be the first one.</p>
 
 
 
@@ -1507,8 +1564,8 @@ a positional argument, it must be the first one.</p>
           <td>
             <div class="doc-md-description">
               <p>A callable that returns a slice object.
-Typically, the class of a custom [SliceSource][zappend.api.SliceSource]
-type will be passed.</p>
+Typically, the class of a custom
+[SliceSource][zappend.api.SliceSource] type will be passed.</p>
             </div>
           </td>
           <td>
@@ -1522,8 +1579,8 @@ type will be passed.</p>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>The positional arguments that the slice factory will pass to
-<code>slice_callable</code>.</p>
+              <p>The positional arguments that the slice factory will pass
+to <code>slice_callable</code>.</p>
             </div>
           </td>
           <td>
@@ -1548,7 +1605,8 @@ type will be passed.</p>
     </tbody>
   </table>
       <p>Returns:
-    A slice factory that receives the current processing context as single argument.</p>
+    A slice factory that receives the current processing context as
+    single argument.</p>
 
   </div>
 
@@ -1951,6 +2009,27 @@ in seconds, otherwise, return (None, None).</p>
 
 
 
+<h3 id="zappend.api.Context.slice_source" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">slice_source</span><span class="p">:</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The configured slice source, if any.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h3 id="zappend.api.Context.slice_storage_options" class="doc doc-heading">
           <code class="highlight language-python"><span class="n">slice_storage_options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span></code>
   
@@ -1963,7 +2042,8 @@ in seconds, otherwise, return (None, None).</p>
 
   <div class="doc doc-contents ">
   
-      <p>The configured slice storage options to be used if a slice object is a Zarr.</p>
+      <p>The configured slice storage options to be used
+if a slice object is a Zarr.</p>
   </div>
 
 </div>

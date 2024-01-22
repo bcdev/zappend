@@ -26,6 +26,9 @@
     
       <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
       
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
       
 
 
@@ -55,7 +58,14 @@
   </head>
   
   
-    <body dir="ltr">
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="light-green" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -106,6 +116,32 @@
         </div>
       </div>
     </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="light-green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
     
     
       <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
@@ -419,6 +455,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#str-and-zappendapifileobj" class="md-nav__link">
+    <span class="md-ellipsis">
+      str and zappend.api.FileObj
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#xarraydataset" class="md-nav__link">
     <span class="md-ellipsis">
       xarray.Dataset
@@ -431,15 +476,6 @@
   <a href="#zappendapislicesource" class="md-nav__link">
     <span class="md-ellipsis">
       zappend.api.SliceSource
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zappendapifileobj" class="md-nav__link">
-    <span class="md-ellipsis">
-      zappend.api.FileObj
     </span>
   </a>
   
@@ -728,6 +764,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#str-and-zappendapifileobj" class="md-nav__link">
+    <span class="md-ellipsis">
+      str and zappend.api.FileObj
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#xarraydataset" class="md-nav__link">
     <span class="md-ellipsis">
       xarray.Dataset
@@ -740,15 +785,6 @@
   <a href="#zappendapislicesource" class="md-nav__link">
     <span class="md-ellipsis">
       zappend.api.SliceSource
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zappendapifileobj" class="md-nav__link">
-    <span class="md-ellipsis">
-      zappend.api.FileObj
     </span>
   </a>
   
@@ -1154,10 +1190,45 @@ the given timeout:</p>
 <span class="p">}</span>
 </code></pre></div>
 <h3 id="slice-sources">Slice Sources</h3>
-<p>Using the <code>zappend</code> command, slice dataset are provided as local filesystem paths 
-or by paths into other filesystems in case the slice datasets are provided by a URI.
-This section describes additional options to pass slice datasets to the <code>slices</code>
-argument of the <a href="../api/"><code>zappend</code></a> Python function.</p>
+<p>A <em>slice source</em> is an object that provides a slice dataset of type <code>xarray.Dataset</code> 
+for given parameters of any type.</p>
+<p>The optional <code>slice_source</code> configuration setting is used to specify a custom 
+slice source. If not specified, <code>zappend</code> selects the slice source based on the type 
+of a given slice object. These types are described in following subsections.</p>
+<p>If given, the value of the <code>slice_source</code> setting is a class derived from
+<code>zappend.api.SliceSource</code>, or a function that creates an instance of 
+<code>zappend.api.SliceSource</code>, or the fully qualified name of the aforementioned. 
+In the case <code>slice_source</code> is given, the <em>slices</em> argument passed to the CLI 
+command and Python function become parameters to the specified class constructor 
+or factory function.
+The individual slice items in the <code>SLICES</code> arguments of the <code>zappend</code> CLI 
+command are of type <code>str</code>, typically interpreted as file paths or URIs.
+The individual slice items passed in the <code>slices</code> argument of the
+<code>zappend.api.zappend()</code> function can be of any type, but the <code>tuple</code>, <code>list</code>, 
+and <code>dict</code> types have a special meaning:</p>
+<ul>
+<li><code>tuple</code>: a pair of the form <code>(args, kwargs)</code>, where <code>args</code> is a list
+  or tuple of positional arguments and <code>kwargs</code> is a dictionary of keyword
+  arguments;</li>
+<li><code>list</code>: positional arguments only;</li>
+<li><code>dict</code>: keyword arguments only;</li>
+<li>Any other type is interpreted as single positional argument.</li>
+</ul>
+<p>In addition, your class constructor or factory function specified by <code>slice_source</code> 
+may specify a positional or keyword argument named <code>ctx</code>, which will receive the 
+current processing context of type <code>zappend.api.Context</code>. </p>
+<p>If the <code>slice_source</code> setting is <em>not</em> specified, the slice items passed as <code>slices</code>
+argument to the <a href="../api/"><code>zappend</code></a> Python function can be one of the types described
+in the following subsections.</p>
+<h4 id="str-and-zappendapifileobj"><code>str</code> and <code>zappend.api.FileObj</code></h4>
+<p>A slice object of type <code>str</code> is interpreted as local file path or URI, in the case 
+the path has a protocol prefix, such as <code>s3://</code>.</p>
+<p>An alternative to providing the slice dataset as path or URI is using the <code>FileObj</code> 
+class, which combines a URI with dedicated filesystem storage options.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">FileObj</span>
+
+<span class="n">slice_obj</span> <span class="o">=</span> <span class="n">FileObj</span><span class="p">(</span><span class="n">slice_uri</span><span class="p">,</span> <span class="n">storage_options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> 
+</code></pre></div>
 <h4 id="xarraydataset"><code>xarray.Dataset</code></h4>
 <p>In-memory slice objects can be passed as <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a> objects. 
 Such objects may originate from opening datasets from some storage </p>
@@ -1188,15 +1259,9 @@ at the cost of additional i/o. It therefore defaults to <code>false</code>.</p>
 <p>Often you want to perform some custom cleanup after a slice has been processed and
 appended to the target dataset. In this case you can write your own 
 <code>zappend.api.SliceSource</code> by implementing its <code>get_dataset()</code> and <code>dispose()</code>
-methods. Slice source instances are supposed to be created by <em>slice factories</em>,
-see below.</p>
-<h4 id="zappendapifileobj"><code>zappend.api.FileObj</code></h4>
-<p>An alternative to providing the slice dataset as path or URI is using the <code>FileObj</code> 
-class, which combines a URI with dedicated filesystem storage options.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">FileObj</span>
-
-<span class="n">slice_obj</span> <span class="o">=</span> <span class="n">FileObj</span><span class="p">(</span><span class="n">slice_uri</span><span class="p">,</span> <span class="n">storage_options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> 
-</code></pre></div>
+methods. </p>
+<p>Slice source instances are supposed to be created by <em>slice factories</em>, see 
+subsection below.</p>
 <h4 id="zappendapislicefactory"><code>zappend.api.SliceFactory</code></h4>
 <p>A slice factory is a 1-argument function that receives a processing context of type
 <code>zappend.api.Context</code> and yields a slice dataset object of one of the types
@@ -1207,10 +1272,8 @@ to capture slice-specific information.</p>
 dataset. A <code>SliceSource</code> is used to close the datasets after the slice has been 
 processed. Slice factories are created from the custom slice source and the slice paths
 using the utility function <a class="autorefs autorefs-internal" href="../api/#zappend.api.to_slice_factories">to_slice_factories()</a>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-<span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">SliceFactory</span>
 <span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">SliceSource</span>
 <span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">to_slice_factories</span>
 <span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">zappend</span>
@@ -1251,6 +1314,11 @@ using the utility function <a class="autorefs autorefs-internal" href="../api/#z
 
 <span class="n">zappend</span><span class="p">(</span><span class="n">to_slice_factories</span><span class="p">(</span><span class="n">MySliceSource</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">]),</span>
         <span class="n">target_dir</span><span class="o">=</span><span class="s2">&quot;target.zarr&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Note, the above example can be simplified by using the <code>slice_source</code> setting directly:</p>
+<div class="highlight"><pre><span></span><code><span class="n">zappend</span><span class="p">([</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">],</span>
+        <span class="n">target_dir</span><span class="o">=</span><span class="s2">&quot;target.zarr&quot;</span><span class="p">,</span>
+        <span class="n">slice_source</span><span class="o">=</span><span class="n">MySliceSource</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="logging">Logging</h2>
 <p>The <code>zappend</code> logging output is configured using the <code>logging</code> setting.
