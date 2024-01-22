@@ -459,10 +459,53 @@ Or use default polling:
 
 ### Slice Sources
 
-Using the `zappend` command, slice dataset are provided as local filesystem paths 
-or by paths into other filesystems in case the slice datasets are provided by a URI.
-This section describes additional options to pass slice datasets to the `slices`
-argument of the [`zappend`](api.md) Python function.
+A _slice source_ is an object that provides a slice dataset of type `xarray.Dataset` 
+for given parameters of any type.
+
+The optional `slice_source` configuration setting is used to specify a custom 
+slice source. If not specified, `zappend` selects the slice source based on the type 
+of a given slice object. These types are described in following subsections.
+
+If given, the value of the `slice_source` setting is a class derived from
+`zappend.api.SliceSource`, or a function that creates an instance of 
+`zappend.api.SliceSource`, or the fully qualified name of the aforementioned. 
+In the case `slice_source` is given, the _slices_ argument passed to the CLI 
+command and Python function become parameters to the specified class constructor 
+or factory function.
+The individual slice items in the `SLICES` arguments of the `zappend` CLI 
+command are of type `str`, typically interpreted as file paths or URIs.
+The individual slice items passed in the `slices` argument of the
+`zappend.api.zappend()` function can be of any type, but the `tuple`, `list`, 
+and `dict` types have a special meaning:
+
+* `tuple`: a pair of the form `(args, kwargs)`, where `args` is a list
+  or tuple of positional arguments and `kwargs` is a dictionary of keyword
+  arguments;
+  * `list`: positional arguments only;
+* `dict`: keyword arguments only;
+* Any other type is interpreted as single positional argument.
+
+In addition, your class constructor or factory function specified by `slice_source` 
+may specify a positional or keyword argument named `ctx`, which will receive the 
+current processing context of type `zappend.api.Context`. 
+
+If the `slice_source` setting is _not_ specified, the slice items passed as `slices`
+argument to the [`zappend`](api.md) Python function can be one of the types described
+in the following subsections.
+
+#### `str` and `zappend.api.FileObj`
+
+A slice object of type `str` is interpreted as local file path or URI, in the case 
+the path has a protocol prefix, such as `s3://`.
+
+An alternative to providing the slice dataset as path or URI is using the `FileObj` 
+class, which combines a URI with dedicated filesystem storage options.
+
+```python
+from zappend.api import FileObj
+
+slice_obj = FileObj(slice_uri, storage_options=dict(...)) 
+```
 
 #### `xarray.Dataset`
 
@@ -504,19 +547,10 @@ at the cost of additional i/o. It therefore defaults to `false`.
 Often you want to perform some custom cleanup after a slice has been processed and
 appended to the target dataset. In this case you can write your own 
 `zappend.api.SliceSource` by implementing its `get_dataset()` and `dispose()`
-methods. Slice source instances are supposed to be created by _slice factories_,
-see below.
+methods. 
 
-#### `zappend.api.FileObj`
-
-An alternative to providing the slice dataset as path or URI is using the `FileObj` 
-class, which combines a URI with dedicated filesystem storage options.
-
-```python
-from zappend.api import FileObj
-
-slice_obj = FileObj(slice_uri, storage_options=dict(...)) 
-```
+Slice source instances are supposed to be created by _slice factories_, see 
+subsection below.
 
 #### `zappend.api.SliceFactory`
 
@@ -532,10 +566,8 @@ processed. Slice factories are created from the custom slice source and the slic
 using the utility function [to_slice_factories()][zappend.slice.factory.to_slice_factories]:
 
 ```python
-from typing import Iterable
 import numpy as np
 import xarray as xr
-from zappend.api import SliceFactory
 from zappend.api import SliceSource
 from zappend.api import to_slice_factories
 from zappend.api import zappend
@@ -576,6 +608,14 @@ class MySliceSource(SliceSource):
         
 zappend(to_slice_factories(MySliceSource, ["slice-1.nc", "slice-2.nc", "slice-3.nc"]),
         target_dir="target.zarr")
+```
+
+Note, the above example can be simplified by using the `slice_source` setting directly:
+
+```python
+zappend(["slice-1.nc", "slice-2.nc", "slice-3.nc"],
+        target_dir="target.zarr",
+        slice_source=MySliceSource)
 ```
 
 ## Logging

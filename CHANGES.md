@@ -1,7 +1,16 @@
 ## Version 0.2.1 (in development)
 
-* Using `sizes` instead of `dims` attribute of `xarray.Dataset` in implementation 
-  code. [#25] 
+* Allow for passing custom slice sources via the configuration.
+  The new configuration setting `slice_source` is the name of a class 
+  derived from `zappend.api.SliceSource` or a function that creates an instance 
+  of `zappend.api.SliceSource`. If `slice_source` is given, slices passed to 
+  the zappend function or CLI command will be interpreted as parameter(s) 
+  passed to the constructor of the specified class or the factory function. 
+  [#27]
+
+* Using `sizes` instead of `dims` attribute of `xarray.Dataset` in 
+  implementation code. [#25] 
+
 * Enhanced documentation including docstrings of several Python API objects.
 
 
