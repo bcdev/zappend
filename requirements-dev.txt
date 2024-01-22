@@ -5,4 +5,5 @@ flake8
 flake8-bugbear
 h5netcdf
 s3fs
+scipy
 pyproj
