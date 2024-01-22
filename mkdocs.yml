@@ -9,6 +9,7 @@ nav:
   - Configuration: config.md
   - CLI Reference: cli.md
   - API Reference: api.md
+  - Example NB: example.ipynb
   - About: about.md
 
 theme: material
@@ -28,6 +29,7 @@ extra:
 plugins:
   - search
   - autorefs
+  - mknotebooks
   - mkdocstrings:
       handlers:
         python:

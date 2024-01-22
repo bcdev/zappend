@@ -12,6 +12,7 @@
   implementation code. [#25] 
 
 * Enhanced documentation including docstrings of several Python API objects.
+  Included example NB in the documentation (`docs/example.ipynb`).
 
 
 ## Version 0.2.0 (from 2024-18-01)
