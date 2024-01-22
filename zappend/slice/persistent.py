@@ -4,6 +4,7 @@
 
 import time
 
+import fsspec.implementations.local
 import xarray as xr
 
 from ..context import Context
@@ -39,29 +40,24 @@ class PersistentSliceSource(SliceSource):
         super().dispose()
 
     def _wait_for_slice_dataset(self) -> xr.Dataset:
-        slice_ds: xr.Dataset | None = None
         interval, timeout = self.ctx.slice_polling
-        if timeout is not None:
-            # t0 = time.monotonic()
-            # while (time.monotonic() - t0) < timeout:
-            t0 = time.monotonic()
-            while True:
-                delta = time.monotonic() - t0
-                if delta >= timeout:
-                    break
-                try:
-                    slice_ds = self._open_slice_dataset()
-                except OSError:
-                    logger.debug(
-                        f"Slice not ready or corrupt, retrying after {interval} seconds"
-                    )
-                    time.sleep(interval)
-        else:
-            slice_ds = self._open_slice_dataset()
+        if timeout is None:
+            return self._open_slice_dataset()
 
-        if not slice_ds:
-            raise FileNotFoundError(self._slice_file.uri)
-        return slice_ds
+        # t0 = time.monotonic()
+        # while (time.monotonic() - t0) < timeout:
+        t0 = time.monotonic()
+        while True:
+            delta = time.monotonic() - t0
+            if delta >= timeout:
+                raise FileNotFoundError(self._slice_file.uri)
+            try:
+                return self._open_slice_dataset()
+            except OSError:
+                logger.debug(
+                    f"Slice not ready or corrupt, retrying after {interval} seconds"
+                )
+                time.sleep(interval)
 
     def _open_slice_dataset(self) -> xr.Dataset:
         engine = self.ctx.slice_engine
@@ -74,5 +70,9 @@ class PersistentSliceSource(SliceSource):
             storage_options = self.ctx.slice_storage_options
             return xr.open_zarr(self._slice_file.uri, storage_options=storage_options)
 
-        with self._slice_file.fs.open(self._slice_file.path, "rb") as f:
-            return xr.open_dataset(f, engine=engine)
+        fs = self._slice_file.fs
+        if isinstance(fs, fsspec.implementations.local.LocalFileSystem):
+            return xr.open_dataset(self._slice_file.path, engine=engine)
+
+        fo = fs.open(self._slice_file.path, "rb")
+        return xr.open_dataset(fo, engine=engine)
