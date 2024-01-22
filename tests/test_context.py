@@ -4,11 +4,13 @@
 
 import unittest
 
+import pytest
 import xarray as xr
 from zappend.api import zappend
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.metadata import DatasetMetadata
+from zappend.slice import SliceSource
 from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
@@ -73,3 +75,90 @@ class ContextTest(unittest.TestCase):
         self.assertEqual(False, ctx.dry_run)
         ctx = Context({"target_dir": "memory://target.zarr", "dry_run": True})
         self.assertEqual(True, ctx.dry_run)
+
+    def test_slice_source_as_name(self):
+        ctx = Context(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source": "tests.test_context.new_custom_slice_source",
+            }
+        )
+        self.assertEqual(new_custom_slice_source, ctx.slice_source)
+
+        ctx = Context(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source": "tests.test_context.CustomSliceSource",
+            }
+        )
+        self.assertEqual(CustomSliceSource, ctx.slice_source)
+
+        # staticmethod
+        ctx = Context(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source": "tests.test_context.CustomSliceSource.new1",
+            }
+        )
+        self.assertEqual(CustomSliceSource.new1, ctx.slice_source)
+
+        # classmethod
+        ctx = Context(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source": "tests.test_context.CustomSliceSource.new2",
+            }
+        )
+        self.assertEqual(CustomSliceSource.new2, ctx.slice_source)
+
+    def test_slice_source_as_type(self):
+        ctx = Context(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source": new_custom_slice_source,
+            }
+        )
+        self.assertIs(new_custom_slice_source, ctx.slice_source)
+
+        ctx = Context(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source": CustomSliceSource,
+            }
+        )
+        self.assertIs(CustomSliceSource, ctx.slice_source)
+
+        with pytest.raises(
+            TypeError,
+            match=(
+                "slice_source must a callable"
+                " or the fully qualified name of a callable"
+            ),
+        ):
+            Context(
+                {
+                    "target_dir": "memory://target.zarr",
+                    "slice_source": 11,
+                }
+            )
+
+
+def new_custom_slice_source(ctx: Context, index: int):
+    return CustomSliceSource(ctx, index)
+
+
+class CustomSliceSource(SliceSource):
+    def __init__(self, ctx: Context, index: int):
+        super().__init__(ctx)
+        self.index = index
+
+    def get_dataset(self) -> xr.Dataset:
+        return make_test_dataset(index=self.index)
+
+    @staticmethod
+    def new1(ctx: Context, index: int):
+        return CustomSliceSource(ctx, index)
+
+    @classmethod
+    def new2(cls, ctx: Context, index: int):
+        return cls(ctx, index)

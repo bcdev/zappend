@@ -2,6 +2,7 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
+import inspect
 import tempfile
 from typing import Any, Dict
 
@@ -48,6 +49,23 @@ class Context:
         temp_dir_uri = config.get("temp_dir", tempfile.gettempdir())
         temp_storage_options = config.get("temp_storage_options")
         self._temp_dir = FileObj(temp_dir_uri, storage_options=temp_storage_options)
+
+        from .slice.factory import import_slice_source
+
+        slice_source = config.get("slice_source")
+        if slice_source is not None:
+            if isinstance(slice_source, str):
+                self._slice_source = import_slice_source(slice_source)
+            elif callable(slice_source):
+                self._slice_source = slice_source
+            else:
+                raise TypeError(
+                    "slice_source must a callable"
+                    " or the fully qualified name of a callable"
+                )
+
+        else:
+            self._slice_source = None
 
     def get_dataset_metadata(self, dataset: xr.Dataset) -> DatasetMetadata:
         """Get the dataset metadata from configuration and the given dataset.
@@ -98,8 +116,15 @@ class Context:
         return self._config.get("slice_engine")
 
     @property
+    def slice_source(self) -> Any | None:
+        """The configured slice source, if any."""
+        return self._slice_source
+
+    @property
     def slice_storage_options(self) -> dict[str, Any] | None:
-        """The configured slice storage options to be used if a slice object is a Zarr."""
+        """The configured slice storage options to be used
+        if a slice object is a Zarr.
+        """
         return self._config.get("slice_storage_options")
 
     @property

@@ -15,6 +15,11 @@ The URI or local path of the target Zarr dataset. Must be a directory.
 Type _object_.
 Options for the filesystem given by the URI of `target_dir`.
 
+### `slice_source`
+
+Type _string_.
+The fully qualified name of a class or function that provides a slice source for each slice item. If a class is given, it must be  derived from `zappend.api.SliceSource`. If a function is given, it must return an instance of  `zappend.api.SliceSource`. Refer to the user guide for more information.
+
 ### `slice_engine`
 
 Type _string_.

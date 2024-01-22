@@ -11,20 +11,59 @@ from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.slice.abc import SliceSource
 from zappend.slice.factory import get_slice_dataset
+from zappend.slice.factory import import_attribute
 from zappend.slice.factory import to_slice_factories
-
-# noinspection PyProtectedMember
-from zappend.slice.factory import _normalize_arg
+from zappend.slice.factory import normalize_slice_arg
 from zappend.slice.memory import MemorySliceSource
 from zappend.slice.persistent import PersistentSliceSource
 from zappend.slice.temporary import TemporarySliceSource
 from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
+from .test_context import CustomSliceSource
 
 
-class OpenSliceDatasetTest(unittest.TestCase):
+class GetSliceDatasetTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
+
+    def test_slice_source_class_slice_source(self):
+        ctx = Context(
+            dict(
+                target_dir="memory://target.zarr",
+                slice_source="tests.test_context.CustomSliceSource",
+            )
+        )
+        slice_source = get_slice_dataset(ctx, 7)
+        self.assertIsInstance(slice_source, CustomSliceSource)
+        self.assertEqual(7, slice_source.index)
+
+    def test_slice_source_func_slice_source(self):
+        ctx = Context(
+            dict(
+                target_dir="memory://target.zarr",
+                slice_source="tests.test_context.new_custom_slice_source",
+            )
+        )
+        slice_source = get_slice_dataset(ctx, 13)
+        self.assertIsInstance(slice_source, CustomSliceSource)
+        self.assertEqual(13, slice_source.index)
+
+    # noinspection PyMethodMayBeStatic
+    def test_slice_source_class_slice_source_fails(self):
+        ctx = Context(
+            dict(
+                target_dir="memory://target.zarr",
+                slice_source="tests.test_slice.false_slice_source_function",
+            )
+        )
+        with pytest.raises(
+            TypeError,
+            match=(
+                "expected an instance of SliceSource returned from"
+                " 'false_slice_source_function', but got <class 'int'>"
+            ),
+        ):
+            get_slice_dataset(ctx, "test.nc")
 
     def test_slice_source_slice_source(self):
         dataset = make_test_dataset()
@@ -33,7 +72,7 @@ class OpenSliceDatasetTest(unittest.TestCase):
         slice_source = get_slice_dataset(ctx, slice_obj)
         self.assertIs(slice_obj, slice_source)
 
-    def test_factory_slice_source(self):
+    def test_slice_factory_slice_source(self):
         dataset = make_test_dataset()
         ctx = Context(dict(target_dir="memory://target.zarr"))
 
@@ -204,33 +243,72 @@ class YieldSlicesTest(unittest.TestCase):
 
     def test_normalize_args_ok(self):
         # tuple
-        self.assertEqual(((), {}), _normalize_arg(((), {})))
-        self.assertEqual(((1, 2), {"c": 3}), _normalize_arg(([1, 2], {"c": 3})))
+        self.assertEqual(((), {}), normalize_slice_arg(((), {})))
+        self.assertEqual(((1, 2), {"c": 3}), normalize_slice_arg(([1, 2], {"c": 3})))
 
         # list
-        self.assertEqual(((), {}), _normalize_arg([]))
-        self.assertEqual(((1, 2, 3), {}), _normalize_arg([1, 2, 3]))
+        self.assertEqual(((), {}), normalize_slice_arg([]))
+        self.assertEqual(((1, 2, 3), {}), normalize_slice_arg([1, 2, 3]))
 
         # dict
-        self.assertEqual(((), {}), _normalize_arg({}))
-        self.assertEqual(((), {"c": 3}), _normalize_arg({"c": 3}))
+        self.assertEqual(((), {}), normalize_slice_arg({}))
+        self.assertEqual(((), {"c": 3}), normalize_slice_arg({"c": 3}))
 
         # other
-        self.assertEqual(((1,), {}), _normalize_arg(1))
-        self.assertEqual((("a",), {}), _normalize_arg("a"))
+        self.assertEqual(((1,), {}), normalize_slice_arg(1))
+        self.assertEqual((("a",), {}), normalize_slice_arg("a"))
 
     # noinspection PyMethodMayBeStatic
     def test_normalize_args_fails(self):
         with pytest.raises(
             TypeError, match="tuple of form \\(args, kwargs\\) expected"
         ):
-            _normalize_arg(((), (), ()))
+            normalize_slice_arg(((), (), ()))
         with pytest.raises(
             TypeError,
             match="args in tuple of form \\(args, kwargs\\) must be a tuple or list",
         ):
-            _normalize_arg(({}, {}))
+            normalize_slice_arg(({}, {}))
         with pytest.raises(
             TypeError, match="kwargs in tuple of form \\(args, kwargs\\) must be a dict"
         ):
-            _normalize_arg(((), ()))
+            normalize_slice_arg(((), ()))
+
+
+class ImportAttributeTest(unittest.TestCase):
+    def test_import_attribute_ok(self):
+        self.assertIs(
+            ImportAttributeTest,
+            import_attribute("tests.test_slice.ImportAttributeTest"),
+        )
+
+        self.assertIs(
+            ImportAttributeTest.test_import_attribute_ok,
+            import_attribute(
+                "tests.test_slice.ImportAttributeTest.test_import_attribute_ok"
+            ),
+        )
+
+    # noinspection PyMethodMayBeStatic
+    def test_import_attribute_fails(self):
+        with pytest.raises(
+            ImportError,
+            match="attribute 'Pippo' not found in module 'tests.test_slice'",
+        ):
+            import_attribute("tests.test_slice.Pippo")
+
+        with pytest.raises(
+            ImportError,
+            match="no attribute found named 'tests.test_slice'",
+        ):
+            import_attribute("tests.test_slice")
+
+        with pytest.raises(
+            ImportError,
+            match="no attribute found named 'pippo.test_slice.ImportObjectTest'",
+        ):
+            import_attribute("pippo.test_slice.ImportObjectTest")
+
+
+def false_slice_source_function(ctx: Context, path: str):
+    return 17

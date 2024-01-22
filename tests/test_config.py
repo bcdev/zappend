@@ -236,6 +236,7 @@ class ConfigNormalizeTest(unittest.TestCase):
                 "persist_mem_slices",
                 "slice_engine",
                 "slice_polling",
+                "slice_source",
                 "slice_storage_options",
                 "target_storage_options",
                 "target_dir",
