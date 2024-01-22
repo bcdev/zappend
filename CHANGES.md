@@ -19,6 +19,9 @@
 
 * Fixed a problem where the underlying i/o stream of a persistent slice dataset 
   was closed immediately after opening the dataset. [#31]
+  
+* Now logging ignored encodings on level DEBUG instead of WARNING because they 
+  occur very likely when processing NetCDF files.
 
 ## Version 0.2.0 (from 2024-18-01)
 
