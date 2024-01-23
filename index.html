@@ -503,7 +503,7 @@ Zarr datacubes from smaller dataset slices. It is build on top of the awesome Py
 packages <a href="https://docs.xarray.dev/">xarray</a> and <a href="https://zarr.readthedocs.io/">zarr</a>.</p>
 <h2 id="motivation">Motivation</h2>
 <p>The objective of <code>zappend</code> is to address recurring memory issues when generating large 
-geospatial datacubes using the <a href="https://zarr.readthedocs.io/">Zarr format</a> 
+geospatial datacubes using the <a href="https://zarr.readthedocs.io/en/stable/spec/v2.html">Zarr format</a> 
 by subsequently concatenating data slices along an append dimension, e.g., <code>time</code> 
 (the default) for geospatial satellite observations.<br />
 Each append step is atomic, that is, the append operation is a transaction that can be 
