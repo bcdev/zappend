@@ -28,6 +28,7 @@ import click
     is_flag=True,
     help="Run the tool without creating, changing," " or deleting any files.",
 )
+@click.option("--profiling", help="Path for profiling output. Switches on profiling.")
 @click.option(
     "--help-config",
     metavar="json|md",
@@ -39,6 +40,7 @@ def zappend(
     config: tuple[str, ...],
     target: str | None,
     dry_run: bool,
+    profiling: str,
     help_config: str | None,
 ):
     """Create or update a Zarr datacube TARGET from slice datasets SLICES.
@@ -61,7 +63,13 @@ def zappend(
 
     # noinspection PyBroadException
     try:
-        zappend(slices, config=config, target_dir=target, dry_run=dry_run)
+        zappend(
+            slices,
+            config=config,
+            target_dir=target,
+            dry_run=dry_run,
+            profiling=profiling,
+        )
     except BaseException as e:
         raise click.ClickException(f"{e}") from e
 

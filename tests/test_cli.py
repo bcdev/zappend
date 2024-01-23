@@ -1,7 +1,7 @@
 # Copyright © 2024 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
-
+import os
 import unittest
 from click.testing import CliRunner
 
@@ -104,3 +104,27 @@ class CliTest(unittest.TestCase):
             "Error: Missing 'target_dir' in configuration\n", result.output
         )
         self.assertFalse(FileObj("memory://target.zarr").exists())
+
+    def test_profiling(self):
+        make_test_dataset(uri="memory://slice-1.zarr")
+        make_test_dataset(uri="memory://slice-2.zarr")
+        make_test_dataset(uri="memory://slice-3.zarr")
+
+        runner = CliRunner()
+        # noinspection PyTypeChecker
+        result = runner.invoke(
+            zappend,
+            [
+                "--profiling",
+                "prof.out",
+                "--target",
+                "memory://target.zarr",
+                "memory://slice-1.zarr",
+                "memory://slice-2.zarr",
+                "memory://slice-3.zarr",
+            ],
+        )
+        self.assertEqual("", result.output)
+        self.assertEqual(0, result.exit_code)
+        self.assertTrue(FileObj("prof.out").exists())
+        os.unlink("prof.out")
