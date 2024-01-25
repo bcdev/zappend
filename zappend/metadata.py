@@ -23,6 +23,15 @@ Codec = numcodecs.abc.Codec
 
 
 class VariableEncoding:
+    """The Zarr encoding of a dataset's variable.
+
+    The named keyword arguments passed to the constructor are effectively used,
+    remaining arguments will emit a log record about the unknown encoding values.
+
+    All arguments default to `UNDEFINED`, so they can be distinguished from
+    `None`, which is has a special meaning for some values, e.g., for `compressor`.
+    """
+
     # noinspection PyPep8Naming
     def __init__(
         self,
@@ -37,9 +46,6 @@ class VariableEncoding:
         filters: list[Codec] | None | Undefined = UNDEFINED,
         **unknown_settings,
     ):
-        """All arguments default to UNDEFINED, so they can be distinguished
-        from None, which is has a special meaning for some values.
-        """
         self.dtype = dtype
         self.chunks = chunks
         self.fill_value = fill_value
@@ -56,6 +62,10 @@ class VariableEncoding:
             )
 
     def to_dict(self):
+        """Convert this object into a dictionary.
+        Includes attributes with value `None`,
+        but excludes attributes with value `UNDEFINED`.
+        """
         d = {
             k: v
             for k, v in self.__dict__.items()
@@ -67,6 +77,17 @@ class VariableEncoding:
 
 
 class VariableMetadata:
+    """Metadata for a dataset variable.
+
+    Arguments:
+        dims: The names of the variable's dimensions.
+        shape: The sizes of the variable's dimensions. This is a derived value,
+            because the dimension size are given by the variable's dataset.
+        encoding: The variable's storage encoding.
+        attrs: Arbitrary metadata attributes, however, this excludes encoding
+            metadata.
+    """
+
     def __init__(
         self,
         dims: tuple[str],
@@ -80,6 +101,7 @@ class VariableMetadata:
         self.attrs = attrs
 
     def to_dict(self):
+        """Convert this object into a dictionary."""
         return dict(
             dims=self.dims,
             shape=self.shape,
@@ -95,11 +117,19 @@ class DatasetMetadata:
         variables: dict[str, VariableMetadata],
         attrs: dict[str, Any],
     ):
+        """Dataset metadata including metadata for variables.
+
+        Arguments:
+            sizes: A mapping from dimension name to dimension size.
+            variables: A mapping from variable name to variable metadata.
+            attrs: Arbitrary metadata attributes.
+        """
         self.sizes = sizes
         self.variables = variables
         self.attrs = attrs
 
     def to_dict(self):
+        """Convert this object into a dictionary."""
         return dict(
             sizes=self.sizes,
             variables={k: v.to_dict() for k, v in self.variables.items()},
@@ -109,9 +139,19 @@ class DatasetMetadata:
     def assert_compatible_slice(
         self, slice_metadata: "DatasetMetadata", append_dim: str
     ):
+        """Assert a given slice dataset's metadata is compatible with this
+        (target) dataset's metadata.
+
+        Arguments:
+            slice_metadata: The slice dataset metadata.
+            append_dim: The name of the append dimension.
+
+        Raises:
+            ValueError: If the assertion fails.
+        """
         for dim_name, dim_size in self.sizes.items():
             if dim_name not in slice_metadata.sizes:
-                raise ValueError(f"Missing dimension" f" {dim_name!r} in slice dataset")
+                raise ValueError(f"Missing dimension {dim_name!r} in slice dataset")
             slice_dim_size = slice_metadata.sizes[dim_name]
             if dim_name != append_dim and dim_size != slice_dim_size:
                 raise ValueError(
@@ -135,6 +175,33 @@ class DatasetMetadata:
 
     @classmethod
     def from_dataset(cls, dataset: xr.Dataset, config: dict[str, Any] | None = None):
+        """Get dataset metadata for the given dataset and processor configuration.
+
+        Information given in the configuration has priority over metadata in
+        given `dataset`. Therefore, the dataset must conform to the specifications
+        made in the configuration. Examples:
+
+        * `fixed_dims` given in configuration must match `dataset.sizes`
+        * `append_dim` given in configuration must be a dimension used
+          in at least one data variable of the dataset
+        * A variable named in `included_variables` given in configuration must
+          exist in `dataset` and must have the dimensions specified in
+          `variables` of the configuration.
+
+        Encoding information found in dataset variables is normalized to valid
+        Zarr encoding.
+
+        Arguments:
+            dataset: A dataset
+            config: Optional processor configuration
+
+        Returns:
+            The dataset's metadata.
+
+        Raises:
+            ValueError: if the dataset does not comply to information given in
+                the configuration.
+        """
         config = config or {}
 
         sizes = _get_effective_sizes(
@@ -163,13 +230,11 @@ def _get_effective_sizes(
     if config_fixed_dims:
         if config_fixed_dims.get(config_append_dim) is not None:
             raise ValueError(
-                f"Size of append dimension" f" {config_append_dim!r} must not be fixed"
+                f"Size of append dimension {config_append_dim!r} must not be fixed"
             )
         for dim_name, fixed_dim_size in config_fixed_dims.items():
             if dim_name not in dataset.dims:
-                raise ValueError(
-                    f"Fixed dimension {dim_name!r}" f" not found in dataset"
-                )
+                raise ValueError(f"Fixed dimension {dim_name!r} not found in dataset")
             ds_dim_size = dataset.sizes[dim_name]
             if fixed_dim_size != ds_dim_size:
                 raise ValueError(
@@ -178,9 +243,7 @@ def _get_effective_sizes(
                     f" found {ds_dim_size}"
                 )
     if config_append_dim not in dataset.sizes:
-        raise ValueError(
-            f"Append dimension" f" {config_append_dim!r} not found in dataset"
-        )
+        raise ValueError(f"Append dimension {config_append_dim!r} not found in dataset")
 
     return {str(k): v for k, v in dataset.sizes.items()}
 

@@ -95,7 +95,7 @@ Variable metadata.
   The array's items are of type _string_.
 * `encoding`:
   Type _object_.
-  Variable storage encoding. Settings given here overwrite the encoding settings of the first contributing dataset.
+  Variable Zarr storage encoding. Settings given here overwrite the encoding settings of the first contributing dataset.
   
   * `dtype`:
     Storage data type

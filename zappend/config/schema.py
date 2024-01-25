@@ -44,9 +44,11 @@ SLICE_POLLING_SCHEMA = {
 }
 
 VARIABLE_ENCODING_SCHEMA = {
-    "description": "Variable storage encoding. Settings given here overwrite"
-    " the encoding settings of the first"
-    " contributing dataset.",
+    "description": (
+        "Variable Zarr storage encoding."
+        " Settings given here overwrite the encoding settings of the"
+        " first contributing dataset."
+    ),
     "type": "object",
     "properties": dict(
         dtype={
