@@ -1,8 +1,7 @@
-
-<p align="center">
+<h1 align="center">
     <img src="docs/assets/logo.png" width="64" title="zappend">
-    <span style="font-size:2em;">&nbsp;zappend</span>
-</p>
+    &nbsp;zappend
+</h1>
 
 <div align="center">
 
