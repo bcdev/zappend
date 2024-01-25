@@ -1,12 +1,22 @@
+
+<p align="center">
+    <img src="docs/assets/logo.png" width="64" title="zappend">
+    <span style="font-size: 64px">&nbsp;zappend</span>
+</p>
+
+<div align="center">
+
 [![CI](https://github.com/bcdev/zappend/actions/workflows/tests.yml/badge.svg)](https://github.com/bcdev/zappend/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/bcdev/zappend/graph/badge.svg?token=B3R6bNmAUp)](https://codecov.io/gh/bcdev/zappend)
 [![PyPI - Version](https://img.shields.io/pypi/v/zappend)](https://pypi.org/project/zappend/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![GitHub License](https://img.shields.io/github/license/bcdev/zappend)](https://github.com/bcdev/zappend)
 
+</div>
+
 <!--- Align following sections with docs/index.md -->
 
-# zappend
+---
 
 `zappend` is a tool written in Python that is used for robustly creating and updating 
 Zarr datacubes from smaller dataset slices. It is build on top of the awesome Python 
