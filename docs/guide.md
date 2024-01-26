@@ -618,6 +618,49 @@ zappend(["slice-1.nc", "slice-2.nc", "slice-3.nc"],
         slice_source=MySliceSource)
 ```
 
+## Profiling
+
+Runtime profiling is very important for understanding program runtime behavior 
+and performance. The configuration setting `profiling` can be used to
+analyse and improve the runtime performance of `zappend` itself as well as 
+the runtime performance of the computation of in-memory slices passed to the
+`zappend()` function.
+
+To log the output of the profiling with level `INFO` (see next section 
+[Logging](#logging)), you can use the value `true`:
+
+```json
+{
+    "profiling": true
+}
+```
+
+If you like to see the output in a file too, then set `profiling` to the 
+desired local file path:
+
+```json
+{
+    "profiling": "perf.out"
+}
+```
+
+You can also set `profiling` to an object that allows for fine-grained 
+control of the runtime logging: 
+
+```json
+{
+    "profiling": {
+        "log_level": "WARNING",
+        "path": "perf.out",
+        "keys": ["tottime", "time", "ncalls"]
+    }
+}
+```
+
+Please refer to section [`profiling`](config.md#profiling) in 
+the [Configuration Reference](config.md) for more details.
+
+
 ## Logging
 
 The `zappend` logging output is configured using the `logging` setting.

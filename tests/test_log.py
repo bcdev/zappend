@@ -1,12 +1,13 @@
 # Copyright © 2024 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
+
 import logging
 import unittest
-from click.testing import CliRunner
 
-from zappend.log import logger
 from zappend.log import configure_logging
+from zappend.log import get_log_level
+from zappend.log import logger
 
 
 class LogTest(unittest.TestCase):
@@ -43,3 +44,13 @@ class LogTest(unittest.TestCase):
             logger.setLevel(old_level)
             for h in old_handlers:
                 logger.addHandler(h)
+
+    def test_get_log_level(self):
+        self.assertEqual(logging.DEBUG, get_log_level("DEBUG"))
+        self.assertEqual(logging.INFO, get_log_level("INFO"))
+        self.assertEqual(logging.WARNING, get_log_level("WARN"))
+        self.assertEqual(logging.WARNING, get_log_level("WARNING"))
+        self.assertEqual(logging.ERROR, get_log_level("ERROR"))
+        self.assertEqual(logging.CRITICAL, get_log_level("CRITICAL"))
+        self.assertEqual(logging.NOTSET, get_log_level("NOTSET"))
+        self.assertEqual(logging.NOTSET, get_log_level("CRASS"))

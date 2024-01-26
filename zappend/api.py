@@ -1,10 +1,8 @@
 # Copyright © 2024 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
-from cProfile import Profile
-from io import StringIO
-from pstats import Stats
-from typing import Iterable, Any, Literal
+
+from typing import Any, Iterable
 
 from .config import ConfigItem
 from .config import ConfigLike
@@ -17,7 +15,6 @@ from .slice import SliceObj
 from .slice import SliceSource
 from .slice import to_slice_factories
 from .slice import to_slice_factory
-from .log import logger
 
 
 __all__ = [
@@ -34,13 +31,10 @@ __all__ = [
     "to_slice_factory",
 ]
 
-_TOTAL_TIME: Literal["tottime"] = "tottime"
-
 
 def zappend(
     slices: Iterable[SliceObj | SliceFactory],
     config: ConfigLike = None,
-    profiling=None,
     **kwargs: Any,
 ):
     """
@@ -65,25 +59,8 @@ def zappend(
             May be a file path or URI, a ``dict``, ``None``, or a sequence of
             the aforementioned. If a sequence is used, subsequent configurations
             are incremental to the previous ones.
-        profiling: Path for profiling output.
-            Switches on profiling
         kwargs: Additional configuration parameters.
             Can be used to pass or override configuration values in *config*.
     """
     processor = Processor(config, **kwargs)
-
-    if profiling:
-        profile = Profile()
-        logger.info(f"profiling ...")
-        profile.enable()
-
     processor.process_slices(slices)
-
-    if profiling:
-        profile.disable()
-        results = StringIO()
-        stats = Stats(profile, stream=results)
-        stats.sort_stats(_TOTAL_TIME).print_stats()
-        with open(profiling, "w") as f:
-            f.write(results.getvalue())
-        logger.info(f"profiling output written to {profiling}")

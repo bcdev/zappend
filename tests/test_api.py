@@ -1,7 +1,7 @@
 # Copyright © 2024 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
-
+import os
 import unittest
 
 import xarray as xr
@@ -28,3 +28,29 @@ class ApiTest(unittest.TestCase):
         self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
         self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
         self.assertEqual({"time", "y", "x"}, set(ds.coords))
+
+    def test_some_slices_with_profiling(self):
+        slices = [
+            "memory://slice-1.zarr",
+            "memory://slice-2.zarr",
+            "memory://slice-3.zarr",
+        ]
+        for uri in slices:
+            make_test_dataset(uri=uri)
+
+        target_dir = "memory://target.zarr"
+        try:
+            zappend(
+                slices,
+                config={
+                    "target_dir": target_dir,
+                    "profiling": {
+                        "path": "prof.out",
+                        "keys": ["tottime", "time", "ncalls"],
+                    },
+                },
+            )
+            self.assertTrue(os.path.exists("prof.out"))
+        finally:
+            if os.path.exists("prof.out"):
+                os.remove("prof.out")
