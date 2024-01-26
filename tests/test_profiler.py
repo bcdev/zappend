@@ -12,37 +12,38 @@ from zappend.profiler import Profiler
 class ProfilerTest(unittest.TestCase):
     def test_disabled(self):
         profiler = Profiler(None)
-        self.assertEqual(False, profiler.enabled)
+        self.assert_profiler_config(profiler, False)
         with profiler:
             pass
 
         profiler = Profiler(False)
-        self.assertEqual(False, profiler.enabled)
+        self.assert_profiler_config(profiler, False)
         with profiler:
             pass
 
         profiler = Profiler({"enabled": False})
-        self.assertEqual(False, profiler.enabled)
+        self.assert_profiler_config(profiler, False)
         with profiler:
             pass
 
         profiler = Profiler({"log_level": "NOTSET"})
-        self.assertEqual(False, profiler.enabled)
+        self.assert_profiler_config(profiler, False, "NOTSET")
+        with profiler:
+            pass
+
+        profiler = Profiler({"enabled": True, "log_level": "NOTSET"})
+        self.assert_profiler_config(profiler, False, "NOTSET")
         with profiler:
             pass
 
     def test_enabled(self):
         profiler = Profiler(True)
-        self.assertEqual(True, profiler.enabled)
-        self.assertEqual("INFO", profiler.log_level)
-        self.assertEqual(None, profiler.path)
+        self.assert_profiler_config(profiler, True, "INFO")
         with profiler:
             pass
 
         profiler = Profiler("prof.out")
-        self.assertEqual(True, profiler.enabled)
-        self.assertEqual("INFO", profiler.log_level)
-        self.assertEqual("prof.out", profiler.path)
+        self.assert_profiler_config(profiler, True, "INFO", "prof.out")
         try:
             with profiler:
                 pass
@@ -52,9 +53,7 @@ class ProfilerTest(unittest.TestCase):
                 os.remove("prof.out")
 
         profiler = Profiler({"path": "prof.out", "log_level": "DEBUG"})
-        self.assertEqual(True, profiler.enabled)
-        self.assertEqual("DEBUG", profiler.log_level)
-        self.assertEqual("prof.out", profiler.path)
+        self.assert_profiler_config(profiler, True, "DEBUG", "prof.out")
         try:
             with profiler:
                 pass
@@ -62,3 +61,22 @@ class ProfilerTest(unittest.TestCase):
         finally:
             if os.path.exists("prof.out"):
                 os.remove("prof.out")
+
+    def assert_profiler_config(
+        self,
+        profiler: Profiler,
+        expected_enabled,
+        expected_log_level="INFO",
+        expected_path=None,
+        expected_keys=None,
+        expected_restrictions=None,
+    ):
+        if expected_keys is None:
+            expected_keys = ["tottime"]
+        if expected_restrictions is None:
+            expected_restrictions = []
+        self.assertEqual(expected_enabled, profiler.enabled)
+        self.assertEqual(expected_log_level, profiler.log_level)
+        self.assertEqual(expected_path, profiler.path)
+        self.assertEqual(expected_keys, profiler.keys)
+        self.assertEqual(expected_restrictions, profiler.restrictions)

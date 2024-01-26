@@ -26,7 +26,7 @@ class Profiler:
         # Defaults
         path = None
         log_level = "INFO"
-        keys = []
+        keys = ["tottime"]
         restrictions = []
 
         if isinstance(profiling_config, str):

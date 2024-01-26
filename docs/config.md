@@ -191,27 +191,35 @@ Defaults to `false`.
 
 Profiling configuration. Allows for runtime profiling of the processing.
 Must be one of the following:
+
 * Type _boolean_.
   If set, profiling is enabled and output is logged using level INFO. Otherwise, profiling is disabled.
+
 * Type _string_.
   Profile path. Enables profiling and writes a profiling report to given path.
+
 * Type _object_.
   
   * `enabled`:
     Type _boolean_.
     Enable or disable profiling.
+  
   * `path`:
     Type _string_.
     Local file path for profiling output.
+  
   * `log_level`:
     Log level. Use 'NOTSET' to disable logging.
     Defaults to `"INFO"`.
     Must be one of `"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"`.
+  
   * `keys`:
     Type _array_.
     Sort output according to the supplied column names. Refer to [Stats.sort_stats(*keys)](https://docs.python.org/3/library/profile.html#pstats.Stats.sort_stats).
+    Defaults to `["tottime"]`.
     
     Must be one of `"calls", "cumulative", "cumtime", "file", "filename", "module", "ncalls", "pcalls", "line", "name", "nfl", "stdname", "time", "tottime"`.
+  
   * `restrictions`:
     Type _array_.
     Used to limit the list down to the significant entries in the profiling report. Refer to [Stats.print_stats(*restrictions)](https://docs.python.org/3/library/profile.html#pstats.Stats.print_stats).

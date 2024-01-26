@@ -234,6 +234,7 @@ PROFILING_SCHEMA = {
                         "(https://docs.python.org/3/library/profile.html"
                         "#pstats.Stats.sort_stats)."
                     ),
+                    "default": ["tottime"],
                     "type": "array",
                     "items": {
                         "enum": [
