@@ -2,11 +2,21 @@
 
 ## Installation
 
-Installing `zappend` into a Python v3.10+ environment:
+`zappend` requires a Python v3.10+ environment. To install the latest released
+version from PyPI:
 
 ```shell
 pip install zappend
 ```
+
+To install the latest version for development, clone the
+[repository](https://github.com/bcdev/zappend), and with the repository’s root
+directory as the current working directory execute:
+
+```shell
+pip install --editable .
+```
+
 
 ## Using the CLI
 
@@ -16,7 +26,7 @@ Get usage help:
 zappend --help
 ```
 
-Get [configuration](config.md) help: 
+Get [configuration](config.md) help in Markdown format (json also available):
 
 ```shell
 zappend --help-config md
@@ -64,5 +74,5 @@ zappend((f"s3:/mybucket/data/{name}"
         config=config)
 ```
 
-Slice datasets can be passed in a number of ways, please refer to the section 
+Slice datasets can be passed in a number of ways; please refer to the section 
 [_Slice Sources_](guide.md#slice-sources) in the [User Guide](guide.md).

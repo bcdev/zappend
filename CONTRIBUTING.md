@@ -35,7 +35,7 @@ checklist are addressed in your PR.
 
 The `zappend` code compliant to [PEP-8](https://pep8.org/) except for a line 
 length of 88 characters as recommended by [black](https://black.readthedocs.io/).
-Since back is un-opinionated regarding the order of imports, 
+Since black is un-opinionated regarding the order of imports, 
 we use the following three import blocks separated by an empty 
 line:
 

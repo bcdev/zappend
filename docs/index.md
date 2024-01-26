@@ -3,7 +3,7 @@
 # The zappend Tool
 
 `zappend` is a tool written in Python that is used for robustly creating and updating 
-Zarr datacubes from smaller dataset slices. It is build on top of the awesome Python 
+Zarr datacubes from smaller dataset slices. It is built on top of the awesome Python
 packages [xarray](https://docs.xarray.dev/) and [zarr](https://zarr.readthedocs.io/).
 
 ## Motivation
