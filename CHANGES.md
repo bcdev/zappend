@@ -2,6 +2,9 @@
 
 ### Enhancements
 
+* It is now possible to configure runtime profiling of the `zappend`
+  processing using the new configuration setting `profiling`. [#39]
+
 * Allow for passing custom slice sources via the configuration.
   The new configuration setting `slice_source` is the name of a class 
   derived from `zappend.api.SliceSource` or a function that creates an instance 
