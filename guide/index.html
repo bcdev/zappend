@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.5">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
     
     
       
@@ -499,6 +499,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#profiling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Profiling
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#logging" class="md-nav__link">
     <span class="md-ellipsis">
       Logging
@@ -808,6 +817,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#profiling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Profiling
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#logging" class="md-nav__link">
     <span class="md-ellipsis">
       Logging
@@ -865,18 +883,18 @@ care how the slice datasets are created. Hence, when using the Python <code>zapp
 function, the slice datasets can be provided in various forms. More on this is given
 in section <a href="#slice-sources"><em>Slice Sources</em></a> below.</p>
 <p>To run the <code>zappend</code> tool with <a href="../config/">configuration</a> you can pass one or more
-configuration files using JSON or YAML format</p>
+configuration files using JSON or YAML format:</p>
 <div class="highlight"><pre><span></span><code>zappend<span class="w"> </span>-t<span class="w"> </span>output/mycube.zarr<span class="w"> </span>-c<span class="w"> </span>config.yaml<span class="w"> </span>inputs/*.nc
 </code></pre></div>
 <p>If multiple configuration files are passed, they will be merged into one by
 incrementally updating the first by subsequent ones. </p>
-<p>You can pass configuration settings to the <code>zappend</code> Python function by the optional
-<code>config</code> keyword argument. Other keyword arguments are interpreted as individual 
-configuration settings and will be merged into the one given by <code>config</code> argument,
-if any. The <code>config</code> keyword argument can be given as local file path or URL 
-(type <code>str</code>) pointing to a JSON or YAML file. It can also be given as dictionary,
-or as a sequence of the aforementioned types. Configuration sequences are again merged
-into one.</p>
+<p>You can pass configuration settings to the <code>zappend</code> Python function with 
+the optional <code>config</code> keyword argument. Other keyword arguments are 
+interpreted as individual configuration settings and will be merged into the 
+one given by <code>config</code> argument, if any. The <code>config</code> keyword argument can be 
+given as local file path or URL (type <code>str</code>) pointing to a JSON or YAML file.
+It can also be given as dictionary, or as a sequence of the aforementioned 
+types. Configuration sequences are again merged into one.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">zappend</span>
 
@@ -898,16 +916,17 @@ the data dimensions, units, and encoding, such as chunking and compression.</p>
 </div>
 <h2 id="dataset-outline">Dataset Outline</h2>
 <p>If no further configuration is supplied, then the target dataset's outline and data 
-encoding is fully prescribed by the first slice dataset provided. By default, the 
-dimension along subsequent slice datasets are concatenated is <code>time</code>. If you use a 
-different append dimension, the <code>append_dim</code> setting can be used to specify its name:</p>
+encoding is fully prescribed by the first slice dataset provided. By default, the
+dimension along which subsequent slice datasets are concatenated is <code>time</code>. If
+you use a different append dimension, the <code>append_dim</code> setting can be used to
+specify its name:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;append_dim&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;depth&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>All other non-variadic dimensions can and should be specified using the
 <code>fixed_dims</code> setting which is a mapping from dimension name to the 
-fixed dimension sizes, e.g.:</p>
+fixed dimension size, e.g.:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;fixed_dims&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">16384</span><span class="p">,</span>
@@ -917,9 +936,9 @@ fixed dimension sizes, e.g.:</p>
 </code></pre></div>
 <p>By default, without further configuration, all data variables seen in the first
 dataset slice will be included in the target dataset. If only a subset of 
-variables shall be used from the slice dataset, they can be specified using the
-<code>included_variables</code> setting, which is a list of names of variables that will 
-be included:</p>
+variables should be used from the slice dataset, they can be specified using
+the <code>included_variables</code> setting, which is a list of names of variables that
+will be included:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;included_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="s2">&quot;time&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;x&quot;</span><span class="p">,</span>
@@ -928,7 +947,7 @@ be included:</p>
 <span class="w">    </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Often, it is easier to tell which variables should be excluded:</p>
+<p>Often, it is easier to specify which variables should be excluded:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;excluded_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;GridCellId&quot;</span><span class="p">]</span>
 <span class="p">}</span>
@@ -954,13 +973,14 @@ values for all variables:</p>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>If <code>*</code> is specified, the effective variable metadata applied is gained by merging a 
-given specific metadata, into the common metadata given by <code>*</code>, which is eventually 
-merged into metadata of the variable in the first dataset slice.</p>
+<p>If <code>*</code> is specified, the metadata for a particular variable is generated by
+merging the specific metadata for that variable into the common metadata given
+by <code>*</code>, which is eventually merged into metadata of the variable in the first
+dataset slice.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Only metadata from the first slice dataset is used, metadata of variables from 
-subsequent slice datasets is ignored entirely.</p>
+<p>Only metadata from the first slice dataset is used. Metadata of variables
+from subsequent slice datasets is ignored entirely.</p>
 </div>
 <h3 id="dimensions">Dimensions</h3>
 <p>To ensure a slice variable has the expected dimensionality and shape, the <code>dims</code> 
@@ -1318,6 +1338,36 @@ using the utility function <a class="autorefs autorefs-internal" href="../api/#z
         <span class="n">target_dir</span><span class="o">=</span><span class="s2">&quot;target.zarr&quot;</span><span class="p">,</span>
         <span class="n">slice_source</span><span class="o">=</span><span class="n">MySliceSource</span><span class="p">)</span>
 </code></pre></div>
+<h2 id="profiling">Profiling</h2>
+<p>Runtime profiling is very important for understanding program runtime behavior 
+and performance. The configuration setting <code>profiling</code> can be used to
+analyse and improve the runtime performance of <code>zappend</code> itself as well as 
+the runtime performance of the computation of in-memory slices passed to the
+<code>zappend()</code> function.</p>
+<p>To log the output of the profiling with level <code>INFO</code> (see next section 
+<a href="#logging">Logging</a>), you can use the value <code>true</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;profiling&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If you like to see the output in a file too, then set <code>profiling</code> to the 
+desired local file path:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;profiling&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;perf.out&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>You can also set <code>profiling</code> to an object that allows for fine-grained 
+control of the runtime logging: </p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;profiling&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;log_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;WARNING&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;perf.out&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;keys&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;tottime&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;time&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ncalls&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Please refer to section <a href="../config/#profiling"><code>profiling</code></a> in 
+the <a href="../config/">Configuration Reference</a> for more details.</p>
 <h2 id="logging">Logging</h2>
 <p>The <code>zappend</code> logging output is configured using the <code>logging</code> setting.
 Its configuration follows exactly the 
@@ -1427,10 +1477,10 @@ the INFO level:</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.c18c5fb9.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
       
     
   </body>

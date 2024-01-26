@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.5">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
     
     
       
@@ -497,14 +497,20 @@
 
 <h1 id="getting-started">Getting Started</h1>
 <h2 id="installation">Installation</h2>
-<p>Installing <code>zappend</code> into a Python v3.10+ environment:</p>
+<p><code>zappend</code> requires a Python v3.10+ environment. To install the latest released
+version from PyPI:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>zappend
+</code></pre></div>
+<p>To install the latest version for development, clone the
+<a href="https://github.com/bcdev/zappend">repository</a>, and with the repository’s root
+directory as the current working directory execute:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>--editable<span class="w"> </span>.
 </code></pre></div>
 <h2 id="using-the-cli">Using the CLI</h2>
 <p>Get usage help:</p>
 <div class="highlight"><pre><span></span><code>zappend<span class="w"> </span>--help
 </code></pre></div>
-<p>Get <a href="../config/">configuration</a> help: </p>
+<p>Get <a href="../config/">configuration</a> help in Markdown format (json also available):</p>
 <div class="highlight"><pre><span></span><code>zappend<span class="w"> </span>--help-config<span class="w"> </span>md
 </code></pre></div>
 <p>Process list of local slice paths:</p>
@@ -535,7 +541,7 @@
          <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">]),</span> 
         <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
 </code></pre></div>
-<p>Slice datasets can be passed in a number of ways, please refer to the section 
+<p>Slice datasets can be passed in a number of ways; please refer to the section 
 <a href="../guide/#slice-sources"><em>Slice Sources</em></a> in the <a href="../guide/">User Guide</a>.</p>
 
 
@@ -613,10 +619,10 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.c18c5fb9.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
       
     
   </body>
