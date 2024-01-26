@@ -4,10 +4,10 @@
 
 import cProfile
 import io
-import logging
 import pstats
 from typing import Any
 
+from .log import get_log_level
 from .log import logger
 
 
@@ -42,9 +42,9 @@ class Profiler:
             assert profiling_config in (True, False, None)
             enabled = bool(profiling_config)
 
-        self.enabled = enabled
+        self.enabled = enabled and (bool(path) or log_level != "NOTSET")
         self.path = path
-        self.log_level = logging.getLevelNamesMapping().get(log_level, "NOTSET")
+        self.log_level = log_level
         self.keys = keys
         self.restrictions = restrictions
         self._profile: cProfile.Profile | None = None
@@ -64,7 +64,8 @@ class Profiler:
         stats = pstats.Stats(self._profile, stream=results)
         stats.sort_stats(*self.keys).print_stats(*self.restrictions)
         if self.log_level != "NOTSET":
-            logger.log(self.log_level, "Profiling result:\n" + results.getvalue())
+            log_level = get_log_level(self.log_level)
+            logger.log(log_level, "Profiling result:\n" + results.getvalue())
         if self.path:
             with open(self.path, "w") as f:
                 f.write(results.getvalue())

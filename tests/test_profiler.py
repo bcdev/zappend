@@ -26,17 +26,22 @@ class ProfilerTest(unittest.TestCase):
         with profiler:
             pass
 
+        profiler = Profiler({"log_level": "NOTSET"})
+        self.assertEqual(False, profiler.enabled)
+        with profiler:
+            pass
+
     def test_enabled(self):
         profiler = Profiler(True)
         self.assertEqual(True, profiler.enabled)
-        self.assertEqual("INFO", logging.getLevelName(profiler.log_level))
+        self.assertEqual("INFO", profiler.log_level)
         self.assertEqual(None, profiler.path)
         with profiler:
             pass
 
         profiler = Profiler("prof.out")
         self.assertEqual(True, profiler.enabled)
-        self.assertEqual("INFO", logging.getLevelName(profiler.log_level))
+        self.assertEqual("INFO", profiler.log_level)
         self.assertEqual("prof.out", profiler.path)
         try:
             with profiler:
@@ -46,9 +51,9 @@ class ProfilerTest(unittest.TestCase):
             if os.path.exists("prof.out"):
                 os.remove("prof.out")
 
-        profiler = Profiler({"path": "prof.out"})
+        profiler = Profiler({"path": "prof.out", "log_level": "DEBUG"})
         self.assertEqual(True, profiler.enabled)
-        self.assertEqual("INFO", logging.getLevelName(profiler.log_level))
+        self.assertEqual("DEBUG", profiler.log_level)
         self.assertEqual("prof.out", profiler.path)
         try:
             with profiler:
