@@ -1,9 +1,6 @@
-## Version 0.2.1 (in development)
+## Version 0.3.0 (in development)
 
 ### Enhancements
-
-* It is now possible to configure runtime profiling of the `zappend`
-  processing using the new configuration setting `profiling`. [#39]
 
 * Allow for passing custom slice sources via the configuration.
   The new configuration setting `slice_source` is the name of a class 
@@ -12,6 +9,11 @@
   the zappend function or CLI command will be interpreted as parameter(s) 
   passed to the constructor of the specified class or the factory function. 
   [#27]
+
+* It is now possible to configure runtime profiling of the `zappend`
+  processing using the new configuration setting `profiling`. [#39]
+
+* Added `--version` option to CLI. [#42]
 
 * Using `sizes` instead of `dims` attribute of `xarray.Dataset` in 
   implementation code. [#25] 

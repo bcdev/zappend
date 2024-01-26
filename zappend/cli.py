@@ -29,6 +29,11 @@ import click
     help="Run the tool without creating, changing," " or deleting any files.",
 )
 @click.option(
+    "--version",
+    is_flag=True,
+    help="Show version and exit.",
+)
+@click.option(
     "--help-config",
     metavar="json|md",
     type=click.Choice(["json", "md"]),
@@ -39,6 +44,7 @@ def zappend(
     config: tuple[str, ...],
     target: str | None,
     dry_run: bool,
+    version: bool,
     help_config: str | None,
 ):
     """Create or update a Zarr datacube TARGET from slice datasets SLICES.
@@ -49,6 +55,10 @@ def zappend(
     be rolled back, in case the append operation fails. This ensures integrity of the
     target data cube given by TARGET or in CONFIG.
     """
+    if version:
+        from zappend import __version__
+
+        return click.echo(f"{__version__}")
 
     if help_config:
         return _show_config_help(help_config)
@@ -70,7 +80,7 @@ def _show_config_help(config_help_format):
     from zappend.config import get_config_schema
 
     text = get_config_schema(format=config_help_format)
-    print(text + "\n")
+    click.echo(text + "\n")
 
 
 if __name__ == "__main__":
