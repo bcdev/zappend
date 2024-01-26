@@ -64,6 +64,14 @@ mkdocs serve
 mkdocs gh-deploy
 ```
 
+If the configuration JSON schema in `zappend/config/schema.py` changes
+then the configuration reference documentation `docs/config.md` must be 
+regenerated:
+
+```bash
+zappend --help-config md > docs/config.md
+```
+
 ## License
 
 `zappend` is open source made available under the terms and conditions of the 
