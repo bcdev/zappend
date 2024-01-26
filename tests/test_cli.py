@@ -31,7 +31,7 @@ class CliTest(unittest.TestCase):
         # noinspection PyTypeChecker
         result = runner.invoke(zappend, ["--help-config", "md"])
         self.assertEqual(0, result.exit_code)
-        self.assertIn("### `target_dir`", result.output)
+        self.assertIn("## `target_dir`", result.output)
 
     def test_no_slices(self):
         runner = CliRunner()

@@ -9,6 +9,7 @@ from .defaults import DEFAULT_APPEND_DIM
 from .defaults import DEFAULT_SLICE_POLLING_INTERVAL
 from .defaults import DEFAULT_SLICE_POLLING_TIMEOUT
 from .defaults import DEFAULT_ZARR_VERSION
+from .markdown import schema_to_markdown
 
 
 SLICE_POLLING_SCHEMA = {
@@ -200,8 +201,8 @@ PROFILING_SCHEMA = {
         {
             "type": "boolean",
             "description": (
-                "If set, profiling is enabled and output is logged using level INFO."
-                " Otherwise, profiling is disabled."
+                "If set, profiling is enabled and output is logged using"
+                ' level `"INFO"`. Otherwise, profiling is disabled.'
             ),
         },
         {
@@ -212,6 +213,7 @@ PROFILING_SCHEMA = {
             ),
         },
         {
+            "description": "Detailed profiling configuration.",
             "type": "object",
             "properties": {
                 "enabled": {
@@ -223,7 +225,7 @@ PROFILING_SCHEMA = {
                     "type": "string",
                 },
                 "log_level": {
-                    "description": "Log level. Use 'NOTSET' to disable logging.",
+                    "description": 'Log level. Use `"NOTSET"` to disable logging.',
                     "default": "INFO",
                     "enum": LOG_LEVELS,
                 },
@@ -266,9 +268,24 @@ PROFILING_SCHEMA = {
                     "type": "array",
                     "items": {
                         "oneOf": [
-                            {"type": "integer", "minimum": 1},
-                            {"type": "number", "minimum": 0.0, "maximum": 1.0},
-                            {"type": "string"},
+                            {
+                                "description": "Select a count of lines.",
+                                "type": "integer",
+                                "minimum": 1,
+                            },
+                            {
+                                "description": "Select a percentage of lines.",
+                                "type": "number",
+                                "minimum": 0.0,
+                                "maximum": 1.0,
+                            },
+                            {
+                                "description": (
+                                    "Pattern-match the standard name"
+                                    " that is printed."
+                                ),
+                                "type": "string",
+                            },
                         ]
                     },
                 },
@@ -424,7 +441,7 @@ LOGGING_SCHEMA = {
 }
 
 CONFIG_SCHEMA_V1 = {
-    "description": "Configuration for the `zappend` tool",
+    "title": "Configuration Reference",
     "type": "object",
     "properties": dict(
         version={
@@ -434,7 +451,46 @@ CONFIG_SCHEMA_V1 = {
                 " preserving backwards compatibility."
             ),
             "const": 1,
+            "default": 1,
         },
+        zarr_version={
+            "description": "The Zarr version to be used.",
+            "const": DEFAULT_ZARR_VERSION,
+            "default": DEFAULT_ZARR_VERSION,
+        },
+        fixed_dims={
+            "description": (
+                "Specifies the fixed dimensions of the"
+                " target dataset. Keys are dimension names, values"
+                " are dimension sizes."
+            ),
+            "type": "object",
+            "additionalProperties": {"type": "integer", "minimum": 1},
+        },
+        append_dim={
+            "description": "The name of the variadic append dimension.",
+            "type": "string",
+            "minLength": 1,
+            "default": DEFAULT_APPEND_DIM,
+        },
+        included_variables={
+            "description": (
+                "Specifies the names of variables to be included in"
+                " the target dataset. Defaults to all variables"
+                " found in the first contributing dataset."
+            ),
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+        },
+        excluded_variables={
+            "description": (
+                "Specifies the names of individual variables"
+                " to be excluded  from all contributing datasets."
+            ),
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+        },
+        variables=VARIABLES_SCHEMA,
         target_dir={
             "description": (
                 "The URI or local path of the target Zarr dataset."
@@ -482,6 +538,16 @@ CONFIG_SCHEMA_V1 = {
             "additionalProperties": True,
         },
         slice_polling=SLICE_POLLING_SCHEMA,
+        persist_mem_slices={
+            "description": (
+                "Persist in-memory slices and reopen from a temporary Zarr before"
+                " appending them to the target dataset."
+                " This can prevent expensive re-computation of dask chunks at the"
+                " cost of additional i/o."
+            ),
+            "type": "boolean",
+            "default": False,
+        },
         temp_dir={
             "description": (
                 "The URI or local path of the directory that"
@@ -498,53 +564,6 @@ CONFIG_SCHEMA_V1 = {
             "type": "object",
             "additionalProperties": True,
         },
-        zarr_version={
-            "description": "The Zarr version to be used.",
-            "const": DEFAULT_ZARR_VERSION,
-        },
-        fixed_dims={
-            "description": (
-                "Specifies the fixed dimensions of the"
-                " target dataset. Keys are dimension names, values"
-                " are dimension sizes."
-            ),
-            "type": "object",
-            "additionalProperties": {"type": "integer", "minimum": 1},
-        },
-        append_dim={
-            "description": "The name of the variadic append dimension.",
-            "type": "string",
-            "minLength": 1,
-            "default": DEFAULT_APPEND_DIM,
-        },
-        variables=VARIABLES_SCHEMA,
-        included_variables={
-            "description": (
-                "Specifies the names of variables to be included in"
-                " the target dataset. Defaults to all variables"
-                " found in the first contributing dataset."
-            ),
-            "type": "array",
-            "items": {"type": "string", "minLength": 1},
-        },
-        excluded_variables={
-            "description": (
-                "Specifies the names of individual variables"
-                " to be excluded  from all contributing datasets."
-            ),
-            "type": "array",
-            "items": {"type": "string", "minLength": 1},
-        },
-        persist_mem_slices={
-            "description": (
-                "Persist in-memory slices and reopen from a temporary Zarr before"
-                " appending them to the target dataset."
-                " This can prevent expensive re-computation of dask chunks at the"
-                " cost of additional i/o."
-            ),
-            "type": "boolean",
-            "default": False,
-        },
         disable_rollback={
             "description": (
                 "Disable rolling back dataset changes on failure."
@@ -554,16 +573,16 @@ CONFIG_SCHEMA_V1 = {
             "type": "boolean",
             "default": False,
         },
+        profiling=PROFILING_SCHEMA,
+        logging=LOGGING_SCHEMA,
         dry_run={
             "description": (
-                "If 'true', log only what would have been done,"
+                "If `true`, log only what would have been done,"
                 " but don't apply any changes."
             ),
             "type": "boolean",
             "default": False,
         },
-        profiling=PROFILING_SCHEMA,
-        logging=LOGGING_SCHEMA,
     ),
     "additionalProperties": False,
 }
@@ -582,101 +601,6 @@ def get_config_schema(
     if format == "json":
         return json.dumps(CONFIG_SCHEMA_V1, indent=2)
     elif format == "md":
-        lines = []
-        _schema_to_md(CONFIG_SCHEMA_V1, [], lines)
-        return "\n".join(lines)
+        return schema_to_markdown(CONFIG_SCHEMA_V1)
     else:
         return dict(CONFIG_SCHEMA_V1)
-
-
-def _schema_to_md(
-    schema: dict[str, Any],
-    path: list[str],
-    lines: list[str],
-    type_prefix: str | None = None,
-):
-    undefined = object()
-    is_root = len(path) == 0
-
-    _type = schema.get("type")
-    if _type and not is_root:
-        if isinstance(_type, str):
-            _type = [_type]
-        value = " | ".join([f"_{name}_" for name in _type])
-        lines.append(f"{type_prefix or 'Type'} {value}.")
-
-    description = schema.get("description")
-    if description:
-        prefix = "## " if is_root else ""
-        lines.append(prefix + description)
-
-    one_of = schema.get("oneOf")
-    if one_of:
-        lines.append(f"Must be one of the following:")
-        for sub_schema in one_of:
-            sub_lines = []
-            _schema_to_md(sub_schema, path, sub_lines)
-            if sub_lines:
-                lines.append("* " + sub_lines[0])
-                for sub_line in sub_lines[1:]:
-                    lines.append("  " + sub_line)
-
-    const = schema.get("const", undefined)
-    if const is not undefined:
-        value = json.dumps(const)
-        lines.append(f"Its value is `{value}`.")
-
-    default = schema.get("default", undefined)
-    if default is not undefined:
-        value = json.dumps(default)
-        lines.append(f"Defaults to `{value}`.")
-
-    enum = schema.get("enum")
-    if enum:
-        values = ", ".join([json.dumps(v) for v in enum])
-        lines.append(f"Must be one of `{values}`.")
-
-    required = schema.get("required")
-    if required:
-        names = [f"`{name}`" for name in required]
-        if len(names) > 1:
-            lines.append(f"The keys {', '.join(names)} are required.")
-        else:
-            lines.append(f"The key {names[0]} is required.")
-
-    properties = schema.get("properties")
-    if properties:
-        lines.append("")
-        for name, property_schema in properties.items():
-            if is_root:
-                lines.append("")
-                lines.append(f"### `{name}`")
-                lines.append("")
-                _schema_to_md(property_schema, path + [name], lines)
-            else:
-                lines.append(f"* `{name}`:")
-                sub_lines = []
-                _schema_to_md(property_schema, path + [name], sub_lines)
-                for sub_line in sub_lines:
-                    lines.append("  " + sub_line)
-        lines.append("")
-
-    additional_properties = schema.get("additionalProperties")
-    if isinstance(additional_properties, dict):
-        lines.append("")
-        _schema_to_md(
-            additional_properties,
-            path,
-            lines,
-            type_prefix="The object's values are of type",
-        )
-
-    items = schema.get("items")
-    if isinstance(items, dict):
-        lines.append("")
-        _schema_to_md(
-            items,
-            path,
-            lines,
-            type_prefix="The array's items are of type",
-        )
