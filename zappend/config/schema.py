@@ -192,10 +192,98 @@ LOG_HDL_CLS_URL = "https://docs.python.org/3/library/logging.handlers.html"
 
 LOG_LEVELS = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"]
 
+PROFILING_SCHEMA = {
+    "description": (
+        "Profiling configuration. Allows for runtime profiling of the" " processing."
+    ),
+    "oneOf": [
+        {
+            "type": "boolean",
+            "description": (
+                "If set, profiling is enabled and output is logged using level INFO."
+                " Otherwise, profiling is disabled."
+            ),
+        },
+        {
+            "type": "string",
+            "description": (
+                "Profile path. Enables profiling and writes a profiling"
+                " report to given path."
+            ),
+        },
+        {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "description": "Enable or disable profiling.",
+                    "type": "boolean",
+                },
+                "path": {
+                    "description": "Local file path for profiling output.",
+                    "type": "string",
+                },
+                "log_level": {
+                    "description": "Log level. Use 'NOTSET' to disable logging.",
+                    "default": "INFO",
+                    "enum": LOG_LEVELS,
+                },
+                "keys": {
+                    "description": (
+                        "Sort output according to the supplied column names."
+                        " Refer to [Stats.sort_stats(*keys)]"
+                        "(https://docs.python.org/3/library/profile.html"
+                        "#pstats.Stats.sort_stats)."
+                    ),
+                    "type": "array",
+                    "items": {
+                        "enum": [
+                            "calls",
+                            "cumulative",
+                            "cumtime",
+                            "file",
+                            "filename",
+                            "module",
+                            "ncalls",
+                            "pcalls",
+                            "line",
+                            "name",
+                            "nfl",
+                            "stdname",
+                            "time",
+                            "tottime",
+                        ]
+                    },
+                },
+                "restrictions": {
+                    "description": (
+                        "Used to limit the list down to the significant entries"
+                        " in the profiling report."
+                        " Refer to [Stats.print_stats(*restrictions)]"
+                        "(https://docs.python.org/3/library/profile.html"
+                        "#pstats.Stats.print_stats)."
+                    ),
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {"type": "integer", "minimum": 1},
+                            {"type": "number", "minimum": 0.0, "maximum": 1.0},
+                            {"type": "string"},
+                        ]
+                    },
+                },
+            },
+            "additionalProperties": False,
+        },
+    ],
+}
+
+
 LOGGING_SCHEMA = {
-    "description": f"Logging configuration. For details refer to the"
-    f" [dictionary schema]({LOG_REF_URL})"
-    f" of the Python module `logging.config`.",
+    "description": (
+        f"Logging configuration. For details refer to the"
+        f" [dictionary schema]({LOG_REF_URL})"
+        f" of the Python module `logging.config`."
+    ),
     "type": "object",
     "properties": dict(
         version={"description": "Logging schema version.", "const": 1},
@@ -473,6 +561,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "boolean",
             "default": False,
         },
+        profiling=PROFILING_SCHEMA,
         logging=LOGGING_SCHEMA,
     ),
     "additionalProperties": False,

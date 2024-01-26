@@ -14,6 +14,7 @@ from .fsutil.transaction import Transaction
 from .fsutil.transaction import RollbackCallback
 from .log import logger
 from .log import configure_logging
+from .profiler import Profiler
 from .rollbackstore import RollbackStore
 from .slice import SliceObj
 from .slice import open_slice_source
@@ -38,6 +39,7 @@ class Processor:
         config.update({k: v for k, v in kwargs.items() if v is not None})
         validate_config(config)
         configure_logging(config.get("logging"))
+        self._profiler = Profiler(config.get("profiling"))
         self._config = config
 
     def process_slices(self, slices: Iterable[SliceObj]):
@@ -47,8 +49,9 @@ class Processor:
         Args:
             slices: Slice objects.
         """
-        for slice_index, slice_obj in enumerate(slices):
-            self.process_slice(slice_obj, slice_index=slice_index)
+        with self._profiler:
+            for slice_index, slice_obj in enumerate(slices):
+                self.process_slice(slice_obj, slice_index=slice_index)
 
     def process_slice(self, slice_obj: SliceObj, slice_index: int = 0):
         """Process a single slice object *slice_obj*.
