@@ -5,6 +5,7 @@
 import unittest
 from click.testing import CliRunner
 
+from zappend import __version__
 from zappend.cli import zappend
 from zappend.fsutil.fileobj import FileObj
 from .helpers import clear_memory_fs
@@ -14,6 +15,13 @@ from .helpers import make_test_dataset
 class CliTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
+
+    def test_version(self):
+        runner = CliRunner()
+        # noinspection PyTypeChecker
+        result = runner.invoke(zappend, ["--version"])
+        self.assertEqual(0, result.exit_code)
+        self.assertEqual(f"{__version__}\n", result.output)
 
     def test_help(self):
         runner = CliRunner()

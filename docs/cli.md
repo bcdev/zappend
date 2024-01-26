@@ -22,7 +22,7 @@ Options:
                          'target_dir' configuration field.
   --dry-run              Run the tool without creating, changing, or deleting
                          any files.
-  --profiling TEXT       Path for profiling output. Switches on profiling.  
+  --version              Show version and exit.
   --help-config json|md  Show configuration help and exit.
   --help                 Show this message and exit.
 ```
