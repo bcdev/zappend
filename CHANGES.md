@@ -1,4 +1,4 @@
-## Version 0.3.0 (in development)
+## Version 0.3.0
 
 ### Enhancements
 
