@@ -1,4 +1,4 @@
-## Version 0.3.0
+## Version 0.3.0 (from 2024-01-26)
 
 ### Enhancements
 
@@ -28,7 +28,7 @@
 * Now logging ignored encodings on level DEBUG instead of WARNING because they 
   occur very likely when processing NetCDF files.
 
-## Version 0.2.0 (from 2024-18-01)
+## Version 0.2.0 (from 2024-01-18)
 
 ### Enhancements
 
