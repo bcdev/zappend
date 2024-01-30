@@ -1,5 +1,10 @@
 ## Version 0.3.1 (in development)
 
+### Fixes
+
+* Fixed an issue where an absolute lock file path was computed if the target 
+  Zarr path was relative in the local filesystem, and had no parent directory.
+  [#45]
 
 ## Version 0.3.0 (from 2024-01-26)
 
