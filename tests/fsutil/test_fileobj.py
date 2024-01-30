@@ -80,7 +80,7 @@ class FileObjTest(unittest.TestCase):
         self.assertEqual(None, zarr_dir.storage_options)
         self.assertIsInstance(zarr_dir.fs, fsspec.AbstractFileSystem)
         self.assertEqual("file", to_protocol(zarr_dir.fs))
-        self.assertEqual(os.path.abspath("test.zarr").replace("\\", "/"), zarr_dir.path)
+        self.assertEqual(to_abs("test.zarr"), zarr_dir.path)
 
     def test_local_protocol(self):
         zarr_dir = FileObj("test.zarr")
@@ -88,7 +88,7 @@ class FileObjTest(unittest.TestCase):
         self.assertEqual(None, zarr_dir.storage_options)
         self.assertIsInstance(zarr_dir.fs, fsspec.AbstractFileSystem)
         self.assertEqual("file", to_protocol(zarr_dir.fs))
-        self.assertEqual(os.path.abspath("test.zarr").replace("\\", "/"), zarr_dir.path)
+        self.assertEqual(to_abs("test.zarr"), zarr_dir.path)
 
     def test_s3_protocol(self):
         zarr_dir = FileObj("s3://eo-data/test.zarr")
@@ -131,7 +131,7 @@ class FileObjTest(unittest.TestCase):
             "eo-data/test.zarr/chl/.zarray",
         )
 
-    def test_parent(self):
+    def test_parent_with_uri(self):
         file = FileObj("s3://eo-data/test.zarr/.zmetadata")
         fs = file.fs
 
@@ -157,15 +157,26 @@ class FileObjTest(unittest.TestCase):
             # noinspection PyUnusedLocal
             parent = parent.parent
 
+    def test_parent_with_local(self):
         # local filesystem
         file = FileObj("test.zarr/chl/.zarray")
         fs = file.fs
         parent = file.parent
         self.assertIsInstance(parent, FileObj)
         self.assertEqual("test.zarr/chl", parent.uri)
-        self.assertEqual(
-            os.path.abspath("test.zarr/chl").replace("\\", "/"), parent.path
-        )
+        self.assertEqual(to_abs("test.zarr/chl"), parent.path)
+        self.assertIs(fs, parent.fs)
+
+        parent = parent.parent
+        self.assertIsInstance(parent, FileObj)
+        self.assertEqual("test.zarr", parent.uri)
+        self.assertEqual(to_abs("test.zarr"), parent.path)
+        self.assertIs(fs, parent.fs)
+
+        parent = parent.parent
+        self.assertIsInstance(parent, FileObj)
+        self.assertEqual("", parent.uri)
+        self.assertEqual(to_abs(""), parent.path)
         self.assertIs(fs, parent.fs)
 
     def test_parent_with_chained_uri(self):
@@ -183,12 +194,10 @@ class FileObjTest(unittest.TestCase):
         parent = file.parent
         self.assertIsInstance(parent, FileObj)
         self.assertEqual("test.zarr/chl::/eo-data/test.zarr", parent.uri)
-        self.assertEqual(
-            os.path.abspath("test.zarr/chl").replace("\\", "/"), parent.path
-        )
+        self.assertEqual(to_abs("test.zarr/chl"), parent.path)
         self.assertIs(fs, parent.fs)
 
-    def test_for_path(self):
+    def test_for_path_with_simple_uri(self):
         root = FileObj("s3://eo-data/test.zarr")
 
         derived = root.for_path("")
@@ -208,6 +217,11 @@ class FileObjTest(unittest.TestCase):
             root, derived, "dir://chl/.zarray::file:/eo-data/test.zarr", "chl/.zarray"
         )
 
+    def test_for_path_with_empty_parent(self):
+        root = FileObj("test.zarr").parent
+        derived = root.for_path("test.zarr")
+        self.assert_derived_ok(root, derived, "test.zarr", to_abs("test.zarr"))
+
     def assert_derived_ok(
         self, root: FileObj, derived: FileObj, expected_uri: str, expected_path: str
     ):
@@ -217,13 +231,13 @@ class FileObjTest(unittest.TestCase):
         self.assertIs(root.storage_options, derived.storage_options)
 
     # noinspection PyMethodMayBeStatic
-    def test_for_path_with_abs_path(self):
+    def test_raises_for_path_with_abs_path(self):
         fo = FileObj("file:/eo-data/test.zarr")
         with pytest.raises(ValueError, match="rel_path must be relative"):
             fo.for_path("/test-2.zarr")
 
     # noinspection PyMethodMayBeStatic
-    def test_for_path_with_wrong_type(self):
+    def test_raises_for_path_with_wrong_type(self):
         fo = FileObj("file:/eo-data/test.zarr")
         with pytest.raises(TypeError, match="rel_path must have type str"):
             # noinspection PyTypeChecker
@@ -282,3 +296,7 @@ def to_protocol(fs: fsspec.AbstractFileSystem):
     if isinstance(fs.protocol, tuple):
         return fs.protocol[0]
     return fs.protocol
+
+
+def to_abs(path: str) -> str:
+    return os.path.abspath(path).replace("\\", "/")

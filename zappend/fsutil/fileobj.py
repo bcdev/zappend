@@ -7,7 +7,7 @@ from typing import Any, Literal
 
 import fsspec
 
-from .path import split_filename
+from .path import split_parent
 
 
 # Note, we could make FileObj an ABC and then introduce concrete
@@ -106,7 +106,7 @@ class FileObj:
     @property
     def filename(self) -> str:
         """The filename part of the URI."""
-        return split_filename(self.path)[1]
+        return split_parent(self.path)[1]
 
     @property
     def parent(self) -> "FileObj":
@@ -115,21 +115,21 @@ class FileObj:
             # If uri is a chained URL, use path of first component
             first_uri, rest = self.uri.split("::", maxsplit=1)
             protocol, path = fsspec.core.split_protocol(first_uri)
-            parent_path, _ = split_filename(path)
+            parent_path, _ = split_parent(path)
             if protocol:
                 new_uri = f"{protocol}://{parent_path}::{rest}"
             else:
                 new_uri = f"{parent_path}::{rest}"
         else:
             protocol, path = fsspec.core.split_protocol(self.uri)
-            parent_path, _ = split_filename(path)
+            parent_path, _ = split_parent(path)
             if protocol:
                 new_uri = f"{protocol}://{parent_path}"
             else:
                 new_uri = parent_path
 
         if self._path is not None:
-            new_path, _ = split_filename(self._path)
+            new_path, _ = split_parent(self._path)
         else:
             # it is ok, we are still unresolved
             new_path = None
@@ -171,6 +171,10 @@ class FileObj:
             # If uri is a chained URL, add path to first component
             first_uri, rest = self.uri.split("::", maxsplit=1)
             new_uri = f"{first_uri}/{rel_path}::{rest}"
+        elif not self.uri:
+            new_uri = rel_path
+        elif self.uri.endswith("/"):
+            new_uri = self.uri + rel_path
         else:
             new_uri = f"{self.uri}/{rel_path}"
 

@@ -2,6 +2,7 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 import os
+import shutil
 import unittest
 
 import xarray as xr
@@ -20,7 +21,7 @@ class ApiTest(unittest.TestCase):
         zappend([], target_dir=target_dir)
         self.assertFalse(FileObj(target_dir).exists())
 
-    def test_some_slices(self):
+    def test_some_slices_memory(self):
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset(), make_test_dataset(), make_test_dataset()]
         zappend(slices, target_dir=target_dir)
@@ -29,7 +30,28 @@ class ApiTest(unittest.TestCase):
         self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
         self.assertEqual({"time", "y", "x"}, set(ds.coords))
 
+    def test_some_slices_local(self):
+        target_dir = "target.zarr"
+        slices = [
+            "slice-1.zarr",
+            "slice-2.zarr",
+            "slice-3.zarr",
+        ]
+        for uri in slices:
+            make_test_dataset(uri=uri)
+        try:
+            zappend(slices, target_dir=target_dir)
+            ds = xr.open_zarr(target_dir)
+            self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
+            self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
+            self.assertEqual({"time", "y", "x"}, set(ds.coords))
+        finally:
+            shutil.rmtree(target_dir, ignore_errors=True)
+            for slice_dir in slices:
+                shutil.rmtree(slice_dir, ignore_errors=True)
+
     def test_some_slices_with_profiling(self):
+        target_dir = "memory://target.zarr"
         slices = [
             "memory://slice-1.zarr",
             "memory://slice-2.zarr",
@@ -37,8 +59,6 @@ class ApiTest(unittest.TestCase):
         ]
         for uri in slices:
             make_test_dataset(uri=uri)
-
-        target_dir = "memory://target.zarr"
         try:
             zappend(
                 slices,
