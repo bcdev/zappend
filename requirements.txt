@@ -2,6 +2,7 @@ click
 dask
 fsspec
 jsonschema
+netcdf4
 numpy
 pyyaml
 xarray
