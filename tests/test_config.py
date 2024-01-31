@@ -9,6 +9,7 @@ import fsspec
 import pytest
 import yaml
 
+from zappend.config import exclude_from_config
 from zappend.config import get_config_schema
 from zappend.config import merge_configs
 from zappend.config import normalize_config
@@ -219,6 +220,18 @@ class ConfigNormalizeTest(unittest.TestCase):
             {"a": {"b": 3, "c": 4}},
             merge_configs({"a": {"b": 2, "c": 4}}, {"a": {"b": 3}}),
         )
+
+    def test_exclude_from_config(self):
+        with exclude_from_config({}) as config:
+            self.assertEqual({}, config)
+        with exclude_from_config({"a": 1, "b": 2}) as config:
+            self.assertEqual({"a": 1, "b": 2}, config)
+        with exclude_from_config({}, "a") as config:
+            self.assertEqual({}, config)
+        with exclude_from_config({"a": 1, "b": 2}, "a") as config:
+            self.assertEqual({"b": 2}, config)
+        with exclude_from_config({"a": 1, "b": 2}, "b", "a") as config:
+            self.assertEqual({}, config)
 
     def test_get_config_schema(self):
         schema = get_config_schema()

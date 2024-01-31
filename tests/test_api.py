@@ -6,8 +6,10 @@ import shutil
 import unittest
 
 import xarray as xr
+
+from zappend.api import FileObj
+from zappend.api import SliceSource
 from zappend.api import zappend
-from zappend.fsutil.fileobj import FileObj
 from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
@@ -50,6 +52,27 @@ class ApiTest(unittest.TestCase):
             for slice_dir in slices:
                 shutil.rmtree(slice_dir, ignore_errors=True)
 
+    def test_some_slices_with_class_slice_source(self):
+        target_dir = "memory://target.zarr"
+        slices = [make_test_dataset(), make_test_dataset(), make_test_dataset()]
+        zappend(slices, target_dir=target_dir, slice_source=MySliceSource)
+        ds = xr.open_zarr(target_dir)
+        self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
+        self.assertEqual({"chl"}, set(ds.data_vars))
+        self.assertEqual({"time", "y", "x"}, set(ds.coords))
+
+    def test_some_slices_with_func_slice_source(self):
+        def process_slice(ctx, slice_ds: xr.Dataset) -> SliceSource:
+            return MySliceSource(ctx, slice_ds)
+
+        target_dir = "memory://target.zarr"
+        slices = [make_test_dataset(), make_test_dataset(), make_test_dataset()]
+        zappend(slices, target_dir=target_dir, slice_source=process_slice)
+        ds = xr.open_zarr(target_dir)
+        self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
+        self.assertEqual({"chl"}, set(ds.data_vars))
+        self.assertEqual({"time", "y", "x"}, set(ds.coords))
+
     def test_some_slices_with_profiling(self):
         target_dir = "memory://target.zarr"
         slices = [
@@ -74,3 +97,12 @@ class ApiTest(unittest.TestCase):
         finally:
             if os.path.exists("prof.out"):
                 os.remove("prof.out")
+
+
+class MySliceSource(SliceSource):
+    def __init__(self, ctx, slice_ds):
+        super().__init__(ctx)
+        self.slice_ds = slice_ds
+
+    def get_dataset(self) -> xr.Dataset:
+        return self.slice_ds.drop_vars(["tsm"])

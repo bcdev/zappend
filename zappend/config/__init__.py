@@ -5,6 +5,7 @@
 from .config import ConfigItem
 from .config import ConfigList
 from .config import ConfigLike
+from .config import exclude_from_config
 from .config import merge_configs
 from .config import normalize_config
 from .config import validate_config

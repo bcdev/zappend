@@ -7,6 +7,7 @@ from typing import Iterable
 import xarray as xr
 
 from .config import ConfigLike
+from .config import exclude_from_config
 from .config import normalize_config
 from .config import validate_config
 from .context import Context
@@ -31,20 +32,24 @@ class Processor:
             the aforementioned. If a sequence is used, subsequent configurations
             are incremental to the previous ones.
         kwargs: Additional configuration parameters.
-            Can be used to pass or override configuration values in *config*.
+            Can be used to pass or override configuration values in `config`.
     """
 
     def __init__(self, config: ConfigLike = None, **kwargs):
         config = normalize_config(config)
         config.update({k: v for k, v in kwargs.items() if v is not None})
-        validate_config(config)
+        # Validate value of slice_source later,
+        # it could be a callable instead of a str
+        # See https://github.com/bcdev/zappend/issues/49
+        with exclude_from_config(config, "slice_source") as _config:
+            validate_config(_config)
         configure_logging(config.get("logging"))
         self._profiler = Profiler(config.get("profiling"))
         self._config = config
 
     def process_slices(self, slices: Iterable[SliceObj]):
-        """Process the given *slices*.
-        Passes each slice in *slices* to the `process_slice()` method.
+        """Process the given `slices`.
+        Passes each slice in `slices` to the `process_slice()` method.
 
         Args:
             slices: Slice objects.
