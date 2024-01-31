@@ -28,47 +28,55 @@ ROLLBACK_ACTIONS = "delete_dir", "delete_file", "replace_file"
 
 
 class Transaction:
-    """
-    A filesystem transaction.
+    """A filesystem transaction.
 
     Its main motivation is implementing transactional Zarr dataset
     modifications, because this does not exist for Zarr yet (2024-01), see
     https://github.com/zarr-developers/zarr-python/issues/247.
 
-    The ``Transaction`` class is used to observe changes to a given target
-    directory *target_dir*.
+    The `Transaction` class is used to observe changes to a given target
+    directory `target_dir`.
 
     Changes must be explicitly registered using a "rollback callback"
     function that is provided as the result of using the
-    transaction instance as a context manager:::
+    transaction instance as a context manager:
 
+    ```python
     with Transaction(target_dir, temp_dir) as rollback_cb:
         # emit rollback actions here
+    ```
 
     The following actions are supported:
 
-    * ``rollback_cb("delete_dir", path)`` if a directory has been created.
-    * ``rollback_cb("delete_file", path)`` if a file has been created.
-    * ``rollback_cb("replace_file", path, original_data)`` if a directory has
+    * `rollback_cb("delete_dir", path)` if a directory has been created.
+    * `rollback_cb("delete_file", path)` if a file has been created.
+    * `rollback_cb("replace_file", path, original_data)` if a directory has
         been changed.
 
-    Reported paths must be relative to *target_dir*. The empty path ``""``
-    refers to *target_dir* itself.
+    Reported paths must be relative to `target_dir`. The empty path `""`
+    refers to `target_dir` itself.
 
     When entering the context, a lock file will be created which prevents
-    other transactions to modify *target_dir*. The lock file will be placed
+    other transactions to modify `target_dir`. The lock file will be placed
     next to *target_dir* and its name is the filename of *target_dir* with a
-    ``.lock`` extension. The lock file will be removed on context exit.
+    `.lock` extension. The lock file will be removed on context exit.
 
-    :param target_dir: The target directory that is subject to this
-        transaction. All paths emitted to the rollback callback must be
-        relative to *target_dir*. The directory may or may not exist yet.
-    :param temp_dir: Temporary directory in which a unique subdirectory
-        will be created that will be used to collect
-        rollback data during the transaction. The directory must exist.
-    :param disable_rollback: Disable rollback entirely.
-        No rollback data will be written, however a lock file will still
-        be created for the duration of the transaction.
+    Args:
+        target_dir: The target directory that is subject to this
+            transaction. All paths emitted to the rollback callback must be
+            relative to *target_dir*. The directory may or may not exist yet.
+        temp_dir: Temporary directory in which a unique subdirectory
+            will be created that will be used to collect
+            rollback data during the transaction. The directory must exist.
+        disable_rollback: Disable rollback entirely.
+            No rollback data will be written, however a lock file will still
+            be created for the duration of the transaction.
+    Raises:
+        OSError: If the target is locked or the lock could not be removed.
+        TypeError: If the returned callback is not used appropriately.
+        ValueError: If instances of this class are not used as a context
+            manager, or if the returned callback is not used appropriately,
+            and in some other cases.
     """
 
     def __init__(
@@ -109,7 +117,7 @@ class Transaction:
 
         lock_file = self._lock_file
         if lock_file.exists():
-            raise IOError(f"Target is locked: {lock_file.uri}")
+            raise OSError(f"Target is locked: {lock_file.uri}")
         lock_file.write(self._rollback_dir.uri)
 
         if not self._disable_rollback:
@@ -209,5 +217,5 @@ class Transaction:
     def _assert_entered_ctx(self):
         if not self._entered_ctx:
             raise ValueError(
-                "Transaction instance" " must be used with the 'with' statement"
+                "Transaction instance must be used with the 'with' statement"
             )

@@ -18,7 +18,7 @@ class Profiler:
         Intended to be used as context manager.
         For internal use only; this class does not belong to the API.
 
-        Arguments:
+        Args:
              profiling_config: The validated(!) "profiling" setting from
              the configuration.
         """

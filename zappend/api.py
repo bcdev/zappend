@@ -50,13 +50,13 @@ def zappend(
 
     Args:
         slices: An iterable that yields slice objects. A slice object is
-            either a ``str``, ``xarray.Dataset``, ``SliceSource`` or a factory
-            function that returns a slice object. If ``str`` is used,
+            either a `str`, `xarray.Dataset`, `SliceSource` or a factory
+            function that returns a slice object. If `str` is used,
             it is interpreted as local dataset path or dataset URI.
             If a URI is used, protocol-specific parameters apply, given by
-            configuration parameter ``slice_storage_options``.
+            configuration parameter `slice_storage_options`.
         config: Processor configuration.
-            May be a file path or URI, a ``dict``, ``None``, or a sequence of
+            May be a file path or URI, a `dict`, `None`, or a sequence of
             the aforementioned. If a sequence is used, subsequent configurations
             are incremental to the previous ones.
         kwargs: Additional configuration parameters.
