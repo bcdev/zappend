@@ -141,7 +141,7 @@ class TransactionTest(unittest.TestCase):
         test_root.mkdir()
         rollback_dir = FileObj("memory://rollback")
         with Transaction(test_root, rollback_dir):
-            with pytest.raises(OSError, match="Target is locked: memory:///test.lock"):
+            with pytest.raises(OSError, match="Target is locked: memory://test.lock"):
                 with Transaction(test_root, rollback_dir):
                     pass
 
@@ -239,3 +239,35 @@ class TransactionTest(unittest.TestCase):
         ):
             with Transaction(test_root, rollback_dir) as callback:
                 callback("replace_ifle", "I/am/the/path", b"I/m/the/data")
+
+    def test_paths_for_uri(self):
+        t = Transaction(FileObj("memory:///target.zarr"), FileObj("memory:///temp"))
+        self.assertEqual(FileObj("memory:///target.zarr"), t.target_dir)
+        self.assertEqual(FileObj("memory:///target.zarr.lock"), t.lock_file)
+        self.assertTrue(t.rollback_dir.uri.startswith("memory:///temp/zappend-"))
+        # Note, 2 slashes only!
+        t = Transaction(FileObj("memory://target.zarr"), FileObj("memory://temp"))
+        self.assertEqual(FileObj("memory://target.zarr"), t.target_dir)
+        self.assertEqual(FileObj("memory://target.zarr.lock"), t.lock_file)
+        self.assertTrue(t.rollback_dir.uri.startswith("memory://temp/zappend-"))
+
+    def test_paths_for_local(self):
+        t = Transaction(FileObj("./target.zarr"), FileObj("temp"))
+        self.assertEqual(FileObj("./target.zarr"), t.target_dir)
+        self.assertEqual(FileObj("./target.zarr.lock"), t.lock_file)
+        self.assertTrue(t.rollback_dir.uri.startswith("temp/zappend-"))
+
+        t = Transaction(FileObj("out/target.zarr"), FileObj("out/temp"))
+        self.assertEqual(FileObj("out/target.zarr"), t.target_dir)
+        self.assertEqual(FileObj("out/target.zarr.lock"), t.lock_file)
+        self.assertTrue(t.rollback_dir.uri.startswith("out/temp/zappend-"))
+
+        t = Transaction(FileObj("/out/target.zarr"), FileObj("/out/temp"))
+        self.assertEqual(FileObj("/out/target.zarr"), t.target_dir)
+        self.assertEqual(FileObj("/out/target.zarr.lock"), t.lock_file)
+        self.assertTrue(t.rollback_dir.uri.startswith("/out/temp/zappend-"))
+
+        t = Transaction(FileObj("target.zarr"), FileObj("temp"))
+        self.assertEqual(FileObj("target.zarr"), t.target_dir)
+        self.assertEqual(FileObj("target.zarr.lock"), t.lock_file)
+        self.assertTrue(t.rollback_dir.uri.startswith("temp/zappend-"))

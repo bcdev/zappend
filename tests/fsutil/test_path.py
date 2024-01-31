@@ -7,33 +7,33 @@ import unittest
 import pytest
 
 from zappend.fsutil.path import split_components
-from zappend.fsutil.path import split_filename
+from zappend.fsutil.path import split_parent
 
 
 class SplitFilenameTest(unittest.TestCase):
     # noinspection PyMethodMayBeStatic
     def test_empty_path(self):
         with pytest.raises(ValueError):
-            split_filename("")
+            split_parent("")
 
-    def test_split_filename_1c(self):
-        self.assertEqual(("", ""), split_filename("/"))
-        self.assertEqual(("", "a"), split_filename("a"))
-        self.assertEqual(("", "a"), split_filename("/a"))
-        self.assertEqual(("a", ""), split_filename("a/"))
-        self.assertEqual(("/a", ""), split_filename("/a/"))
+    def test_split_parent_1c(self):
+        self.assertEqual(("/", ""), split_parent("/"))
+        self.assertEqual(("", "a"), split_parent("a"))
+        self.assertEqual(("/", "a"), split_parent("/a"))
+        self.assertEqual(("a", ""), split_parent("a/"))
+        self.assertEqual(("/a", ""), split_parent("/a/"))
 
-    def test_split_filename_2c(self):
-        self.assertEqual(("a", "b"), split_filename("a/b"))
-        self.assertEqual(("/a", "b"), split_filename("/a/b"))
-        self.assertEqual(("a/b", ""), split_filename("a/b/"))
-        self.assertEqual(("/a/b", ""), split_filename("/a/b/"))
+    def test_split_parent_2c(self):
+        self.assertEqual(("a", "b"), split_parent("a/b"))
+        self.assertEqual(("/a", "b"), split_parent("/a/b"))
+        self.assertEqual(("a/b", ""), split_parent("a/b/"))
+        self.assertEqual(("/a/b", ""), split_parent("/a/b/"))
 
-    def test_split_filename_3c(self):
-        self.assertEqual(("a/b", "c"), split_filename("a/b/c"))
-        self.assertEqual(("/a/b", "c"), split_filename("/a/b/c"))
-        self.assertEqual(("a/b/c", ""), split_filename("a/b/c/"))
-        self.assertEqual(("/a/b/c", ""), split_filename("/a/b/c/"))
+    def test_split_parent_3c(self):
+        self.assertEqual(("a/b", "c"), split_parent("a/b/c"))
+        self.assertEqual(("/a/b", "c"), split_parent("/a/b/c"))
+        self.assertEqual(("a/b/c", ""), split_parent("a/b/c/"))
+        self.assertEqual(("/a/b/c", ""), split_parent("/a/b/c/"))
 
 
 class SplitComponentsTest(unittest.TestCase):

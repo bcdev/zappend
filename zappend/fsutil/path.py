@@ -3,13 +3,14 @@
 # https://opensource.org/licenses/MIT.
 
 
-def split_filename(path: str, sep: str = "/") -> tuple[str, str]:
+def split_parent(path: str, sep: str = "/") -> tuple[str, str]:
     if not path:
         raise ValueError("cannot get parent of empty path")
     comps = path.rsplit(sep, maxsplit=1)
     if len(comps) == 1:
         return "", comps[0]
-    return comps[0], comps[1]
+    parent, rest = comps
+    return parent or "/", rest
 
 
 def split_components(path: str, sep: str = "/") -> list[str]:
