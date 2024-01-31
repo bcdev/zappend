@@ -1,5 +1,10 @@
 ## Version 0.3.1 (in development)
 
+### Enhancements
+
+* Added a demo Notebook `exmaples/zappend-demo.ipynb` and linked 
+  it by a binder badge in README.md. [#47] 
+
 ### Fixes
 
 * When `slice_source` was given as class or function and passed  
