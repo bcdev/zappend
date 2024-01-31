@@ -79,7 +79,7 @@ class VariableEncoding:
 class VariableMetadata:
     """Metadata for a dataset variable.
 
-    Arguments:
+    Args:
         dims: The names of the variable's dimensions.
         shape: The sizes of the variable's dimensions. This is a derived value,
             because the dimension size are given by the variable's dataset.
@@ -119,7 +119,7 @@ class DatasetMetadata:
     ):
         """Dataset metadata including metadata for variables.
 
-        Arguments:
+        Args:
             sizes: A mapping from dimension name to dimension size.
             variables: A mapping from variable name to variable metadata.
             attrs: Arbitrary metadata attributes.
@@ -142,7 +142,7 @@ class DatasetMetadata:
         """Assert a given slice dataset's metadata is compatible with this
         (target) dataset's metadata.
 
-        Arguments:
+        Args:
             slice_metadata: The slice dataset metadata.
             append_dim: The name of the append dimension.
 
@@ -191,7 +191,7 @@ class DatasetMetadata:
         Encoding information found in dataset variables is normalized to valid
         Zarr encoding.
 
-        Arguments:
+        Args:
             dataset: A dataset
             config: Optional processor configuration
 

@@ -27,7 +27,7 @@ class Processor:
 
     Args:
         config: Processor configuration.
-            May be a file path or URI, a ``dict``, ``None``, or a sequence of
+            May be a file path or URI, a `dict`, `None`, or a sequence of
             the aforementioned. If a sequence is used, subsequent configurations
             are incremental to the previous ones.
         kwargs: Additional configuration parameters.
@@ -44,7 +44,7 @@ class Processor:
 
     def process_slices(self, slices: Iterable[SliceObj]):
         """Process the given *slices*.
-        Passes each slice in *slices* to the ``process_slice()`` method.
+        Passes each slice in *slices* to the `process_slice()` method.
 
         Args:
             slices: Slice objects.
@@ -57,11 +57,11 @@ class Processor:
         """Process a single slice object *slice_obj*.
 
         A slice object is
-        either a ``str``, ``xarray.Dataset``, ``SliceSource`` or a factory
-        function that returns a slice object. If ``str`` is used,
+        either a `str`, `xarray.Dataset`, `SliceSource`` or a factory
+        function that returns a slice object. If `str` is used,
         it is interpreted as local dataset path or dataset URI.
         If a URI is used, protocol-specific parameters apply, given by
-        configuration parameter ``slice_storage_options``.
+        configuration parameter `slice_storage_options`.
 
         If there is no target yet, just config and slice:
 
