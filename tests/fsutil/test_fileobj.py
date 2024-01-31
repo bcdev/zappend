@@ -299,4 +299,4 @@ def to_protocol(fs: fsspec.AbstractFileSystem):
 
 
 def to_abs(path: str) -> str:
-    return os.path.abspath(path).replace("\\", "/")
+    return os.path.abspath(path).replace(os.path.sep, "/")
