@@ -2,6 +2,7 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
+from contextlib import contextmanager
 import json
 import os.path
 from typing import Any
@@ -135,3 +136,8 @@ def _merge_values(value_1: Any, value_2: Any) -> Any:
     if isinstance(value_1, (list, tuple)) and isinstance(value_2, (list, tuple)):
         return _merge_lists(value_1, value_2)
     return value_2
+
+
+@contextmanager
+def exclude_from_config(config: dict[str, Any], *keys: str) -> dict[str, Any]:
+    yield {k: v for k, v in config.items() if k not in keys}

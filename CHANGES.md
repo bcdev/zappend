@@ -2,6 +2,10 @@
 
 ### Fixes
 
+* When `slice_source` was given as class or function and passed  
+  to the `zappend()` function either as configuration entry or as keyword 
+  argument, a `ValidationError` was accidentally raised. [#49]
+
 * Fixed an issue where an absolute lock file path was computed if the target 
   Zarr path was relative in the local filesystem, and had no parent directory.
   [#45]
