@@ -2,10 +2,12 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from contextlib import contextmanager
+from typing import Any
+import contextlib
+import io
 import json
 import os.path
-from typing import Any
+import string
 
 import jsonschema
 import jsonschema.exceptions
@@ -91,10 +93,13 @@ def load_config(config_file: FileObj) -> dict[str, Any]:
     logger.info(f"Reading configuration {config_file.uri}")
     _, ext = os.path.splitext(config_file.path)
     with config_file.fs.open(config_file.path, "rt") as f:
-        if ext in yaml_extensions:
-            config = yaml.safe_load(f)
-        else:
-            config = json.load(f)
+        source = f.read()
+    source = string.Template(source).safe_substitute(os.environ)
+    stream = io.StringIO(source)
+    if ext in yaml_extensions:
+        config = yaml.safe_load(stream)
+    else:
+        config = json.load(stream)
     if not isinstance(config, dict):
         raise TypeError(
             f"Invalid configuration:" f" {config_file.uri}: object expected"
@@ -138,6 +143,6 @@ def _merge_values(value_1: Any, value_2: Any) -> Any:
     return value_2
 
 
-@contextmanager
+@contextlib.contextmanager
 def exclude_from_config(config: dict[str, Any], *keys: str) -> dict[str, Any]:
     yield {k: v for k, v in config.items() if k not in keys}

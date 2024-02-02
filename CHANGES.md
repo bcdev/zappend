@@ -2,6 +2,9 @@
 
 ### Enhancements
 
+* It is now possible to reference environment variables
+  in configuration files using the syntax `${ENV_VAR}`. [#36]
+
 * Added a demo Notebook `exmaples/zappend-demo.ipynb` and linked 
   it by a binder badge in README.md. [#47] 
 
