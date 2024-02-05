@@ -50,6 +50,10 @@ zappend -t output/mycube.zarr -c config.yaml inputs/*.nc
 If multiple configuration files are passed, they will be merged into one by
 incrementally updating the first by subsequent ones. 
 
+!!! info "Environment Variables"
+    It is possible to include the values of environment variables in JSON or YAML 
+    configuration files using the syntax `${ENV_VAR}` or just `$ENV_VAR`.
+
 You can pass configuration settings to the `zappend` Python function with 
 the optional `config` keyword argument. Other keyword arguments are 
 interpreted as individual configuration settings and will be merged into the 

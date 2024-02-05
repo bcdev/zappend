@@ -3,6 +3,7 @@
 # https://opensource.org/licenses/MIT.
 
 import json
+import os
 import unittest
 
 import fsspec
@@ -82,6 +83,40 @@ class ConfigNormalizeTest(unittest.TestCase):
         with fsspec.open(uri, "w") as f:
             f.write(yaml.dump(config))
         self.assertEqual(config, normalize_config(uri))
+
+    def test_interpolate_env_vars_json(self):
+        uri = "memory://config.json"
+        config = {
+            "slice_storage_options": {
+                "key": "${_TEST_S3_KEY}",
+                "secret": "$_TEST_S3_SECRET",
+            }
+        }
+        with fsspec.open(uri, "wt") as f:
+            f.write(json.dumps(config))
+        os.environ["_TEST_S3_KEY"] = "abc"
+        os.environ["_TEST_S3_SECRET"] = "123"
+        self.assertEqual(
+            {"slice_storage_options": {"key": "abc", "secret": "123"}},
+            normalize_config(uri),
+        )
+
+    def test_interpolate_env_vars_yaml(self):
+        uri = "memory://config.yaml"
+        config = {
+            "slice_storage_options": {
+                "key": "${_TEST_S3_KEY}",
+                "secret": "$_TEST_S3_SECRET",
+            }
+        }
+        with fsspec.open(uri, "w") as f:
+            f.write(yaml.dump(config))
+        os.environ["_TEST_S3_KEY"] = "abc"
+        os.environ["_TEST_S3_SECRET"] = "123"
+        self.assertEqual(
+            {"slice_storage_options": {"key": "abc", "secret": 123}},
+            normalize_config(uri),
+        )
 
     def test_normalize_file_obj(self):
         file_obj = FileObj("memory://config.yaml")
