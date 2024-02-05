@@ -5,8 +5,9 @@
 import unittest
 
 import pytest
+import numpy as np
 import xarray as xr
-from zappend.api import zappend
+
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.metadata import DatasetMetadata
@@ -37,20 +38,32 @@ class ContextTest(unittest.TestCase):
     def test_append_dim(self):
         ctx = Context({"target_dir": "memory://target.zarr"})
         self.assertEqual("time", ctx.append_dim_name)
-
         ctx = Context({"target_dir": "memory://target.zarr", "append_dim": "depth"})
         self.assertEqual("depth", ctx.append_dim_name)
+
+    def test_append_step(self):
+        make_test_dataset(uri="memory://target.zarr")
+        ctx = Context({"target_dir": "memory://target.zarr"})
+        self.assertEqual(None, ctx.append_step_size)
+        ctx = Context({"target_dir": "memory://target.zarr", "append_step": "1d"})
+        self.assertEqual("1d", ctx.append_step_size)
+
+    def test_last_append_label(self):
+        make_test_dataset(uri="memory://target.zarr")
+        ctx = Context({"target_dir": "memory://target.zarr"})
+        self.assertEqual(None, ctx.last_append_label)
+        ctx = Context({"target_dir": "memory://TARGET.zarr", "append_step": "1d"})
+        self.assertEqual(None, ctx.last_append_label)
+        ctx = Context({"target_dir": "memory://target.zarr", "append_step": "1d"})
+        self.assertEqual(np.datetime64("2024-01-03"), ctx.last_append_label)
 
     def test_slice_polling(self):
         ctx = Context({"target_dir": "memory://target.zarr"})
         self.assertEqual((None, None), ctx.slice_polling)
-
         ctx = Context({"target_dir": "memory://target.zarr", "slice_polling": False})
         self.assertEqual((None, None), ctx.slice_polling)
-
         ctx = Context({"target_dir": "memory://target.zarr", "slice_polling": True})
         self.assertEqual((2, 60), ctx.slice_polling)
-
         ctx = Context(
             {
                 "target_dir": "memory://target.zarr",

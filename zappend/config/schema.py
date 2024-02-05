@@ -6,6 +6,7 @@ import json
 from typing import Any, Literal
 
 from .defaults import DEFAULT_APPEND_DIM
+from .defaults import DEFAULT_APPEND_STEP
 from .defaults import DEFAULT_SLICE_POLLING_INTERVAL
 from .defaults import DEFAULT_SLICE_POLLING_TIMEOUT
 from .defaults import DEFAULT_ZARR_VERSION
@@ -472,6 +473,31 @@ CONFIG_SCHEMA_V1 = {
             "type": "string",
             "minLength": 1,
             "default": DEFAULT_APPEND_DIM,
+        },
+        append_step={
+            "description": (
+                "If set, enforces a step size in the append dimension between two"
+                " slices or just enforces a direction."
+            ),
+            "oneOf": [
+                {
+                    "description": "Arbitrary step size or not applicable.",
+                    "const": None,
+                },
+                {"description": "Monotonically increasing.", "const": "+"},
+                {"description": "Monotonically decreasing.", "const": "-"},
+                {
+                    "description": "A time delta value.",
+                    "type": "string",
+                    "not": {"const": ""},
+                },
+                {
+                    "description": "A numerical delta value.",
+                    "type": "number",
+                    "not": {"const": 0},
+                },
+            ],
+            "default": DEFAULT_APPEND_STEP,
         },
         included_variables={
             "description": (

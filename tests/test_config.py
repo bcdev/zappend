@@ -233,6 +233,8 @@ class ConfigNormalizeTest(unittest.TestCase):
         with exclude_from_config({"a": 1, "b": 2}, "b", "a") as config:
             self.assertEqual({}, config)
 
+
+class ConfigSchemaTest(unittest.TestCase):
     def test_get_config_schema(self):
         schema = get_config_schema()
         self.assertIn("properties", schema)
@@ -240,6 +242,7 @@ class ConfigNormalizeTest(unittest.TestCase):
         self.assertEqual(
             {
                 "append_dim",
+                "append_step",
                 "disable_rollback",
                 "dry_run",
                 "excluded_variables",
