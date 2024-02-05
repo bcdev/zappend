@@ -479,7 +479,7 @@ CONFIG_SCHEMA_V1 = {
                 "If set, enforces a step size in the append dimension between two"
                 " slices or just enforces a direction."
             ),
-            "oneOf": [
+            "anyOf": [
                 {
                     "description": "Arbitrary step size or not applicable.",
                     "const": None,

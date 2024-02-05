@@ -6,6 +6,7 @@ import shutil
 import unittest
 
 import numpy as np
+import pytest
 import xarray as xr
 
 from zappend.api import FileObj
@@ -82,7 +83,7 @@ class ApiTest(unittest.TestCase):
             make_test_dataset(index=1, shape=(1, 50, 100)),
             make_test_dataset(index=2, shape=(1, 50, 100)),
         ]
-        zappend(slices, target_dir=target_dir, append_step="1d")
+        zappend(slices, target_dir=target_dir, append_step="1D")
         ds = xr.open_zarr(target_dir)
         np.testing.assert_array_equal(
             ds.time.values,
@@ -96,57 +97,118 @@ class ApiTest(unittest.TestCase):
             make_test_dataset(index=1, shape=(1, 50, 100)),
             make_test_dataset(index=0, shape=(1, 50, 100)),
         ]
-        zappend(slices, target_dir=target_dir, append_step="-1d")
+        zappend(slices, target_dir=target_dir, append_step="-1D")
         ds = xr.open_zarr(target_dir)
         np.testing.assert_array_equal(
             ds.time.values,
             np.array(["2024-01-03", "2024-01-02", "2024-01-01"], dtype=np.datetime64),
         )
 
-    def test_some_slices_with_one_missing_append_step(self):
-        target_dir = "memory://target.zarr"
-        slices = [
-            make_test_dataset(index=0, shape=(1, 50, 100)),
-            make_test_dataset(index=2, shape=(1, 50, 100)),
-        ]
-        zappend(slices, target_dir=target_dir, append_step="1d")
-        ds = xr.open_zarr(target_dir)
-        np.testing.assert_array_equal(
-            ds.time.values,
-            np.array(["2024-01-01", "2024-01-02", "2024-01-03"], dtype=np.datetime64),
-        )
+    # # See https://github.com/bcdev/zappend/issues/21
+    #
+    # def test_some_slices_with_one_missing_append_step(self):
+    #     target_dir = "memory://target.zarr"
+    #     slices = [
+    #         make_test_dataset(index=0, shape=(1, 50, 100)),
+    #         make_test_dataset(index=2, shape=(1, 50, 100)),
+    #     ]
+    #     zappend(slices, target_dir=target_dir, append_step="1D")
+    #     ds = xr.open_zarr(target_dir)
+    #     np.testing.assert_array_equal(
+    #         ds.time.values,
+    #         np.array(
+    #             ["2024-01-01", "2024-01-02", "2024-01-03"], dtype="datetime64[ns]"
+    #         ),
+    #     )
 
-    def test_some_slices_with_three_missing_append_steps(self):
-        target_dir = "memory://target.zarr"
-        slices = [
-            make_test_dataset(index=0, shape=(1, 50, 100)),
-            make_test_dataset(index=4, shape=(1, 50, 100)),
-        ]
-        zappend(slices, target_dir=target_dir, append_step="1d")
-        ds = xr.open_zarr(target_dir)
-        np.testing.assert_array_equal(
-            ds.time.values,
-            np.array(
-                ["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04", "2024-01-05"],
-                dtype=np.datetime64,
-            ),
-        )
+    # # See https://github.com/bcdev/zappend/issues/21
+    #
+    # def test_some_slices_with_three_missing_append_steps(self):
+    #     target_dir = "memory://target.zarr"
+    #     slices = [
+    #         make_test_dataset(index=0, shape=(1, 50, 100)),
+    #         make_test_dataset(index=4, shape=(1, 50, 100)),
+    #     ]
+    #     zappend(slices, target_dir=target_dir, append_step="1D")
+    #     ds = xr.open_zarr(target_dir)
+    #     np.testing.assert_array_equal(
+    #         ds.time.values,
+    #         np.array(
+    #             [
+    #                 "2024-01-01",
+    #                 "2024-01-02",
+    #                 "2024-01-03",
+    #                 "2024-01-04",
+    #                 "2024-01-05",
+    #             ],
+    #             dtype="datetime64[ns]",
+    #         ),
+    #     )
 
     def test_it_raises_for_wrong_append_step(self):
-        # TODO: implement me
-        pass
+        target_dir = "memory://target.zarr"
+        slices = [
+            make_test_dataset(index=0, shape=(1, 50, 100)),
+            make_test_dataset(index=1, shape=(1, 50, 100)),
+        ]
+        with pytest.raises(
+            ValueError,
+            match=(
+                "Cannot append slice because this would result in"
+                " an invalid step size."
+            ),
+        ):
+            zappend(slices, target_dir=target_dir, append_step="2D")
 
     def test_some_slices_with_inc_append_labels(self):
-        # TODO: implement me
-        pass
+        append_step = "+"
+
+        target_dir = "memory://target.zarr"
+        slices = [
+            make_test_dataset(index=0, shape=(1, 50, 100)),
+            make_test_dataset(index=1, shape=(1, 50, 100)),
+            make_test_dataset(index=2, shape=(1, 50, 100)),
+        ]
+        # OK!
+        zappend(slices, target_dir=target_dir, append_step=append_step)
+
+        target_dir = "memory://target.zarr"
+        slices = [
+            make_test_dataset(index=1, shape=(1, 50, 100)),
+            make_test_dataset(index=0, shape=(1, 50, 100)),
+        ]
+        with pytest.raises(
+            ValueError,
+            match=(
+                "Cannot append slice because labels must be monotonically increasing"
+            ),
+        ):
+            zappend(slices, target_dir=target_dir, append_step=append_step)
 
     def test_some_slices_with_dec_append_labels(self):
-        # TODO: implement me
-        pass
+        append_step = "-"
 
-    def test_it_raises_for_none_inc_append_labels(self):
-        # TODO: implement me
-        pass
+        target_dir = "memory://target.zarr"
+        slices = [
+            make_test_dataset(index=2, shape=(1, 50, 100)),
+            make_test_dataset(index=1, shape=(1, 50, 100)),
+            make_test_dataset(index=0, shape=(1, 50, 100)),
+        ]
+        # OK!
+        zappend(slices, target_dir=target_dir, append_step=append_step)
+
+        target_dir = "memory://target.zarr"
+        slices = [
+            make_test_dataset(index=0, shape=(1, 50, 100)),
+            make_test_dataset(index=1, shape=(1, 50, 100)),
+        ]
+        with pytest.raises(
+            ValueError,
+            match=(
+                "Cannot append slice because labels must be monotonically decreasing"
+            ),
+        ):
+            zappend(slices, target_dir=target_dir, append_step=append_step)
 
     def test_some_slices_with_profiling(self):
         target_dir = "memory://target.zarr"

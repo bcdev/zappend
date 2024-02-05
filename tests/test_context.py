@@ -45,16 +45,16 @@ class ContextTest(unittest.TestCase):
         make_test_dataset(uri="memory://target.zarr")
         ctx = Context({"target_dir": "memory://target.zarr"})
         self.assertEqual(None, ctx.append_step_size)
-        ctx = Context({"target_dir": "memory://target.zarr", "append_step": "1d"})
-        self.assertEqual("1d", ctx.append_step_size)
+        ctx = Context({"target_dir": "memory://target.zarr", "append_step": "1D"})
+        self.assertEqual("1D", ctx.append_step_size)
 
     def test_last_append_label(self):
         make_test_dataset(uri="memory://target.zarr")
         ctx = Context({"target_dir": "memory://target.zarr"})
         self.assertEqual(None, ctx.last_append_label)
-        ctx = Context({"target_dir": "memory://TARGET.zarr", "append_step": "1d"})
+        ctx = Context({"target_dir": "memory://TARGET.zarr", "append_step": "1D"})
         self.assertEqual(None, ctx.last_append_label)
-        ctx = Context({"target_dir": "memory://target.zarr", "append_step": "1d"})
+        ctx = Context({"target_dir": "memory://target.zarr", "append_step": "1D"})
         self.assertEqual(np.datetime64("2024-01-03"), ctx.last_append_label)
 
     def test_slice_polling(self):

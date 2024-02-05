@@ -2,6 +2,16 @@
 
 ### Enhancements
 
+* A new configuration setting `append_step` can be used to validate
+  the step sizes between the labels of a coordinate variable associated with
+  the append dimension. Its value can be a number for numerical labels
+  or a time delta value of the form `8h` (8 hours) or `2D` (two days) for
+  date/time labels. The value can also be negative. [#21] 
+
+* The configuration setting `append_step` can take the special values
+  `"+"` and `"-"` which are used to verify that the labels are monotonically 
+  increasing or decreasing. [#20]
+
 * It is now possible to reference environment variables
   in configuration files using the syntax `${ENV_VAR}`. [#36]
 
