@@ -106,7 +106,7 @@ and `<units>` is one of the possible
 for example, `8h` (8 hours) or `2D` (two days). Numerical and timedelta values
 may be negative. `append_step` can also take the two special values `"+"` and 
 `"-"`. In this case it is just verified that the append labels are monotonically 
-increasing or decreasing.
+increasing and decreasing, respectively.
 
 ```json
 {

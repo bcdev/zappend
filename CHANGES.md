@@ -10,7 +10,7 @@
 
 * The configuration setting `append_step` can take the special values
   `"+"` and `"-"` which are used to verify that the labels are monotonically 
-  increasing or decreasing. [#20]
+  increasing and decreasing, respectively. [#20]
 
 * It is now possible to reference environment variables
   in configuration files using the syntax `${ENV_VAR}`. [#36]
