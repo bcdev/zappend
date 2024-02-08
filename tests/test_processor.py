@@ -3,15 +3,21 @@
 # https://opensource.org/licenses/MIT.
 
 import unittest
+
+import numpy as np
+import pytest
 import xarray as xr
 
 from zappend.fsutil.fileobj import FileObj
+from zappend.context import Context
 from zappend.processor import Processor
+from zappend.processor import to_timedelta
+from zappend.processor import verify_append_labels
 from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
 
-class TestProcessor(unittest.TestCase):
+class ProcessorTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
 
@@ -142,3 +148,83 @@ class TestProcessor(unittest.TestCase):
         self.assertEqual(None, ds.time.chunks)
         self.assertEqual(((3, 1), (5, 5), (10, 10)), ds.chl.chunks)
         self.assertEqual(((3, 1), (5, 5), (10, 10)), ds.tsm.chunks)
+
+
+# noinspection PyMethodMayBeStatic
+class AppendLabelValidationTest(unittest.TestCase):
+    def setUp(self):
+        clear_memory_fs()
+
+    def test_verify_append_labels_succeeds(self):
+        ctx = Context({"target_dir": "memory://target.zarr", "append_step": "1D"})
+
+        # Ok, because we have no delta
+        slice_ds = make_test_dataset(shape=(1, 50, 100))
+        verify_append_labels(ctx, slice_ds)
+
+        # Ok, because we have 4 deltas that are 1D
+        slice_ds = make_test_dataset(shape=(5, 50, 100))
+        verify_append_labels(ctx, slice_ds)
+
+        # Ok, because after removing "time" coordinate variable,
+        # xarray will use numerical labels
+        ctx = Context({"target_dir": "memory://target.zarr", "append_step": 1})
+        slice_ds = make_test_dataset(shape=(3, 50, 100)).drop_vars(["time"])
+        verify_append_labels(ctx, slice_ds)
+
+        # Ok, because "foo" has no labels
+        ctx = Context(
+            {
+                "target_dir": "memory://target.zarr",
+                "append_dim": "foo",
+                "append_step": "1D",
+            }
+        )
+        slice_ds = make_test_dataset(shape=(3, 50, 100))
+        verify_append_labels(ctx, slice_ds)
+
+    def test_verify_append_labels_fails(self):
+        ctx = Context({"target_dir": "memory://target.zarr", "append_step": "2D"})
+        slice_ds = make_test_dataset(shape=(3, 50, 100))
+        with pytest.raises(
+            ValueError,
+            match="Cannot append slice because this would result in an invalid step size.",
+        ):
+            verify_append_labels(ctx, slice_ds)
+
+        ctx = Context({"target_dir": "memory://target.zarr", "append_step": "-"})
+        slice_ds = make_test_dataset(shape=(3, 50, 100))
+        with pytest.raises(
+            ValueError,
+            match="Cannot append slice because labels must be monotonically decreasing.",
+        ):
+            verify_append_labels(ctx, slice_ds)
+
+        ctx = Context({"target_dir": "memory://target.zarr", "append_step": "+"})
+        slice_ds = make_test_dataset(shape=(3, 50, 100))
+        time = slice_ds["time"]
+        slice_ds["time"] = xr.DataArray(
+            list(reversed(time.values)), dims=time.dims, attrs=time.attrs
+        )
+        with pytest.raises(
+            ValueError,
+            match="Cannot append slice because labels must be monotonically increasing.",
+        ):
+            verify_append_labels(ctx, slice_ds)
+
+
+class ToTimedeltaTest(unittest.TestCase):
+    def test_it(self):
+        self.assertEqual(np.timedelta64(1, "s"), to_timedelta("s"))
+        self.assertEqual(np.timedelta64(1, "m"), to_timedelta("m"))
+        self.assertEqual(np.timedelta64(1, "h"), to_timedelta("h"))
+        self.assertEqual(np.timedelta64(1, "h"), to_timedelta("1h"))
+        self.assertEqual(np.timedelta64(24, "h"), to_timedelta("24h"))
+        self.assertEqual(np.timedelta64(1, "D"), to_timedelta("24h"))
+        self.assertEqual(np.timedelta64(1, "D"), to_timedelta("D"))
+        self.assertEqual(np.timedelta64(1, "D"), to_timedelta("1D"))
+        self.assertEqual(np.timedelta64(7, "D"), to_timedelta("7D"))
+        self.assertEqual(np.timedelta64(1, "W"), to_timedelta("7D"))
+        self.assertEqual(np.timedelta64(12, "D"), to_timedelta("12D"))
+        self.assertEqual(np.timedelta64(60 * 60 * 24, "s"), to_timedelta(60 * 60 * 24))
+        self.assertEqual(np.timedelta64(1, "D"), to_timedelta(60 * 60 * 24))

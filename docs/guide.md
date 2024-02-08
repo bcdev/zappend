@@ -97,9 +97,27 @@ specify its name:
 }
 ```
 
-All other non-variadic dimensions can and should be specified using the
-`fixed_dims` setting which is a mapping from dimension name to the 
-fixed dimension size, e.g.:
+The configuration setting `append_step` can be used to validate the step sizes 
+between the labels of a coordinate variable associated with the append dimension. 
+Its value can be a number for numerical labels or a timedelta value of the form
+`<count><unit>` for date/time labels. In the latter case `<count>` is an integer 
+and `<units>` is one of the possible
+[numpy datetime units](https://numpy.org/doc/stable/reference/arrays.datetime.html#datetime-units), 
+for example, `8h` (8 hours) or `2D` (two days). Numerical and timedelta values
+may be negative. `append_step` can also take the two special values `"+"` and 
+`"-"`. In this case it is just verified that the append labels are monotonically 
+increasing and decreasing, respectively.
+
+```json
+{
+    "append_dim": "time",
+    "append_step": "2D"
+}
+```
+
+Other, non-variadic dimensions besides the append dimension can and should 
+be specified using the `fixed_dims` setting which is a mapping from dimension 
+name to the fixed dimension size, e.g.:
 
 ```json
 {

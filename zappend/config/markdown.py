@@ -41,7 +41,7 @@ def _schema_to_md(
     if description:
         lines.append(description)
 
-    one_of = schema.get("oneOf")
+    one_of = schema.get("anyOf") or schema.get("oneOf")
     if one_of:
         if sequence_name:
             lines.append(f"The {sequence_name} must be one of the following.")

@@ -277,6 +277,7 @@ class ConfigSchemaTest(unittest.TestCase):
         self.assertEqual(
             {
                 "append_dim",
+                "append_step",
                 "disable_rollback",
                 "dry_run",
                 "excluded_variables",

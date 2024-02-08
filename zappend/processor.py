@@ -4,6 +4,7 @@
 
 from typing import Iterable
 
+import numpy as np
 import xarray as xr
 
 from .config import ConfigLike
@@ -100,6 +101,8 @@ class Processor:
                     slice_metadata, ctx.append_dim_name
                 )
 
+            verify_append_labels(ctx, slice_dataset)
+
             transaction = Transaction(
                 ctx.target_dir, ctx.temp_dir, disable_rollback=ctx.disable_rollback
             )
@@ -156,3 +159,72 @@ def update_target_from_slice(
         mode="a",
         append_dim=append_dim_name,
     )
+
+
+def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):
+    append_step_size = ctx.append_step_size
+    if append_step_size is None:
+        # If step size is not specified, there is nothing to do
+        return
+
+    append_dim_name = ctx.append_dim_name
+    append_labels: xr.DataArray = slice_ds.get(append_dim_name)
+    if append_labels is None:
+        # It is ok to not have append-labels in the dataset
+        return
+
+    last_append_label = ctx.last_append_label
+    if last_append_label is not None:
+        # Existing target dataset with append-labels
+        step_sizes = np.diff(append_labels.values, prepend=last_append_label)
+    elif append_labels.size >= 2:
+        # Target dataset does not exist yet, but we have a number of labels
+        step_sizes = np.diff(append_labels.values)
+    else:
+        # Target dataset does not exist yet, and just one label,
+        # so nothing to verify yet.
+        return
+
+    zero = step_sizes.dtype.type(0)
+
+    if append_step_size == "+":
+        # Force monotonically increasing labels
+        if not np.all(step_sizes > zero):
+            raise ValueError(
+                "Cannot append slice because labels must be monotonically increasing."
+            )
+    elif append_step_size == "-":
+        # Force monotonically decreasing labels
+        if not np.all(step_sizes < zero):
+            raise ValueError(
+                "Cannot append slice because labels must be monotonically decreasing."
+            )
+    else:
+        # Force fixed step size
+        if np.issubdtype(step_sizes.dtype, np.timedelta64):
+            deltas = step_sizes - to_timedelta(append_step_size)
+        else:
+            deltas = step_sizes - append_step_size
+        if not np.all(deltas == zero):
+            raise ValueError(
+                f"Cannot append slice because this would"
+                f" result in an invalid step size."
+            )
+
+
+def to_timedelta(append_step_size: str | int | float) -> np.timedelta64:
+    if isinstance(append_step_size, str):
+        i = 0
+        for i in range(len(append_step_size)):
+            if append_step_size[i].isalpha():
+                break
+        if i == 0:
+            count = 1
+            unit = append_step_size
+        else:
+            count = int(append_step_size[0:i])
+            unit = append_step_size[i:]
+    else:
+        count = int(append_step_size)
+        unit = "s"
+    return np.timedelta64(count, unit)

@@ -8,6 +8,7 @@ from typing import Any, Dict
 import xarray as xr
 
 from .config import DEFAULT_APPEND_DIM
+from .config import DEFAULT_APPEND_STEP
 from .config import DEFAULT_SLICE_POLLING_INTERVAL
 from .config import DEFAULT_SLICE_POLLING_TIMEOUT
 from .config import DEFAULT_ZARR_VERSION
@@ -35,10 +36,18 @@ class Context:
         target_storage_options = config.get("target_storage_options")
         self._target_dir = FileObj(target_uri, storage_options=target_storage_options)
 
+        self._append_dim_name = config.get("append_dim") or DEFAULT_APPEND_DIM
+        self._append_step_size = config.get("append_step") or DEFAULT_APPEND_STEP
+        self._last_append_label = None
+
         try:
             with xr.open_zarr(
                 target_uri, storage_options=target_storage_options
             ) as target_dataset:
+                if self.append_step_size is not None:
+                    append_var = target_dataset.get(self._append_dim_name)
+                    if append_var is not None and append_var.size > 0:
+                        self._last_append_label = append_var[-1]
                 target_metadata = DatasetMetadata.from_dataset(target_dataset, config)
         except FileNotFoundError:
             target_metadata = None
@@ -73,10 +82,24 @@ class Context:
     @property
     def append_dim_name(self) -> str:
         """The name of the append dimension along which slice datasets will be
-        concatenated.
-        If not configured, it defaults to `"time"`.
+        concatenated. Defaults to `"time"`.
         """
-        return self._config.get("append_dim") or DEFAULT_APPEND_DIM
+        return self._append_dim_name
+
+    @property
+    def append_step_size(self) -> int | float | str | None:
+        """The enforced step size in the append dimension between two slices.
+        Defaults to `None`.
+        """
+        return self._append_step_size
+
+    @property
+    def last_append_label(self) -> Any | None:
+        """The last label found in the coordinate variable that corresponds to
+        the append dimension. Its value is `None` if no such variable exists or the
+        variable is empty or if [append_step_size][append_step_size] is `None`.
+        """
+        return self._last_append_label
 
     @property
     def target_metadata(self) -> DatasetMetadata | None:
