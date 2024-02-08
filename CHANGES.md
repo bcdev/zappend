@@ -1,4 +1,4 @@
-## Version 0.3.1 (in development)
+## Version 0.4.0 (from 2024-02-09)
 
 ### Enhancements
 
