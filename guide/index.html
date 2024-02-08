@@ -888,6 +888,11 @@ configuration files using JSON or YAML format:</p>
 </code></pre></div>
 <p>If multiple configuration files are passed, they will be merged into one by
 incrementally updating the first by subsequent ones. </p>
+<div class="admonition info">
+<p class="admonition-title">Environment Variables</p>
+<p>It is possible to include the values of environment variables in JSON or YAML 
+configuration files using the syntax <code>${ENV_VAR}</code> or just <code>$ENV_VAR</code>.</p>
+</div>
 <p>You can pass configuration settings to the <code>zappend</code> Python function with 
 the optional <code>config</code> keyword argument. Other keyword arguments are 
 interpreted as individual configuration settings and will be merged into the 
@@ -924,9 +929,24 @@ specify its name:</p>
 <span class="w">    </span><span class="nt">&quot;append_dim&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;depth&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>All other non-variadic dimensions can and should be specified using the
-<code>fixed_dims</code> setting which is a mapping from dimension name to the 
-fixed dimension size, e.g.:</p>
+<p>The configuration setting <code>append_step</code> can be used to validate the step sizes 
+between the labels of a coordinate variable associated with the append dimension. 
+Its value can be a number for numerical labels or a timedelta value of the form
+<code>&lt;count&gt;&lt;unit&gt;</code> for date/time labels. In the latter case <code>&lt;count&gt;</code> is an integer 
+and <code>&lt;units&gt;</code> is one of the possible
+<a href="https://numpy.org/doc/stable/reference/arrays.datetime.html#datetime-units">numpy datetime units</a>, 
+for example, <code>8h</code> (8 hours) or <code>2D</code> (two days). Numerical and timedelta values
+may be negative. <code>append_step</code> can also take the two special values <code>"+"</code> and 
+<code>"-"</code>. In this case it is just verified that the append labels are monotonically 
+increasing and decreasing, respectively.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;append_dim&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;append_step&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2D&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Other, non-variadic dimensions besides the append dimension can and should 
+be specified using the <code>fixed_dims</code> setting which is a mapping from dimension 
+name to the fixed dimension size, e.g.:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;fixed_dims&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">16384</span><span class="p">,</span>

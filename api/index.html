@@ -506,6 +506,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#zappend.api.Context.append_step_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      append_step_size
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#zappend.api.Context.disable_rollback" class="md-nav__link">
     <span class="md-ellipsis">
       disable_rollback
@@ -518,6 +527,15 @@
   <a href="#zappend.api.Context.dry_run" class="md-nav__link">
     <span class="md-ellipsis">
       dry_run
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.api.Context.last_append_label" class="md-nav__link">
+    <span class="md-ellipsis">
+      last_append_label
     </span>
   </a>
   
@@ -1007,6 +1025,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#zappend.api.Context.append_step_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      append_step_size
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#zappend.api.Context.disable_rollback" class="md-nav__link">
     <span class="md-ellipsis">
       disable_rollback
@@ -1019,6 +1046,15 @@
   <a href="#zappend.api.Context.dry_run" class="md-nav__link">
     <span class="md-ellipsis">
       dry_run
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.api.Context.last_append_label" class="md-nav__link">
+    <span class="md-ellipsis">
+      last_append_label
     </span>
   </a>
   
@@ -1889,8 +1925,29 @@ target dataset:</p>
   <div class="doc doc-contents ">
   
       <p>The name of the append dimension along which slice datasets will be
-concatenated.
-If not configured, it defaults to <code>"time"</code>.</p>
+concatenated. Defaults to <code>"time"</code>.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.api.Context.append_step_size" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">append_step_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The enforced step size in the append dimension between two slices.
+Defaults to <code>None</code>.</p>
   </div>
 
 </div>
@@ -1933,6 +1990,29 @@ If not configured, it defaults to <code>"time"</code>.</p>
   <div class="doc doc-contents ">
   
       <p>Whether to run in dry mode.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.api.Context.last_append_label" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">last_append_label</span><span class="p">:</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The last label found in the coordinate variable that corresponds to
+the append dimension. Its value is <code>None</code> if no such variable exists or the
+variable is empty or if [append_step_size][] is <code>None</code>.</p>
   </div>
 
 </div>
