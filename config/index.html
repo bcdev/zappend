@@ -369,6 +369,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#append_step" class="md-nav__link">
+    <span class="md-ellipsis">
+      append_step
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#included_variables" class="md-nav__link">
     <span class="md-ellipsis">
       included_variables
@@ -643,6 +652,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#append_step" class="md-nav__link">
+    <span class="md-ellipsis">
+      append_step
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#included_variables" class="md-nav__link">
     <span class="md-ellipsis">
       included_variables
@@ -804,11 +822,11 @@
 <h1 id="configuration-reference">Configuration Reference</h1>
 <h2 id="version"><code>version</code></h2>
 <p>Configuration schema version. Allows the schema to evolve while still preserving backwards compatibility.
-Its value must be <code>1</code>.
+Its value is <code>1</code>.
 Defaults to <code>1</code>.</p>
 <h2 id="zarr_version"><code>zarr_version</code></h2>
 <p>The Zarr version to be used.
-Its value must be <code>2</code>.
+Its value is <code>2</code>.
 Defaults to <code>2</code>.</p>
 <h2 id="fixed_dims"><code>fixed_dims</code></h2>
 <p>Type <em>object</em>.
@@ -818,6 +836,32 @@ The object's values are of type <em>integer</em>.</p>
 <p>Type <em>string</em>.
 The name of the variadic append dimension.
 Defaults to <code>"time"</code>.</p>
+<h2 id="append_step"><code>append_step</code></h2>
+<p>If set, enforces a step size in the append dimension between two slices or just enforces a direction.
+Must be one of the following:</p>
+<ul>
+<li>
+<p>Arbitrary step size or not applicable.
+    Its value is <code>null</code>.</p>
+</li>
+<li>
+<p>Monotonically increasing.
+    Its value is <code>"+"</code>.</p>
+</li>
+<li>
+<p>Monotonically decreasing.
+    Its value is <code>"-"</code>.</p>
+</li>
+<li>
+<p>Type <em>string</em>.
+    A positive or negative time delta value, such as <code>12h</code>, <code>2D</code>, <code>-1D</code>.</p>
+</li>
+<li>
+<p>Type <em>number</em>.
+    A positive or negative numerical delta value.</p>
+</li>
+</ul>
+<p>Defaults to <code>null</code>.</p>
 <h2 id="included_variables"><code>included_variables</code></h2>
 <p>Type <em>array</em>.
 Specifies the names of variables to be included in the target dataset. Defaults to all variables found in the first contributing dataset.
@@ -851,7 +895,7 @@ Variable metadata.</p>
 <li>
 <p><code>chunks</code>:
     Storage chunking.
-    Must be one of the following.</p>
+    Must be one of the following:</p>
 <ul>
 <li>
 <p>Type <em>array</em>.
@@ -860,14 +904,14 @@ Variable metadata.</p>
 </li>
 <li>
 <p>Disable chunking.
-    Its value must be <code>null</code>.</p>
+    Its value is <code>null</code>.</p>
 </li>
 </ul>
 </li>
 <li>
 <p><code>fill_value</code>:
     Storage fill value.
-    Must be one of the following.</p>
+    Must be one of the following:</p>
 <ul>
 <li>
 <p>Type <em>number</em>.
@@ -875,11 +919,11 @@ Variable metadata.</p>
 </li>
 <li>
 <p>Not-a-number. Can be used only if storage <code>dtype</code> is <code>float32</code> or <code>float64</code>.
-    Its value must be <code>"NaN"</code>.</p>
+    Its value is <code>"NaN"</code>.</p>
 </li>
 <li>
 <p>No fill value.
-    Its value must be <code>null</code>.</p>
+    Its value is <code>null</code>.</p>
 </li>
 </ul>
 </li>
@@ -950,15 +994,15 @@ The name of the engine to be used for opening contributing datasets. Refer to th
 Options for the filesystem given by the protocol of the URIs of contributing datasets.</p>
 <h2 id="slice_polling"><code>slice_polling</code></h2>
 <p>Defines how to poll for contributing datasets.
-Must be one of the following.</p>
+Must be one of the following:</p>
 <ul>
 <li>
 <p>No polling, fail immediately if dataset is not available.
-    Its value must be <code>false</code>.</p>
+    Its value is <code>false</code>.</p>
 </li>
 <li>
 <p>Poll using default values.
-    Its value must be <code>true</code>.</p>
+    Its value is <code>true</code>.</p>
 </li>
 <li>
 <p>Type <em>object</em>.
@@ -996,7 +1040,7 @@ Disable rolling back dataset changes on failure. Effectively disables transactio
 Defaults to <code>false</code>.</p>
 <h2 id="profiling"><code>profiling</code></h2>
 <p>Profiling configuration. Allows for runtime profiling of the processing.
-Must be one of the following.</p>
+Must be one of the following:</p>
 <ul>
 <li>
 <p>Type <em>boolean</em>.
@@ -1037,7 +1081,7 @@ Must be one of the following.</p>
 <p><code>restrictions</code>:
     Type <em>array</em>.
     Used to limit the list down to the significant entries in the profiling report. Refer to <a href="https://docs.python.org/3/library/profile.html#pstats.Stats.print_stats">Stats.print_stats(*restrictions)</a>.
-    The items of the array must be one of the following.</p>
+    The items of the array must be one of the following:</p>
 <ul>
 <li>
 <p>Type <em>integer</em>.
@@ -1064,7 +1108,7 @@ The key <code>version</code> is required.</p>
 <li>
 <p><code>version</code>:
     Logging schema version.
-    Its value must be <code>1</code>.</p>
+    Its value is <code>1</code>.</p>
 </li>
 <li>
 <p><code>formatters</code>:
