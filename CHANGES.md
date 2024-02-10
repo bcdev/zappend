@@ -1,5 +1,9 @@
 ## Version 0.4.1 (in development)
 
+### Fixes
+
+* Global metadata attributes of target dataset is no longer empty. [#56]
+
 ## Version 0.4.0 (from 2024-02-08)
 
 ### Enhancements
