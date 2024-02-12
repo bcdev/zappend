@@ -44,9 +44,9 @@ def _schema_to_md(
     one_of = schema.get("anyOf") or schema.get("oneOf")
     if one_of:
         if sequence_name:
-            lines.append(f"The {sequence_name} must be one of the following.")
+            lines.append(f"The {sequence_name} must be one of the following:")
         else:
-            lines.append("Must be one of the following.")
+            lines.append("Must be one of the following:")
         for sub_schema in one_of:
             sub_lines = []
             _schema_to_md(sub_schema, path, sub_lines)
@@ -55,11 +55,12 @@ def _schema_to_md(
                 lines.append("  * " + sub_lines[0])
                 for sub_line in sub_lines[1:]:
                     lines.append("    " + sub_line)
+        lines.append("")
 
     const = schema.get("const", undefined)
     if const is not undefined:
         value = json.dumps(const)
-        lines.append(f"Its value must be `{value}`.")
+        lines.append(f"Its value is `{value}`.")
 
     default = schema.get("default", undefined)
     if default is not undefined:

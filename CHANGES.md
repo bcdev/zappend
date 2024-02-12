@@ -6,6 +6,11 @@
   reporting that the lock file to be written does not exist. Changed this to
   report that the target parent directory does not exist. [#55]
 
+### Enhancements
+
+* Added missing documentation of the `append_step` setting in the 
+  [configuration reference](https://bcdev.github.io/zappend/config/).
+
 ## Version 0.4.0 (from 2024-02-08)
 
 ### Enhancements
