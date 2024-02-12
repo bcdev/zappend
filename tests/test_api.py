@@ -1,6 +1,7 @@
 # Copyright © 2024 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
+
 import os
 import shutil
 import unittest
@@ -210,13 +211,27 @@ class ApiTest(unittest.TestCase):
         ):
             zappend(slices, target_dir=target_dir, append_step=append_step)
 
-
-    def test_some_slices_and_custom_attrs(self):
-        append_step = "-"
-
+    def test_some_slices_and_dynamic_attrs(self):
         target_dir = "memory://target.zarr"
-        slices = [make_test_dataset(index=i) for in range(3)]
-        zappend(slices, target_dir=target_dir, append_step=append_step)
+        slices = [make_test_dataset(index=i) for i in range(3)]
+        zappend(
+            slices,
+            target_dir=target_dir,
+            attrs={
+                "title": "HROC Ocean Colour Monthly Composite",
+                "time_coverage_start": "{{ ds.time[0] }}",
+                "time_coverage_end": "{{ ds.time[-1] }}",
+            },
+        )
+        ds = xr.open_zarr(target_dir)
+        self.assertEqual(
+            {
+                "title": "HROC Ocean Colour Monthly Composite",
+                "time_coverage_start": np.datetime_as_string(ds.time[0], unit="s"),
+                "time_coverage_end": np.datetime_as_string(ds.time[-1], unit="s"),
+            },
+            ds.attrs,
+        )
 
     def test_some_slices_with_profiling(self):
         target_dir = "memory://target.zarr"
