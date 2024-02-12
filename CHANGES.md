@@ -2,6 +2,8 @@
 
 ### Fixes
 
+* Global metadata attributes of target dataset is no longer empty. [#56]
+
 * If the target _parent_ directory did not exist, an exception was raised 
   reporting that the lock file to be written does not exist. Changed this to
   report that the target parent directory does not exist. [#55]

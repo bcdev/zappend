@@ -40,9 +40,18 @@ def tailor_slice_dataset(
         # as dimension, e.g., "x", "y", "crs", ...
         dataset = dataset.drop_vars(const_variables)
 
+    # https://github.com/bcdev/zappend/issues/56
+    # slice_dataset.to_zarr(store, mode="a", ...) will replace
+    # global attributes.
+    # Therefore, we must replace slice dataset attributes by
+    # existing target dataset attributes.
+    # However, users should be able to select the appropriate
+    # operation, e.g., a new config setting target_attrs_op with
+    # values "first" (default), "last", "update".
+    dataset.attrs = target_metadata.attrs
+
     # Remove any encoding and attributes from slice,
     # since both are prescribed by target
-    dataset.attrs.clear()
     for variable in dataset.variables.values():
         variable.encoding = {}
         variable.attrs = {}
