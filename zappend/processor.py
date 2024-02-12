@@ -131,6 +131,16 @@ def create_target_from_slice(
             write_empty_chunks=False,
             consolidated=True,
         )
+
+        # TODO: extract function
+        from zappend.config.attrs import eval_attrs
+        import zarr.attrs
+        import zarr.convenience
+
+        attrs = eval_attrs(target_ds.attrs, dict(ds=target_ds))
+        store = target_dir.fs.get_mapper(root=target_dir.path)
+        zarr.attrs.Attributes(store).update(attrs)
+        zarr.convenience.consolidate_metadata(store)
     finally:
         if target_dir.exists():
             rollback_cb("delete_dir", "", None)

@@ -9,6 +9,12 @@ import numpy as np
 
 
 def eval_attrs(attrs: dict[str, Any], env: dict[str, Any]):
+    # TODO: test must be separate function as it does not use env
+    must_eval = any(
+        isinstance(v, str) and "{{" in v and "}}" in v for v in attrs.values()
+    )
+    if not must_eval:
+        return attrs
     return {k: eval_attr_value(v, env) for k, v in attrs.items()}
 
 

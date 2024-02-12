@@ -211,7 +211,29 @@ class ApiTest(unittest.TestCase):
         ):
             zappend(slices, target_dir=target_dir, append_step=append_step)
 
-    def test_some_slices_and_dynamic_attrs(self):
+    def test_dynamic_attrs_with_one_slice(self):
+        target_dir = "memory://target.zarr"
+        slices = [make_test_dataset()]
+        zappend(
+            slices,
+            target_dir=target_dir,
+            attrs={
+                "title": "HROC Ocean Colour Monthly Composite",
+                "time_coverage_start": "{{ ds.time[0] }}",
+                "time_coverage_end": "{{ ds.time[-1] }}",
+            },
+        )
+        ds = xr.open_zarr(target_dir)
+        self.assertEqual(
+            {
+                "title": "HROC Ocean Colour Monthly Composite",
+                "time_coverage_start": np.datetime_as_string(ds.time[0], unit="s"),
+                "time_coverage_end": np.datetime_as_string(ds.time[-1], unit="s"),
+            },
+            ds.attrs,
+        )
+
+    def test_dynamic_attrs_with_some_slices(self):
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset(index=i) for i in range(3)]
         zappend(
