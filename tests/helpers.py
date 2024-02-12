@@ -78,6 +78,8 @@ def make_test_dataset(
     location using *storage_options* and ``decode_cf=False``.
     """
     one_day = np.timedelta64(1, "D")
+    x_res = 1.0 / shape[-1]
+    y_res = 1.0 / shape[-2]
     ds = xr.Dataset(
         data_vars=dict(
             chl=xr.DataArray(
@@ -102,10 +104,14 @@ def make_test_dataset(
                 dims=dims[0],
             ),
             dims[1]: xr.DataArray(
-                np.linspace(0, 1, shape[1], dtype="float64"), dims=dims[1]
+                np.linspace(0, 1, shape[1], endpoint=False, dtype="float64")
+                + y_res / 2,
+                dims=dims[1],
             ),
             dims[2]: xr.DataArray(
-                np.linspace(0, 1, shape[2], dtype="float64"), dims=dims[2]
+                np.linspace(0, 1, shape[2], endpoint=False, dtype="float64")
+                + x_res / 2,
+                dims=dims[2],
             ),
         },
     )

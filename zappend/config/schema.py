@@ -178,7 +178,14 @@ VARIABLES_SCHEMA = {
             },
             encoding=VARIABLE_ENCODING_SCHEMA,
             attrs={
-                "description": "Arbitrary variable metadata" " attributes.",
+                "description": (
+                    "Arbitrary variable metadata attributes."
+                    " Values may include Python expressions"
+                    " enclosed in `{{` and `}}`; the current"
+                    " variable is named `v`, the current"
+                    " dataset is named `ds`."
+                    " Refer to the user guide for more information."
+                ),
                 "type": "object",
                 "additionalProperties": True,
             },
@@ -517,6 +524,17 @@ CONFIG_SCHEMA_V1 = {
             "items": {"type": "string", "minLength": 1},
         },
         variables=VARIABLES_SCHEMA,
+        attrs={
+            "description": (
+                "Arbitrary dataset attributes."
+                " Values may include Python expressions"
+                " enclosed in `{{` and `}}`; the current"
+                " dataset is named `ds`."
+                " Refer to the user guide for more information."
+            ),
+            "type": "object",
+            "additionalProperties": True,
+        },
         target_dir={
             "description": (
                 "The URI or local path of the target Zarr dataset."
@@ -538,8 +556,8 @@ CONFIG_SCHEMA_V1 = {
                 " a slice source for each slice item. If a class is given, it must be "
                 " derived from `zappend.api.SliceSource`."
                 " If a function is given, it must return an instance of "
-                " `zappend.api.SliceSource`. Refer to the user guide for more"
-                " information."
+                " `zappend.api.SliceSource`."
+                " Refer to the user guide for more information."
             ),
             "type": "string",
             "minLength": 1,

@@ -210,6 +210,14 @@ class ApiTest(unittest.TestCase):
         ):
             zappend(slices, target_dir=target_dir, append_step=append_step)
 
+
+    def test_some_slices_and_custom_attrs(self):
+        append_step = "-"
+
+        target_dir = "memory://target.zarr"
+        slices = [make_test_dataset(index=i) for in range(3)]
+        zappend(slices, target_dir=target_dir, append_step=append_step)
+
     def test_some_slices_with_profiling(self):
         target_dir = "memory://target.zarr"
         slices = [
