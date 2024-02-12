@@ -1,5 +1,11 @@
 ## Version 0.4.1 (in development)
 
+### Fixes
+
+* If the target _parent_ directory did not exist, an exception was raised 
+  reporting that the lock file to be written does not exist. Changed this to
+  report that the target parent directory does not exist. [#55]
+
 ### Enhancements
 
 * Added missing documentation of the `append_step` setting in the 

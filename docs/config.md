@@ -146,7 +146,7 @@ Variable metadata.
 ## `target_dir`
 
 Type _string_.
-The URI or local path of the target Zarr dataset. Must be a directory.
+The URI or local path of the target Zarr dataset. Must specify a directory whose parent directory must exist.
 
 ## `target_storage_options`
 
