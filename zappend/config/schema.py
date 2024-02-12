@@ -520,7 +520,7 @@ CONFIG_SCHEMA_V1 = {
         target_dir={
             "description": (
                 "The URI or local path of the target Zarr dataset."
-                " Must be a directory."
+                " Must specify a directory whose parent directory must exist."
             ),
             "type": "string",
             "minLength": 1,
