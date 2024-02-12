@@ -4,13 +4,13 @@
 ## `version`
 
 Configuration schema version. Allows the schema to evolve while still preserving backwards compatibility.
-Its value must be `1`.
+Its value is `1`.
 Defaults to `1`.
 
 ## `zarr_version`
 
 The Zarr version to be used.
-Its value must be `2`.
+Its value is `2`.
 Defaults to `2`.
 
 ## `fixed_dims`
@@ -24,6 +24,28 @@ The object's values are of type _integer_.
 Type _string_.
 The name of the variadic append dimension.
 Defaults to `"time"`.
+
+## `append_step`
+
+If set, enforces a step size in the append dimension between two slices or just enforces a direction.
+Must be one of the following:
+
+  * Arbitrary step size or not applicable.
+    Its value is `null`.
+
+  * Monotonically increasing.
+    Its value is `"+"`.
+
+  * Monotonically decreasing.
+    Its value is `"-"`.
+
+  * Type _string_.
+    A positive or negative time delta value, such as `12h`, `2D`, `-1D`.
+
+  * Type _number_.
+    A positive or negative numerical delta value.
+
+Defaults to `null`.
 
 ## `included_variables`
 
@@ -59,27 +81,29 @@ Variable metadata.
     
       * `chunks`:
         Storage chunking.
-        Must be one of the following.
+        Must be one of the following:
         
           * Type _array_.
             Chunk sizes in the order of the dimensions.
             The items of the array are of type _integer_.
         
           * Disable chunking.
-            Its value must be `null`.
+            Its value is `null`.
+        
     
       * `fill_value`:
         Storage fill value.
-        Must be one of the following.
+        Must be one of the following:
         
           * Type _number_.
             A number of type and unit of the given storage `dtype`.
         
           * Not-a-number. Can be used only if storage `dtype` is `float32` or `float64`.
-            Its value must be `"NaN"`.
+            Its value is `"NaN"`.
         
           * No fill value.
-            Its value must be `null`.
+            Its value is `null`.
+        
     
       * `scale_factor`:
         Type _number_.
@@ -122,7 +146,7 @@ Variable metadata.
 ## `target_dir`
 
 Type _string_.
-The URI or local path of the target Zarr dataset. Must be a directory.
+The URI or local path of the target Zarr dataset. Must specify a directory whose parent directory must exist.
 
 ## `target_storage_options`
 
@@ -147,13 +171,13 @@ Options for the filesystem given by the protocol of the URIs of contributing dat
 ## `slice_polling`
 
 Defines how to poll for contributing datasets.
-Must be one of the following.
+Must be one of the following:
 
   * No polling, fail immediately if dataset is not available.
-    Its value must be `false`.
+    Its value is `false`.
 
   * Poll using default values.
-    Its value must be `true`.
+    Its value is `true`.
 
   * Type _object_.
     Polling parameters.
@@ -168,6 +192,7 @@ Must be one of the following.
         Type _number_.
         Polling timeout in seconds.
         Defaults to `60`.
+
 
 ## `persist_mem_slices`
 
@@ -194,7 +219,7 @@ Defaults to `false`.
 ## `profiling`
 
 Profiling configuration. Allows for runtime profiling of the processing.
-Must be one of the following.
+Must be one of the following:
 
   * Type _boolean_.
     If set, profiling is enabled and output is logged using level `"INFO"`. Otherwise, profiling is disabled.
@@ -227,7 +252,7 @@ Must be one of the following.
       * `restrictions`:
         Type _array_.
         Used to limit the list down to the significant entries in the profiling report. Refer to [Stats.print_stats(*restrictions)](https://docs.python.org/3/library/profile.html#pstats.Stats.print_stats).
-        The items of the array must be one of the following.
+        The items of the array must be one of the following:
         
           * Type _integer_.
             Select a count of lines.
@@ -237,6 +262,8 @@ Must be one of the following.
         
           * Type _string_.
             Pattern-match the standard name that is printed.
+        
+
 
 ## `logging`
 
@@ -246,7 +273,7 @@ The key `version` is required.
 
   * `version`:
     Logging schema version.
-    Its value must be `1`.
+    Its value is `1`.
 
   * `formatters`:
     Type _object_.

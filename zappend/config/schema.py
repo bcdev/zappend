@@ -487,12 +487,15 @@ CONFIG_SCHEMA_V1 = {
                 {"description": "Monotonically increasing.", "const": "+"},
                 {"description": "Monotonically decreasing.", "const": "-"},
                 {
-                    "description": "A time delta value.",
+                    "description": (
+                        "A positive or negative time delta value,"
+                        " such as `12h`, `2D`, `-1D`."
+                    ),
                     "type": "string",
                     "not": {"const": ""},
                 },
                 {
-                    "description": "A numerical delta value.",
+                    "description": "A positive or negative numerical delta value.",
                     "type": "number",
                     "not": {"const": 0},
                 },
@@ -520,7 +523,7 @@ CONFIG_SCHEMA_V1 = {
         target_dir={
             "description": (
                 "The URI or local path of the target Zarr dataset."
-                " Must be a directory."
+                " Must specify a directory whose parent directory must exist."
             ),
             "type": "string",
             "minLength": 1,

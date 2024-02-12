@@ -115,6 +115,12 @@ class Transaction:
             )
         self._entered_ctx = True
 
+        if not self.target_dir.parent.exists():
+            raise FileNotFoundError(
+                f"Target parent directory does not exist:"
+                f" {self.target_dir.parent.path}"
+            )
+
         lock_file = self._lock_file
         if lock_file.exists():
             raise OSError(f"Target is locked: {lock_file.uri}")
