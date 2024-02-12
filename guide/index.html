@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.5">
     
     
       
@@ -860,7 +860,8 @@ zappend<span class="o">(</span>os.listdir<span class="o">(</span><span class="s2
 </code></pre></div>
 <p>Both invocations will create the Zarr dataset <code>output/mycube.zarr</code> by concatenating
 the "slice" datasets provided in the <code>inputs</code> directory along their <code>time</code> dimension. 
-Both the CLI command and the Python function can be run without any further 
+<code>target_dir</code> must specify a directory for the Zarr dataset. (Its parent directory must 
+exist.) Both the CLI command and the Python function can be run without any further 
 configuration provided the paths of the target dataset and the source slice datasets 
 are given. The target dataset path must point to a directory that will contain a Zarr 
 group to be created and updated. The slice dataset paths may be provided as Zarr as 
@@ -1191,7 +1192,8 @@ data (Python <code>tempfile.gettempdir()</code>). </p>
 <h3 id="target-dataset">Target Dataset</h3>
 <p>The <code>target_dir</code> setting is mandatory. If it is not specified in the configuration,
 it must be passed either as <code>--target</code> or <code>-t</code> option to the <code>zappend</code> command or as 
-<code>target_dir</code> keyword argument when using the <code>zappend</code> Python function.</p>
+<code>target_dir</code> keyword argument when using the <code>zappend</code> Python function.
+Note, the parent directory of <code>target_dir</code> must already exist.</p>
 <p>If the target path is given for another filesystem, additional storage options may be 
 passed using the optional <code>target_storage_options</code> setting. </p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1497,10 +1499,10 @@ the INFO level:</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.c18c5fb9.min.js"></script>
       
     
   </body>
