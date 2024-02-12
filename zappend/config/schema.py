@@ -487,12 +487,15 @@ CONFIG_SCHEMA_V1 = {
                 {"description": "Monotonically increasing.", "const": "+"},
                 {"description": "Monotonically decreasing.", "const": "-"},
                 {
-                    "description": "A time delta value.",
+                    "description": (
+                        "A positive or negative time delta value,"
+                        " such as `12h`, `2D`, `-1D`."
+                    ),
                     "type": "string",
                     "not": {"const": ""},
                 },
                 {
-                    "description": "A numerical delta value.",
+                    "description": "A positive or negative numerical delta value.",
                     "type": "number",
                     "not": {"const": 0},
                 },

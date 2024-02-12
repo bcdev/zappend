@@ -1,5 +1,10 @@
 ## Version 0.4.1 (in development)
 
+### Enhancements
+
+* Added missing documentation of the `append_step` setting in the 
+  [configuration reference](https://bcdev.github.io/zappend/config/).
+
 ## Version 0.4.0 (from 2024-02-08)
 
 ### Enhancements
