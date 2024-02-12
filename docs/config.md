@@ -25,6 +25,27 @@ Type _string_.
 The name of the variadic append dimension.
 Defaults to `"time"`.
 
+## `append_step`
+
+If set, enforces a step size in the append dimension between two slices or just enforces a direction.
+Must be one of the following.
+
+  * Arbitrary step size or not applicable.
+    Its value must be `null`.
+
+  * Monotonically increasing.
+    Its value must be `"+"`.
+
+  * Monotonically decreasing.
+    Its value must be `"-"`.
+
+  * Type _string_.
+    A time delta value.
+
+  * Type _number_.
+    A numerical delta value.
+Defaults to `null`.
+
 ## `included_variables`
 
 Type _array_.
@@ -122,7 +143,7 @@ Variable metadata.
 ## `target_dir`
 
 Type _string_.
-The URI or local path of the target Zarr dataset. Must be a directory.
+The URI or local path of the target Zarr dataset. Must specify a directory whose parent directory must exist.
 
 ## `target_storage_options`
 
