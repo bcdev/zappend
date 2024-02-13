@@ -183,7 +183,7 @@ def post_create_target(ctx: Context, target_ds: xr.Dataset):
         target_ds: The target dataset.
     """
     target_attrs = target_ds.attrs
-    if has_dyn_config_attrs(target_attrs):
+    if ctx.computed_attrs_permitted and has_dyn_config_attrs(target_attrs):
         target_store = ctx.target_dir.fs.get_mapper(root=ctx.target_dir.path)
         resolve_target_attrs(target_store, target_ds, target_attrs)
 
@@ -196,12 +196,12 @@ def post_update_target(ctx: Context, target_store: RollbackStore, slice_ds: xr.D
     that will receive the `ctx` parameter.
 
     Args:
-        ctx: Current processing context. (Not used yet.)
+        ctx: Current processing context.
         target_store: The target dataset as a rollback store.
         slice_ds: The current slice dataset that has already been appended.
     """
     target_attrs = slice_ds.attrs
-    if has_dyn_config_attrs(target_attrs):
+    if ctx.computed_attrs_permitted and has_dyn_config_attrs(target_attrs):
         with xr.open_zarr(target_store) as target_ds:
             resolve_target_attrs(target_store, target_ds, target_attrs)
 

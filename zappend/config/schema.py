@@ -178,14 +178,7 @@ VARIABLES_SCHEMA = {
             },
             encoding=VARIABLE_ENCODING_SCHEMA,
             attrs={
-                "description": (
-                    "Arbitrary variable metadata attributes."
-                    " Values may include Python expressions"
-                    " enclosed in `{{` and `}}`; the current"
-                    " variable is named `v`, the current"
-                    " dataset is named `ds`."
-                    " Refer to the user guide for more information."
-                ),
+                "description": "Arbitrary variable metadata attributes.",
                 "type": "object",
                 "additionalProperties": True,
             },
@@ -530,13 +523,25 @@ CONFIG_SCHEMA_V1 = {
         attrs={
             "description": (
                 "Arbitrary dataset attributes."
-                " Values may include Python expressions"
-                " enclosed in `{{` and `}}`; the current"
-                " dataset is named `ds`."
+                " If `permit_computed_attrs` is set to `true`,"
+                " string values may include Python expressions"
+                " enclosed in `{{` and `}}` to dynamically compute"
+                " attribute values; in the expression, the current dataset "
+                " is named `ds`."
                 " Refer to the user guide for more information."
             ),
             "type": "object",
             "additionalProperties": True,
+        },
+        permit_computed_attrs={
+            "description": (
+                "Allow for dynamically computed values in dataset attributes"
+                " `attrs` using the syntax `{{ expression }}`. "
+                " Executing arbitrary Python expressions is a security"
+                " risk, therefore this must be explicitly enabled."
+            ),
+            "type": "boolean",
+            "default": False,
         },
         target_dir={
             "description": (
