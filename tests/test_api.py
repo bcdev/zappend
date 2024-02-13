@@ -94,11 +94,18 @@ class ApiTest(unittest.TestCase):
         ]
         for uri in slices:
             make_test_dataset(uri=uri)
-        with pytest.raises(
-            FileNotFoundError,
-            match="\\ATarget parent directory does not exist: .*/non_existent_dir\\Z",
-        ):
-            zappend(slices, target_dir=target_dir)
+        try:
+            with pytest.raises(
+                FileNotFoundError,
+                match=(
+                    "\\ATarget parent directory does not exist: .*/non_existent_dir\\Z"
+                ),
+            ):
+                zappend(slices, target_dir=target_dir)
+        finally:
+            shutil.rmtree(target_dir, ignore_errors=True)
+            for slice_dir in slices:
+                shutil.rmtree(slice_dir, ignore_errors=True)
 
     def test_some_slices_with_class_slice_source(self):
         target_dir = "memory://target.zarr"
