@@ -4,6 +4,7 @@
 
 from .attrs import eval_dyn_config_attrs
 from .attrs import has_dyn_config_attrs
+from .attrs import get_dyn_config_attrs_env
 from .config import ConfigItem
 from .config import ConfigLike
 from .config import ConfigList
@@ -13,6 +14,7 @@ from .config import normalize_config
 from .config import validate_config
 from .defaults import DEFAULT_APPEND_DIM
 from .defaults import DEFAULT_APPEND_STEP
+from .defaults import DEFAULT_ATTRS_UPDATE_MODE
 from .defaults import DEFAULT_SLICE_POLLING_INTERVAL
 from .defaults import DEFAULT_SLICE_POLLING_TIMEOUT
 from .defaults import DEFAULT_ZARR_VERSION

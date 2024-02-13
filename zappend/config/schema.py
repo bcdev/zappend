@@ -7,6 +7,7 @@ from typing import Any, Literal
 
 from .defaults import DEFAULT_APPEND_DIM
 from .defaults import DEFAULT_APPEND_STEP
+from .defaults import DEFAULT_ATTRS_UPDATE_MODE
 from .defaults import DEFAULT_SLICE_POLLING_INTERVAL
 from .defaults import DEFAULT_SLICE_POLLING_TIMEOUT
 from .defaults import DEFAULT_ZARR_VERSION
@@ -532,6 +533,29 @@ CONFIG_SCHEMA_V1 = {
             ),
             "type": "object",
             "additionalProperties": True,
+        },
+        attrs_update_mode={
+            "description": (
+                "The mode used update target attributes from slice"
+                " attributes. Independently of this setting, extra attributes"
+                " configured by the `attrs` setting will finally be used to"
+                " update the resulting target attributes."
+            ),
+            "oneOf": [
+                {
+                    "description": "Keep attributes from first slice dataset.",
+                    "const": "keep",
+                },
+                {
+                    "description": "Replace attributes from last slice dataset.",
+                    "const": "replace",
+                },
+                {
+                    "description": "Update attributes from last slice dataset.",
+                    "const": "update",
+                },
+            ],
+            "default": DEFAULT_ATTRS_UPDATE_MODE,
         },
         permit_computed_attrs={
             "description": (

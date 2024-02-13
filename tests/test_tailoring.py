@@ -134,7 +134,7 @@ class TailorSliceDatasetTest(unittest.TestCase):
         self.assertIsInstance(tailored_ds, xr.Dataset)
         self.assertEqual({"a", "b"}, set(tailored_ds.variables.keys()))
 
-    def test_it_clears_encoding_and_attrs(self):
+    def test_it_clears_var_encoding_and_attrs(self):
         ds = xr.Dataset(
             {
                 "a": xr.DataArray(
@@ -173,3 +173,62 @@ class TailorSliceDatasetTest(unittest.TestCase):
         b = tailored_ds.b
         self.assertEqual({}, b.encoding)
         self.assertEqual({}, b.attrs)
+
+    def test_it_updates_attrs_according_to_update_mode(self):
+        target_ds = xr.Dataset(
+            {
+                "a": xr.DataArray(
+                    np.zeros((2, 3, 4)),
+                    dims=("time", "y", "x"),
+                ),
+            },
+            attrs={"Conventions": "CF-1.8"},
+        )
+        slice_ds = xr.Dataset(
+            {
+                "a": xr.DataArray(
+                    np.zeros((2, 3, 4)),
+                    dims=("time", "y", "x"),
+                ),
+            },
+            attrs={"title": "OCC 2024"},
+        )
+
+        target_md = DatasetMetadata.from_dataset(target_ds)
+
+        tailored_ds = tailor_slice_dataset(
+            slice_ds, target_md, "time", "keep", {"a": 12, "b": True}
+        )
+        self.assertEqual(
+            {
+                "Conventions": "CF-1.8",
+                "a": 12,
+                "b": True,
+            },
+            tailored_ds.attrs,
+        )
+
+        tailored_ds = tailor_slice_dataset(
+            slice_ds, target_md, "time", "replace", {"a": 12, "b": True}
+        )
+        self.assertEqual(
+            {
+                "title": "OCC 2024",
+                "a": 12,
+                "b": True,
+            },
+            tailored_ds.attrs,
+        )
+
+        tailored_ds = tailor_slice_dataset(
+            slice_ds, target_md, "time", "update", {"a": 12, "b": True}
+        )
+        self.assertEqual(
+            {
+                "Conventions": "CF-1.8",
+                "title": "OCC 2024",
+                "a": 12,
+                "b": True,
+            },
+            tailored_ds.attrs,
+        )

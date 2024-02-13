@@ -14,8 +14,9 @@ from .config import ConfigLike
 from .config import exclude_from_config
 from .config import normalize_config
 from .config import validate_config
-from .config import has_dyn_config_attrs
 from .config import eval_dyn_config_attrs
+from .config import get_dyn_config_attrs_env
+from .config import has_dyn_config_attrs
 from .context import Context
 from .fsutil.transaction import Transaction
 from .fsutil.transaction import RollbackCallback
@@ -25,8 +26,8 @@ from .profiler import Profiler
 from .rollbackstore import RollbackStore
 from .slice import SliceObj
 from .slice import open_slice_source
-from .tailoring import tailor_target_dataset
 from .tailoring import tailor_slice_dataset
+from .tailoring import tailor_target_dataset
 
 
 class Processor:
@@ -103,7 +104,7 @@ class Processor:
                 ctx.target_metadata = slice_metadata
             else:
                 ctx.target_metadata.assert_compatible_slice(
-                    slice_metadata, ctx.append_dim_name
+                    slice_metadata, ctx.append_dim
                 )
 
             verify_append_labels(ctx, slice_dataset)
@@ -150,9 +151,10 @@ def update_target_from_slice(
 ):
     target_dir = ctx.target_dir
     logger.info(f"Updating target dataset {target_dir.uri}")
-    append_dim_name = ctx.append_dim_name
 
-    slice_ds = tailor_slice_dataset(slice_ds, ctx.target_metadata, append_dim_name)
+    slice_ds = tailor_slice_dataset(
+        slice_ds, ctx.target_metadata, ctx.append_dim, ctx.attrs_update_mode, ctx.attrs
+    )
 
     if ctx.dry_run:
         return
@@ -165,7 +167,7 @@ def update_target_from_slice(
         write_empty_chunks=False,
         consolidated=True,
         mode="a",
-        append_dim=append_dim_name,
+        append_dim=ctx.append_dim,
     )
 
     post_update_target(ctx, target_store, slice_ds)
@@ -174,9 +176,6 @@ def update_target_from_slice(
 def post_create_target(ctx: Context, target_ds: xr.Dataset):
     """Post-process the target dataset given by `target_ds`
     that has just been created.
-
-    Note, we may later update zappend to support target post processors.
-    that will receive the `ctx` parameter.
 
     Args:
         ctx: Current processing context.
@@ -191,9 +190,6 @@ def post_create_target(ctx: Context, target_ds: xr.Dataset):
 def post_update_target(ctx: Context, target_store: RollbackStore, slice_ds: xr.Dataset):
     """Post-process the target dataset given by `target_store` that has just
     been updated by `slice_ds`.
-
-    Note, we may later update zappend to support target post processors.
-    that will receive the `ctx` parameter.
 
     Args:
         ctx: Current processing context.
@@ -211,20 +207,22 @@ def resolve_target_attrs(
     target_ds: xr.Dataset,
     target_attrs: dict[str, Any],
 ):
-    resolved_attrs = eval_dyn_config_attrs(target_attrs, dict(ds=target_ds))
+    resolved_attrs = eval_dyn_config_attrs(
+        target_attrs,
+        get_dyn_config_attrs_env(target_ds),
+    )
     zarr.attrs.Attributes(target_store).update(resolved_attrs)
     # noinspection PyTypeChecker
     zarr.convenience.consolidate_metadata(target_store)
 
 
 def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):
-    append_step_size = ctx.append_step_size
+    append_step_size = ctx.append_step
     if append_step_size is None:
         # If step size is not specified, there is nothing to do
         return
 
-    append_dim_name = ctx.append_dim_name
-    append_labels: xr.DataArray = slice_ds.get(append_dim_name)
+    append_labels: xr.DataArray = slice_ds.get(ctx.append_dim)
     if append_labels is None:
         # It is ok to not have append-labels in the dataset
         return

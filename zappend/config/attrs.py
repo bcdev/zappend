@@ -3,9 +3,10 @@
 # https://opensource.org/licenses/MIT.
 
 import datetime
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
+import xarray as xr
 
 
 def has_dyn_config_attrs(attrs: dict[str, Any]) -> bool:
@@ -35,11 +36,6 @@ def eval_dyn_config_attrs(attrs: dict[str, Any], env: dict[str, Any]):
     Returns:
          `True`, if so.
     """
-    must_eval = any(
-        isinstance(v, str) and "{{" in v and "}}" in v for v in attrs.values()
-    )
-    if not must_eval:
-        return attrs
     return {k: eval_attr_value(v, env) for k, v in attrs.items()}
 
 
@@ -81,3 +77,69 @@ def eval_expr(expr: str, env: dict[str, Any]) -> Any:
     except (TypeError, ValueError):
         pass
     return value
+
+
+def get_dyn_config_attrs_env(ds: xr.Dataset):
+    return dict(
+        ds=ds,
+        **{
+            k: v
+            for k, v in ConfigAttrsUserFunctions.__dict__.items()
+            if not k.startswith("_")
+        },
+    )
+
+
+_CellRef = Literal["lower"] | Literal["center"] | Literal["upper"]
+
+
+class ConfigAttrsUserFunctions:
+    """User functions that can be used within attribute expressions."""
+
+    @staticmethod
+    def lower_bound(array: xr.DataArray | np.ndarray, ref: _CellRef = "lower"):
+        """Get the lower bound of one-dimensional `array`.
+
+        Args:
+            array: numpy ndarray-like array
+            ref: cell reference
+                 - `"lower"` the cell lower bound
+                 - `"upper"` the cell upper bound
+                 - `"center"` the cell center
+        Return:
+            The lower bound of `array`.
+        """
+        return _bounds(array, ref)[0]
+
+    @staticmethod
+    def upper_bound(array: xr.DataArray | np.ndarray, ref: _CellRef = "lower"):
+        """Get the upper bound of one-dimensional `array`.
+
+        Args:
+            array: numpy ndarray-like array
+            ref: cell reference
+                 - `"lower"` the cell lower bound
+                 - `"upper"` the cell upper bound
+                 - `"center"` the cell center
+        Return:
+            The lower bound of `array`.
+        """
+        return _bounds(array, ref)[1]
+
+
+def _bounds(array: xr.DataArray | np.ndarray, ref: _CellRef):
+    if len(array.shape) != 1:
+        raise ValueError(f"array must be 1-dimensional, got shape {array.shape}")
+    if array.shape[0] == 0:
+        raise ValueError(f"array must not be empty")
+    v1, v2 = array[0], array[-1]
+    delta = array[1] - v1 if array.size > 1 else 0
+    if v1 > v2:
+        v1, v2 = v2, v1
+        delta = -delta
+    if ref == "lower":
+        return v1, v2 + delta
+    elif ref == "upper":
+        return v1 - delta, v2
+    else:
+        return v1 - delta / 2, v2 + delta / 2

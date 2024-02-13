@@ -84,7 +84,9 @@ This remainder of this guide explains the how to use the various `zappend`
     variables. A variable comprises the actual data array as well as metadata describing 
     the data dimensions, units, and encoding, such as chunking and compression.
 
-## Dataset Outline
+## Dataset Metadata
+
+### Outline
 
 If no further configuration is supplied, then the target dataset's outline and data 
 encoding is fully prescribed by the first slice dataset provided. By default, the
@@ -152,6 +154,16 @@ Often, it is easier to specify which variables should be excluded:
     "excluded_variables": ["GridCellId"]
 }
 ```
+### Attributes
+
+_TODO: Write section_
+
+Configuration settings:
+
+* `attrs`
+* `permit_dyn_attrs`
+* `attrs_update_mode`
+
 
 ## Variable Metadata 
 

@@ -5,11 +5,17 @@
 import json
 import unittest
 
+import numpy as np
+import pytest
+
+from zappend.config.attrs import ConfigAttrsUserFunctions
 from zappend.config.attrs import eval_dyn_config_attrs
+from zappend.config.attrs import get_dyn_config_attrs_env
+from zappend.config.attrs import has_dyn_config_attrs
 from ..helpers import make_test_dataset
 
 
-class ConfigEvalAttrsTest(unittest.TestCase):
+class EvalDynConfigAttrsTest(unittest.TestCase):
     def setUp(self):
         ds = make_test_dataset()
         ds.attrs["title"] = "Ocean Colour"
@@ -84,3 +90,128 @@ class ConfigEvalAttrsTest(unittest.TestCase):
             attrs,
         )
         self.assertEqual(attrs, json.loads(json.dumps(attrs)))
+
+
+class HasDynConfigAttrsTest(unittest.TestCase):
+    def test_no(self):
+        self.assertFalse(
+            has_dyn_config_attrs({"value": 3}),
+        )
+        self.assertFalse(
+            has_dyn_config_attrs({"value": "Chlorophyll A"}),
+        )
+        self.assertFalse(
+            has_dyn_config_attrs({"value": "Chlorophyll {{A"}),
+        )
+        self.assertFalse(
+            has_dyn_config_attrs({"value": "Chlorophyll A}}"}),
+        )
+
+    def test_yes(self):
+        self.assertTrue(
+            has_dyn_config_attrs({"value": "{{}}"}),
+        )
+        self.assertTrue(
+            has_dyn_config_attrs({"value": "{{A}}"}),
+        )
+        self.assertTrue(
+            has_dyn_config_attrs({"value": "{{'Number'}} {{2}}"}),
+        )
+
+
+class GetDynConfigAttrsEnvTest(unittest.TestCase):
+    def test_env(self):
+        ds = make_test_dataset()
+        env = get_dyn_config_attrs_env(ds)
+        self.assertIsInstance(env, dict)
+        self.assertEqual({"ds", "lower_bound", "upper_bound"}, set(env.keys()))
+        self.assertIs(ds, env["ds"])
+        self.assertTrue(callable(env["lower_bound"]))
+        self.assertTrue(callable(env["upper_bound"]))
+
+
+class ConfigAttrsUserFunctionsTest(unittest.TestCase):
+    def test_lower_bounds_numerical_ok(self):
+        self._assert_lower_bound_ok(np.array([0, 1, 2]), 0, -0.5, -1)
+        self._assert_lower_bound_ok(np.array([2, 1, 0]), 0, -0.5, -1)
+        self._assert_lower_bound_ok(np.array([0.5, 1.5, 2.5]), 0.5, 0.0, -0.5)
+
+    def test_lower_bounds_datetime_ok(self):
+        self._assert_lower_bound_ok(
+            np.array(["2024-01-01", "2024-01-02", "2024-01-03"], dtype="datetime64[h]"),
+            np.datetime64("2024-01-01T00", "h"),
+            np.datetime64("2023-12-31T12", "h"),
+            np.datetime64("2023-12-31T00", "h"),
+        )
+        self._assert_lower_bound_ok(
+            np.array(
+                ["2024-01-01 12:00:00", "2024-01-02 12:00:00", "2024-01-03 12:00:00"],
+                dtype="datetime64[h]",
+            ),
+            np.datetime64("2024-01-01T12", "h"),
+            np.datetime64("2024-01-01T00", "h"),
+            np.datetime64("2023-12-31T12", "h"),
+        )
+
+    def test_upper_bounds_numerical_ok(self):
+        self._assert_upper_bound_ok(np.array([0, 1, 2]), 3, 2.5, 2)
+        self._assert_upper_bound_ok(np.array([2, 1, 0]), 3, 2.5, 2)
+        self._assert_upper_bound_ok(np.array([2.5, 1.5, 0.5]), 3.5, 3.0, 2.5)
+
+    def test_upper_bounds_datetime_ok(self):
+        self._assert_upper_bound_ok(
+            np.array(["2024-01-01", "2024-01-02", "2024-01-03"], dtype="datetime64[h]"),
+            np.datetime64("2024-01-04T00", "h"),
+            np.datetime64("2024-01-03T12", "h"),
+            np.datetime64("2024-01-03T00", "h"),
+        )
+        self._assert_upper_bound_ok(
+            np.array(
+                ["2024-01-01 12:00:00", "2024-01-02 12:00:00", "2024-01-03 12:00:00"],
+                dtype="datetime64[h]",
+            ),
+            np.datetime64("2024-01-04T12", "h"),
+            np.datetime64("2024-01-04T00", "h"),
+            np.datetime64("2024-01-03T12", "h"),
+        )
+
+    def _assert_lower_bound_ok(
+        self, array, expected_lower, expected_center, expected_upper
+    ):
+        self._assert_bound_func_ok(
+            ConfigAttrsUserFunctions.lower_bound,
+            array,
+            expected_lower,
+            expected_center,
+            expected_upper,
+        )
+
+    def _assert_upper_bound_ok(
+        self, array, expected_lower, expected_center, expected_upper
+    ):
+        self._assert_bound_func_ok(
+            ConfigAttrsUserFunctions.upper_bound,
+            array,
+            expected_lower,
+            expected_center,
+            expected_upper,
+        )
+
+    def _assert_bound_func_ok(
+        self, f, array, expected_lower, expected_center, expected_upper
+    ):
+        self.assertEqual(expected_lower, f(array), "default")
+        self.assertEqual(expected_lower, f(array, ref="lower"), "lower")
+        self.assertEqual(expected_center, f(array, ref="center"), "center")
+        self.assertEqual(expected_upper, f(array, ref="upper"), "upper")
+
+    def test_upper_lower_bounds_fail_for_wrong_shape(self):
+        self._assert_upper_lower_bounds_fail(np.array(3))
+        self._assert_upper_lower_bounds_fail(np.array([[1, 2], [3, 4]]))
+
+    # noinspection PyMethodMayBeStatic
+    def _assert_upper_lower_bounds_fail(self, array):
+        with pytest.raises(ValueError):
+            ConfigAttrsUserFunctions.lower_bound(array)
+        with pytest.raises(ValueError):
+            ConfigAttrsUserFunctions.upper_bound(array)
