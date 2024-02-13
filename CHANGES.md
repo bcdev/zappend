@@ -1,4 +1,4 @@
-## Version 0.4.1 (in development)
+## Version 0.4.1 (from 2024-02-13)
 
 ### Fixes
 
