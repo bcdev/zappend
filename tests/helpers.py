@@ -114,6 +114,10 @@ def make_test_dataset(
                 dims=dims[2],
             ),
         },
+        attrs={
+            "Conventions": "CF-1.8",
+            "title": f"Test {index + 1}-{index + shape[0]}",
+        },
     )
 
     if crs:

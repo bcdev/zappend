@@ -27,14 +27,37 @@ class ApiTest(unittest.TestCase):
         zappend([], target_dir=target_dir)
         self.assertFalse(FileObj(target_dir).exists())
 
+    def test_one_slices_memory(self):
+        target_dir = "memory://target.zarr"
+        slices = [make_test_dataset()]
+        zappend(slices, target_dir=target_dir)
+        ds = xr.open_zarr(target_dir)
+        self.assertEqual({"time": 3, "y": 50, "x": 100}, ds.sizes)
+        self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
+        self.assertEqual({"time", "y", "x"}, set(ds.coords))
+        self.assertEqual(
+            {
+                "Conventions": "CF-1.8",
+                "title": "Test 1-3",
+            },
+            ds.attrs,
+        )
+
     def test_some_slices_memory(self):
         target_dir = "memory://target.zarr"
-        slices = [make_test_dataset(), make_test_dataset(), make_test_dataset()]
+        slices = [make_test_dataset(index=3 * i) for i in range(3)]
         zappend(slices, target_dir=target_dir)
         ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
         self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
         self.assertEqual({"time", "y", "x"}, set(ds.coords))
+        self.assertEqual(
+            {
+                "Conventions": "CF-1.8",
+                "title": "Test 1-3",
+            },
+            ds.attrs,
+        )
 
     def test_some_slices_local(self):
         target_dir = "target.zarr"
@@ -43,14 +66,43 @@ class ApiTest(unittest.TestCase):
             "slice-2.zarr",
             "slice-3.zarr",
         ]
-        for uri in slices:
-            make_test_dataset(uri=uri)
+        for index, uri in enumerate(slices):
+            make_test_dataset(uri=uri, index=3 * index)
         try:
             zappend(slices, target_dir=target_dir)
             ds = xr.open_zarr(target_dir)
             self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
             self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
             self.assertEqual({"time", "y", "x"}, set(ds.coords))
+            self.assertEqual(
+                {
+                    "Conventions": "CF-1.8",
+                    "title": "Test 1-3",
+                },
+                ds.attrs,
+            )
+        finally:
+            shutil.rmtree(target_dir, ignore_errors=True)
+            for slice_dir in slices:
+                shutil.rmtree(slice_dir, ignore_errors=True)
+
+    def test_some_slices_local_output_to_non_existing_dir(self):
+        target_dir = "non_existent_dir/target.zarr"
+        slices = [
+            "slice-1.zarr",
+            "slice-2.zarr",
+            "slice-3.zarr",
+        ]
+        for uri in slices:
+            make_test_dataset(uri=uri)
+        try:
+            with pytest.raises(
+                FileNotFoundError,
+                match=(
+                    "\\ATarget parent directory does not exist: .*/non_existent_dir\\Z"
+                ),
+            ):
+                zappend(slices, target_dir=target_dir)
         finally:
             shutil.rmtree(target_dir, ignore_errors=True)
             for slice_dir in slices:
@@ -58,51 +110,73 @@ class ApiTest(unittest.TestCase):
 
     def test_some_slices_with_class_slice_source(self):
         target_dir = "memory://target.zarr"
-        slices = [make_test_dataset(), make_test_dataset(), make_test_dataset()]
+        slices = [make_test_dataset(index=3 * i) for i in range(3)]
         zappend(slices, target_dir=target_dir, slice_source=MySliceSource)
         ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
         self.assertEqual({"chl"}, set(ds.data_vars))
         self.assertEqual({"time", "y", "x"}, set(ds.coords))
+        self.assertEqual(
+            {
+                "Conventions": "CF-1.8",
+                "title": "Test 1-3",
+            },
+            ds.attrs,
+        )
 
     def test_some_slices_with_func_slice_source(self):
         def process_slice(ctx, slice_ds: xr.Dataset) -> SliceSource:
             return MySliceSource(ctx, slice_ds)
 
         target_dir = "memory://target.zarr"
-        slices = [make_test_dataset(), make_test_dataset(), make_test_dataset()]
+        slices = [make_test_dataset(index=3 * i) for i in range(3)]
         zappend(slices, target_dir=target_dir, slice_source=process_slice)
         ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
         self.assertEqual({"chl"}, set(ds.data_vars))
         self.assertEqual({"time", "y", "x"}, set(ds.coords))
+        self.assertEqual(
+            {
+                "Conventions": "CF-1.8",
+                "title": "Test 1-3",
+            },
+            ds.attrs,
+        )
 
     def test_some_slices_with_inc_append_step(self):
         target_dir = "memory://target.zarr"
-        slices = [
-            make_test_dataset(index=0, shape=(1, 50, 100)),
-            make_test_dataset(index=1, shape=(1, 50, 100)),
-            make_test_dataset(index=2, shape=(1, 50, 100)),
-        ]
+        slices = [make_test_dataset(index=i, shape=(1, 50, 100)) for i in range(3)]
         zappend(slices, target_dir=target_dir, append_step="1D")
         ds = xr.open_zarr(target_dir)
         np.testing.assert_array_equal(
             ds.time.values,
             np.array(["2024-01-01", "2024-01-02", "2024-01-03"], dtype=np.datetime64),
         )
+        self.assertEqual(
+            {
+                "Conventions": "CF-1.8",
+                "title": "Test 1-1",
+            },
+            ds.attrs,
+        )
 
     def test_some_slices_with_dec_append_step(self):
         target_dir = "memory://target.zarr"
         slices = [
-            make_test_dataset(index=2, shape=(1, 50, 100)),
-            make_test_dataset(index=1, shape=(1, 50, 100)),
-            make_test_dataset(index=0, shape=(1, 50, 100)),
+            make_test_dataset(index=i, shape=(1, 50, 100)) for i in reversed(range(3))
         ]
         zappend(slices, target_dir=target_dir, append_step="-1D")
         ds = xr.open_zarr(target_dir)
         np.testing.assert_array_equal(
             ds.time.values,
             np.array(["2024-01-03", "2024-01-02", "2024-01-01"], dtype=np.datetime64),
+        )
+        self.assertEqual(
+            {
+                "Conventions": "CF-1.8",
+                "title": "Test 3-3",
+            },
+            ds.attrs,
         )
 
     # # See https://github.com/bcdev/zappend/issues/21

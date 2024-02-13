@@ -16,7 +16,8 @@ zappend(os.listdir("inputs"), target_dir="output/mycube.zarr")
 
 Both invocations will create the Zarr dataset `output/mycube.zarr` by concatenating
 the "slice" datasets provided in the `inputs` directory along their `time` dimension. 
-Both the CLI command and the Python function can be run without any further 
+`target_dir` must specify a directory for the Zarr dataset. (Its parent directory must 
+exist.) Both the CLI command and the Python function can be run without any further 
 configuration provided the paths of the target dataset and the source slice datasets 
 are given. The target dataset path must point to a directory that will contain a Zarr 
 group to be created and updated. The slice dataset paths may be provided as Zarr as 
@@ -433,6 +434,7 @@ You can disable transaction management by specifying
 The `target_dir` setting is mandatory. If it is not specified in the configuration,
 it must be passed either as `--target` or `-t` option to the `zappend` command or as 
 `target_dir` keyword argument when using the `zappend` Python function.
+Note, the parent directory of `target_dir` must already exist.
 
 If the target path is given for another filesystem, additional storage options may be 
 passed using the optional `target_storage_options` setting. 
