@@ -135,8 +135,9 @@ class OpenSliceSourceTest(unittest.TestCase):
             with slice_source as slice_ds:
                 self.assertIsInstance(slice_ds, xr.Dataset)
         except KeyError as e:
-            # TODO: Find out what's going wrong in xarray.
-            #   This should not happen.
+            # This is unexpected! xarray cannot open the NetCDF file it just
+            # created. Maybe report a xarray issue once we can isolate the
+            # root cause. But it may be related to just the memory FS.
             warnings.warn(f"received known exception from to_netcdf(): {e}")
 
     def test_persistent_slice_source_for_nc_local(self):
