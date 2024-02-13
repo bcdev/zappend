@@ -77,8 +77,8 @@ class EvalDynConfigAttrsTest(unittest.TestCase):
             },
             self.env,
         )
-        self.assertAlmostEquals(0.0, attrs.get("x_min"))
-        self.assertAlmostEquals(1.0, attrs.get("x_max"))
+        self.assertAlmostEqual(0.0, attrs.get("x_min"))
+        self.assertAlmostEqual(1.0, attrs.get("x_max"))
         self.assertEqual(attrs, json.loads(json.dumps(attrs)))
 
     def test_time_min_max(self):
