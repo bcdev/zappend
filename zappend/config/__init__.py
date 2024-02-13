@@ -2,6 +2,8 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
+from .attrs import eval_dyn_config_attrs
+from .attrs import has_dyn_config_attrs
 from .config import ConfigItem
 from .config import ConfigLike
 from .config import ConfigList

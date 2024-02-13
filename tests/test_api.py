@@ -300,6 +300,7 @@ class ApiTest(unittest.TestCase):
         ds = xr.open_zarr(target_dir)
         self.assertEqual(
             {
+                "Conventions": "CF-1.8",
                 "title": "HROC Ocean Colour Monthly Composite",
                 "time_coverage_start": np.datetime_as_string(ds.time[0], unit="s"),
                 "time_coverage_end": np.datetime_as_string(ds.time[-1], unit="s"),
@@ -322,6 +323,7 @@ class ApiTest(unittest.TestCase):
         ds = xr.open_zarr(target_dir)
         self.assertEqual(
             {
+                "Conventions": "CF-1.8",
                 "title": "HROC Ocean Colour Monthly Composite",
                 "time_coverage_start": np.datetime_as_string(ds.time[0], unit="s"),
                 "time_coverage_end": np.datetime_as_string(ds.time[-1], unit="s"),

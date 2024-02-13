@@ -2,15 +2,20 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from typing import Iterable
+from typing import Iterable, Any
+import collections.abc
 
 import numpy as np
 import xarray as xr
+import zarr.attrs
+import zarr.convenience
 
 from .config import ConfigLike
 from .config import exclude_from_config
 from .config import normalize_config
 from .config import validate_config
+from .config import has_dyn_config_attrs
+from .config import eval_dyn_config_attrs
 from .context import Context
 from .fsutil.transaction import Transaction
 from .fsutil.transaction import RollbackCallback
@@ -118,11 +123,12 @@ def create_target_from_slice(
 ):
     target_dir = ctx.target_dir
     logger.info(f"Creating target dataset {target_dir.uri}")
+
     target_ds = tailor_target_dataset(slice_ds, ctx.target_metadata)
+
     if ctx.dry_run:
         return
-    # TODO: adjust global attributes dependent on append_dim,
-    #  e.g., time coverage
+
     try:
         target_ds.to_zarr(
             store=target_dir.uri,
@@ -132,15 +138,8 @@ def create_target_from_slice(
             consolidated=True,
         )
 
-        # TODO: extract function
-        from zappend.config.attrs import eval_attrs
-        import zarr.attrs
-        import zarr.convenience
+        post_create_target(ctx, target_ds)
 
-        attrs = eval_attrs(target_ds.attrs, dict(ds=target_ds))
-        store = target_dir.fs.get_mapper(root=target_dir.path)
-        zarr.attrs.Attributes(store).update(attrs)
-        zarr.convenience.consolidate_metadata(store)
     finally:
         if target_dir.exists():
             rollback_cb("delete_dir", "", None)
@@ -158,17 +157,64 @@ def update_target_from_slice(
     if ctx.dry_run:
         return
 
-    # TODO: adjust global attributes dependent on append_dim,
-    #  e.g., time coverage
-
-    store = RollbackStore(target_dir.fs.get_mapper(root=target_dir.path), rollback_cb)
+    target_store = RollbackStore(
+        target_dir.fs.get_mapper(root=target_dir.path), rollback_cb
+    )
     slice_ds.to_zarr(
-        store=store,
+        store=target_store,
         write_empty_chunks=False,
         consolidated=True,
         mode="a",
         append_dim=append_dim_name,
     )
+
+    post_update_target(ctx, target_store, slice_ds)
+
+
+def post_create_target(ctx: Context, target_ds: xr.Dataset):
+    """Post-process the target dataset given by `target_ds`
+    that has just been created.
+
+    Note, we may later update zappend to support target post processors.
+    that will receive the `ctx` parameter.
+
+    Args:
+        ctx: Current processing context.
+        target_ds: The target dataset.
+    """
+    target_attrs = target_ds.attrs
+    if has_dyn_config_attrs(target_attrs):
+        target_store = ctx.target_dir.fs.get_mapper(root=ctx.target_dir.path)
+        resolve_target_attrs(target_store, target_ds, target_attrs)
+
+
+def post_update_target(ctx: Context, target_store: RollbackStore, slice_ds: xr.Dataset):
+    """Post-process the target dataset given by `target_store` that has just
+    been updated by `slice_ds`.
+
+    Note, we may later update zappend to support target post processors.
+    that will receive the `ctx` parameter.
+
+    Args:
+        ctx: Current processing context. (Not used yet.)
+        target_store: The target dataset as a rollback store.
+        slice_ds: The current slice dataset that has already been appended.
+    """
+    target_attrs = slice_ds.attrs
+    if has_dyn_config_attrs(target_attrs):
+        with xr.open_zarr(target_store) as target_ds:
+            resolve_target_attrs(target_store, target_ds, target_attrs)
+
+
+def resolve_target_attrs(
+    target_store: collections.abc.MutableMapping,
+    target_ds: xr.Dataset,
+    target_attrs: dict[str, Any],
+):
+    resolved_attrs = eval_dyn_config_attrs(target_attrs, dict(ds=target_ds))
+    zarr.attrs.Attributes(target_store).update(resolved_attrs)
+    # noinspection PyTypeChecker
+    zarr.convenience.consolidate_metadata(target_store)
 
 
 def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):

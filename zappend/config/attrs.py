@@ -8,8 +8,33 @@ from typing import Any
 import numpy as np
 
 
-def eval_attrs(attrs: dict[str, Any], env: dict[str, Any]):
-    # TODO: test must be separate function as it does not use env
+def has_dyn_config_attrs(attrs: dict[str, Any]) -> bool:
+    """Check if given configuration `attrs` contain dynamically computed values.
+    Note, the check is currently performed only on top level attributes.
+
+    Args:
+        attrs: The dictionary of attributes from configuration.
+    Returns:
+         `True`, if so.
+    """
+    return any(isinstance(v, str) and "{{" in v and "}}" in v for v in attrs.values())
+
+
+def eval_dyn_config_attrs(attrs: dict[str, Any], env: dict[str, Any]):
+    """Replace any expression found in string-valued configuration attributes
+    `attrs` by dynamically computed values.
+    Note, the replacement is currently performed only on top level attributes.
+
+    WARNING: This method uses Python's evil `eval()` function. The caller is
+    responsible for avoiding that `env` causes a potential vulnerability
+    and prohibits insecure operations!
+
+    Args:
+        attrs: The dictionary of attributes from configuration.
+        env: The environment used for the evaluation.
+    Returns:
+         `True`, if so.
+    """
     must_eval = any(
         isinstance(v, str) and "{{" in v and "}}" in v for v in attrs.values()
     )
