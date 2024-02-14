@@ -4,12 +4,14 @@
 
 import json
 import unittest
+from datetime import datetime
 
 import numpy as np
 import pytest
 
 from zappend.config.attrs import ConfigAttrsUserFunctions
 from zappend.config.attrs import eval_dyn_config_attrs
+from zappend.config.attrs import eval_expr
 from zappend.config.attrs import get_dyn_config_attrs_env
 from zappend.config.attrs import has_dyn_config_attrs
 from ..helpers import make_test_dataset
@@ -19,7 +21,7 @@ class EvalDynConfigAttrsTest(unittest.TestCase):
     def setUp(self):
         ds = make_test_dataset()
         ds.attrs["title"] = "Ocean Colour"
-        self.env = dict(ds=ds, N=10)
+        self.env = get_dyn_config_attrs_env(ds, N=10)
 
     def test_zero(self):
         self.assertEqual(
@@ -69,11 +71,23 @@ class EvalDynConfigAttrsTest(unittest.TestCase):
         )
         self.assertEqual(attrs, json.loads(json.dumps(attrs)))
 
-    def test_x_min_max_corr(self):
+    def test_x_min_max_center(self):
         attrs = eval_dyn_config_attrs(
             {
                 "x_min": "{{ ds.x[0] - (ds.x[1]-ds.x[0])/2 }}",
                 "x_max": "{{ ds.x[-1] + (ds.x[1]-ds.x[0])/2 }}",
+            },
+            self.env,
+        )
+        self.assertAlmostEqual(0.0, attrs.get("x_min"))
+        self.assertAlmostEqual(1.0, attrs.get("x_max"))
+        self.assertEqual(attrs, json.loads(json.dumps(attrs)))
+
+    def test_x_bounds_center(self):
+        attrs = eval_dyn_config_attrs(
+            {
+                "x_min": "{{ lower_bound(ds.x, ref='center') }}",
+                "x_max": "{{ upper_bound(ds.x, ref='center') }}",
             },
             self.env,
         )
@@ -87,6 +101,20 @@ class EvalDynConfigAttrsTest(unittest.TestCase):
         )
         self.assertEqual(
             {"time_min": "2024-01-01T00:00:00", "time_max": "2024-01-03T00:00:00"},
+            attrs,
+        )
+        self.assertEqual(attrs, json.loads(json.dumps(attrs)))
+
+    def test_time_bounds(self):
+        attrs = eval_dyn_config_attrs(
+            {
+                "time_min": "{{ lower_bound(ds.time) }}",
+                "time_max": "{{ upper_bound(ds.time) }}",
+            },
+            self.env,
+        )
+        self.assertEqual(
+            {"time_min": "2024-01-01T00:00:00", "time_max": "2024-01-04T00:00:00"},
             attrs,
         )
         self.assertEqual(attrs, json.loads(json.dumps(attrs)))
@@ -116,6 +144,56 @@ class HasDynConfigAttrsTest(unittest.TestCase):
         )
         self.assertTrue(
             has_dyn_config_attrs({"value": "{{'Number'}} {{2}}"}),
+        )
+
+
+class EvalExprTest(unittest.TestCase):
+    def test_all_cases(self):
+        self.assertEqual(True, eval_expr("True", {}))
+        self.assertEqual(13, eval_expr("13", {}))
+        self.assertEqual(0.5, eval_expr("0.5", {}))
+        self.assertEqual("ABC", eval_expr("'ABC'", {}))
+
+        switches = np.array([True, False])
+        self.assertEqual(
+            True,
+            eval_expr("switches[0]", {"switches": switches}),
+        )
+
+        levels = [3, 4, 5]
+        self.assertIs(
+            levels,
+            eval_expr("levels", {"levels": levels}),
+        )
+
+        levels = np.array([3, 4, 5])
+        self.assertEqual(
+            3,
+            eval_expr("levels[0]", {"levels": levels}),
+        )
+
+        lon = np.array([11.05, 11.15, 11.25])
+        self.assertIs(
+            lon,
+            eval_expr("lon", {"lon": lon}),
+        )
+
+        lon = np.array([11.05, 11.15, 11.25])
+        self.assertEqual(
+            11.05,
+            eval_expr("lon[0]", {"lon": lon}),
+        )
+
+        names = np.array(["A", "B"])
+        self.assertEqual(
+            "A",
+            eval_expr("names[0]", {"names": names}),
+        )
+
+        time = datetime.fromisoformat("2024-01-02T10:20:30")
+        self.assertEqual(
+            "2024-01-02T10:20:30",
+            eval_expr("time", {"time": time}),
         )
 
 
@@ -207,6 +285,7 @@ class ConfigAttrsUserFunctionsTest(unittest.TestCase):
 
     def test_upper_lower_bounds_fail_for_wrong_shape(self):
         self._assert_upper_lower_bounds_fail(np.array(3))
+        self._assert_upper_lower_bounds_fail(np.array([]))
         self._assert_upper_lower_bounds_fail(np.array([[1, 2], [3, 4]]))
 
     # noinspection PyMethodMayBeStatic

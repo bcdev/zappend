@@ -64,22 +64,27 @@ def eval_attr_value(attr_value: Any, env: dict[str, Any]) -> Any:
 
 def eval_expr(expr: str, env: dict[str, Any]) -> Any:
     value = eval(expr, env)
+    if isinstance(value, (bool, int, float, str, type(None))):
+        return value
     if isinstance(value, datetime.datetime):
         return value.replace(microsecond=0).isoformat()
     try:
-        if np.ndim(value) == 0:
-            if np.issubdtype(value, int):
+        if value.ndim == 0:
+            if np.issubdtype(value.dtype, np.bool_):
+                return bool(value)
+            if np.issubdtype(value.dtype, np.integer):
                 return int(value)
-            if np.issubdtype(value, float):
+            if np.issubdtype(value.dtype, np.floating):
                 return float(value)
-            if np.issubdtype(value, np.datetime64):
+            if np.issubdtype(value.dtype, np.datetime64):
                 return np.datetime_as_string(value, unit="s")
-    except (TypeError, ValueError):
+    except AttributeError:
         pass
+    # TODO: this is not right, handle remaining cases or raise
     return value
 
 
-def get_dyn_config_attrs_env(ds: xr.Dataset):
+def get_dyn_config_attrs_env(ds: xr.Dataset, **kwargs):
     return dict(
         ds=ds,
         **{
@@ -87,6 +92,7 @@ def get_dyn_config_attrs_env(ds: xr.Dataset):
             for k, v in ConfigAttrsUserFunctions.__dict__.items()
             if not k.startswith("_")
         },
+        **kwargs,
     )
 
 
