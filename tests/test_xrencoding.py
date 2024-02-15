@@ -26,7 +26,9 @@ def get_v_attrs():
 
 
 def get_v_meta():
-    return read_json("v/.zarray")
+    meta = read_json("v/.zarray")
+    meta.pop("dimension_separator", None)  # new in xarray/zarr
+    return meta
 
 
 class XArrayEncodingTest(unittest.TestCase):
