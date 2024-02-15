@@ -112,3 +112,25 @@ class CliTest(unittest.TestCase):
             "Error: Missing 'target_dir' in configuration\n", result.output
         )
         self.assertFalse(FileObj("memory://target.zarr").exists())
+
+    def test_some_slices_and_no_target_with_traceback(self):
+        make_test_dataset(uri="memory://slice-1.zarr")
+        make_test_dataset(uri="memory://slice-2.zarr")
+        make_test_dataset(uri="memory://slice-3.zarr")
+
+        runner = CliRunner()
+        # noinspection PyTypeChecker
+        result = runner.invoke(
+            zappend,
+            [
+                "--traceback",
+                "memory://slice-1.zarr",
+                "memory://slice-2.zarr",
+                "memory://slice-3.zarr",
+            ],
+        )
+        print(result.output)
+        self.assertEqual(1, result.exit_code)
+        self.assertIn("Traceback (most recent call last):\n", result.output)
+        self.assertIn("Error: Missing 'target_dir' in configuration\n", result.output)
+        self.assertFalse(FileObj("memory://target.zarr").exists())
