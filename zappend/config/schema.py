@@ -524,7 +524,7 @@ CONFIG_SCHEMA_V1 = {
         attrs={
             "description": (
                 "Arbitrary dataset attributes."
-                " If `permit_computed_attrs` is set to `true`,"
+                " If `permit_eval` is set to `true`,"
                 " string values may include Python expressions"
                 " enclosed in `{{` and `}}` to dynamically compute"
                 " attribute values; in the expression, the current dataset "
@@ -543,26 +543,39 @@ CONFIG_SCHEMA_V1 = {
             ),
             "oneOf": [
                 {
-                    "description": "Keep attributes from first slice dataset.",
+                    "description": (
+                        "Use attributes from first slice dataset and keep them."
+                    ),
                     "const": "keep",
                 },
                 {
-                    "description": "Replace attributes from last slice dataset.",
+                    "description": (
+                        "Replace existing attributes by attributes"
+                        " of last slice dataset."
+                    ),
                     "const": "replace",
                 },
                 {
-                    "description": "Update attributes from last slice dataset.",
+                    "description": (
+                        "Update existing attributes by attributes"
+                        " of last slice dataset."
+                    ),
                     "const": "update",
+                },
+                {
+                    "description": "Ignore attributes from slice datasets.",
+                    "const": "ignore",
                 },
             ],
             "default": DEFAULT_ATTRS_UPDATE_MODE,
         },
-        permit_computed_attrs={
+        permit_eval={
             "description": (
                 "Allow for dynamically computed values in dataset attributes"
                 " `attrs` using the syntax `{{ expression }}`. "
                 " Executing arbitrary Python expressions is a security"
                 " risk, therefore this must be explicitly enabled."
+                " Refer to the user guide for more information."
             ),
             "type": "boolean",
             "default": False,

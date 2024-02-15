@@ -232,3 +232,14 @@ class TailorSliceDatasetTest(unittest.TestCase):
             },
             tailored_ds.attrs,
         )
+
+        tailored_ds = tailor_slice_dataset(
+            slice_ds, target_md, "time", "ignore", {"a": 12, "b": True}
+        )
+        self.assertEqual(
+            {
+                "a": 12,
+                "b": True,
+            },
+            tailored_ds.attrs,
+        )

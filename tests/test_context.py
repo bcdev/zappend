@@ -62,18 +62,18 @@ class ContextTest(unittest.TestCase):
         ctx = Context({"target_dir": "memory://target.zarr"})
         self.assertEqual({}, ctx.attrs)
         self.assertEqual("keep", ctx.attrs_update_mode)
-        self.assertEqual(False, ctx.computed_attrs_permitted)
+        self.assertEqual(False, ctx.permit_eval)
         ctx = Context(
             {
                 "target_dir": "memory://target.zarr",
                 "attrs": {"title": "OCC 2024"},
                 "attrs_update_mode": "update",
-                "permit_computed_attrs": True,
+                "permit_eval": True,
             }
         )
         self.assertEqual({"title": "OCC 2024"}, ctx.attrs)
         self.assertEqual("update", ctx.attrs_update_mode)
-        self.assertEqual(True, ctx.computed_attrs_permitted)
+        self.assertEqual(True, ctx.permit_eval)
 
     def test_slice_polling(self):
         ctx = Context({"target_dir": "memory://target.zarr"})

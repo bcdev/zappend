@@ -119,13 +119,13 @@ class Context:
         return self._last_append_label
 
     @property
-    def computed_attrs_permitted(self) -> bool:
+    def permit_eval(self) -> bool:
         """Check if dynamically computed values in dataset attributes `attrs`
         using the syntax `{{ expression }}` is permitted. Executing arbitrary
         Python expressions is a security risk, therefore this must be explicitly
         enabled.
         """
-        return bool(self._config.get("permit_computed_attrs"))
+        return bool(self._config.get("permit_eval"))
 
     @property
     def target_metadata(self) -> DatasetMetadata | None:

@@ -291,7 +291,7 @@ class ApiTest(unittest.TestCase):
         zappend(
             slices,
             target_dir=target_dir,
-            permit_computed_attrs=True,
+            permit_eval=True,
             attrs={
                 "title": "HROC Ocean Colour Monthly Composite",
                 "time_coverage_start": "{{ ds.time[0] }}",
@@ -315,7 +315,7 @@ class ApiTest(unittest.TestCase):
         zappend(
             slices,
             target_dir=target_dir,
-            permit_computed_attrs=True,
+            permit_eval=True,
             attrs={
                 "title": "HROC Ocean Colour Monthly Composite",
                 "time_coverage_start": "{{ ds.time[0] }}",

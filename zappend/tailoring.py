@@ -14,15 +14,19 @@ from .log import logger
 from .metadata import DatasetMetadata
 
 
+# TODO: use ctx as only argument
 def tailor_target_dataset(
     dataset: xr.Dataset, target_metadata: DatasetMetadata
 ) -> xr.Dataset:
     dataset = _strip_dataset(dataset, target_metadata)
     dataset = _complete_dataset(dataset, target_metadata)
 
-    # Complement dataset attributes and set
-    # variable encoding and attributes
+    # TODO: use ctx.attrs_update_mode to set initial dataset attributes
+
+    # Set initial dataset attributes
     dataset.attrs = target_metadata.attrs
+
+    # Set variable encoding and attributes
     for var_name, var_metadata in target_metadata.variables.items():
         variable = dataset.variables[var_name]
         variable.encoding = var_metadata.encoding.to_dict()
@@ -30,12 +34,13 @@ def tailor_target_dataset(
     return dataset
 
 
+# TODO: use ctx and slice_ds as only arguments
 def tailor_slice_dataset(
     slice_ds: xr.Dataset,
     target_metadata: DatasetMetadata,
     append_dim: str = DEFAULT_APPEND_DIM,
     attrs_update_mode: (
-        Literal["keep"] | Literal["replace"] | Literal["update"]
+        Literal["keep"] | Literal["replace"] | Literal["update"] | Literal["ignore"]
     ) = DEFAULT_ATTRS_UPDATE_MODE,
     attrs: dict[str, Any] | None = None,
 ) -> xr.Dataset:
@@ -62,6 +67,9 @@ def tailor_slice_dataset(
     elif attrs_update_mode == "update":
         # Update from last slice dataset
         slice_ds.attrs = target_metadata.attrs | slice_ds.attrs
+    elif attrs_update_mode == "ignore":
+        # Ignore attributes from slice dataset
+        slice_ds.attrs = {}
     if attrs:
         # Always update by configured attributes
         slice_ds.attrs.update(attrs)

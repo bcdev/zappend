@@ -24,7 +24,7 @@ class ConfigSchemaTest(unittest.TestCase):
                 "fixed_dims",
                 "included_variables",
                 "logging",
-                "permit_computed_attrs",
+                "permit_eval",
                 "persist_mem_slices",
                 "profiling",
                 "slice_engine",
