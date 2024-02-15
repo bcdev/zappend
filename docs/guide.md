@@ -519,13 +519,14 @@ If the `slice_source` setting is _not_ specified, the slice items passed as `sli
 argument to the [`zappend`](api.md) Python function can be one of the types described
 in the following subsections.
 
-#### `str` and `zappend.api.FileObj`
+#### Types `str` and `FileObj`
 
 A slice object of type `str` is interpreted as local file path or URI, in the case 
 the path has a protocol prefix, such as `s3://`.
 
-An alternative to providing the slice dataset as path or URI is using the `FileObj` 
-class, which combines a URI with dedicated filesystem storage options.
+An alternative to providing the slice dataset as path or URI is using the 
+`zappend.api.FileObj` class, which combines a URI with dedicated filesystem 
+storage options.
 
 ```python
 from zappend.api import FileObj
@@ -533,10 +534,10 @@ from zappend.api import FileObj
 slice_obj = FileObj(slice_uri, storage_options=dict(...)) 
 ```
 
-#### `xarray.Dataset`
+#### Type `Dataset`
 
-In-memory slice objects can be passed as [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html) objects. 
-Such objects may originate from opening datasets from some storage 
+In-memory slice objects can be passed as [`xarray.Dataset`](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html) 
+objects. Such objects may originate from opening datasets from some storage 
 
 ```python
 import xarray as xr
@@ -568,7 +569,7 @@ If the flag is set, in-memory slices will be persisted to a temporary Zarr befor
 appending them to the target dataset. It may prevent expensive re-computation of chunks 
 at the cost of additional i/o. It therefore defaults to `false`.
 
-#### `zappend.api.SliceSource`
+#### Type `SliceSource`
 
 Often you want to perform some custom cleanup after a slice has been processed and
 appended to the target dataset. In this case you can write your own 
@@ -578,7 +579,7 @@ methods.
 Slice source instances are supposed to be created by _slice factories_, see 
 subsection below.
 
-#### `zappend.api.SliceFactory`
+#### Type `SliceFactory`
 
 A slice factory is a 1-argument function that receives a processing context of type
 `zappend.api.Context` and yields a slice dataset object of one of the types
