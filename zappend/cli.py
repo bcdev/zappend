@@ -1,6 +1,7 @@
 # Copyright © 2024 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
+import sys
 
 import click
 
@@ -29,6 +30,11 @@ import click
     help="Run the tool without creating, changing," " or deleting any files.",
 )
 @click.option(
+    "--traceback",
+    is_flag=True,
+    help="Show Python traceback on error.",
+)
+@click.option(
     "--version",
     is_flag=True,
     help="Show version and exit.",
@@ -44,6 +50,7 @@ def zappend(
     config: tuple[str, ...],
     target: str | None,
     dry_run: bool,
+    traceback: bool,
     version: bool,
     help_config: str | None,
 ):
@@ -73,6 +80,10 @@ def zappend(
     try:
         zappend(slices, config=config, target_dir=target, dry_run=dry_run)
     except BaseException as e:
+        if traceback:
+            import traceback as tb
+
+            tb.print_exc(file=sys.stderr)
         raise click.ClickException(f"{e}") from e
 
 
