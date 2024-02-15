@@ -1,5 +1,10 @@
 ## Version 0.5.0 (in development)
 
+### Enhancements
+
+* Added CLI option `--traceback`. [#57]
+
+
 ## Version 0.4.1 (from 2024-02-13)
 
 ### Fixes
