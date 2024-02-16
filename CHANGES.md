@@ -2,6 +2,9 @@
 
 ### Enhancements
 
+* Added a section in the notebook `examples/zappend-demo.ipynb`
+  that demonstrates transaction rollbacks.
+
 * Added CLI option `--traceback`. [#57]
 
 
