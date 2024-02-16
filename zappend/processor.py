@@ -125,7 +125,7 @@ def create_target_from_slice(
     target_dir = ctx.target_dir
     logger.info(f"Creating target dataset {target_dir.uri}")
 
-    target_ds = tailor_target_dataset(slice_ds, ctx.target_metadata)
+    target_ds = tailor_target_dataset(ctx, slice_ds)
 
     if ctx.dry_run:
         return
@@ -152,9 +152,7 @@ def update_target_from_slice(
     target_dir = ctx.target_dir
     logger.info(f"Updating target dataset {target_dir.uri}")
 
-    slice_ds = tailor_slice_dataset(
-        slice_ds, ctx.target_metadata, ctx.append_dim, ctx.attrs_update_mode, ctx.attrs
-    )
+    slice_ds = tailor_slice_dataset(ctx, slice_ds)
 
     if ctx.dry_run:
         return

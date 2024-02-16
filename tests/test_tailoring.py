@@ -8,14 +8,23 @@ import numpy as np
 import pyproj
 import xarray as xr
 
-from zappend.metadata import DatasetMetadata
+from zappend.context import Context
 from zappend.tailoring import tailor_target_dataset
 from zappend.tailoring import tailor_slice_dataset
 
 
+def make_context(config: dict, target_ds: xr.Dataset, write: bool = False) -> Context:
+    target_dir = "memory://target.zarr"
+    if write:
+        target_ds.to_zarr(target_dir, mode="w")
+    ctx = Context({"target_dir": target_dir, **config})
+    ctx.target_metadata = ctx.get_dataset_metadata(target_ds)
+    return ctx
+
+
 class TailorTargetDatasetTest(unittest.TestCase):
-    def test_it_sets_metadata(self):
-        ds = xr.Dataset(
+    def test_it_sets_vars_metadata(self):
+        slice_ds = xr.Dataset(
             {
                 "a": xr.DataArray(
                     np.zeros((2, 3, 4)),
@@ -29,18 +38,17 @@ class TailorTargetDatasetTest(unittest.TestCase):
                 ),
             }
         )
-        tailored_ds = tailor_target_dataset(
-            ds,
-            DatasetMetadata.from_dataset(
-                ds,
-                {
-                    "variables": {
-                        "a": {"encoding": {"dtype": "uint8", "fill_value": 0}},
-                        "b": {"encoding": {"dtype": "int8", "fill_value": -1}},
-                    }
+        ctx = make_context(
+            {
+                "variables": {
+                    "a": {"encoding": {"dtype": "uint8", "fill_value": 0}},
+                    "b": {"encoding": {"dtype": "int8", "fill_value": -1}},
                 },
-            ),
+            },
+            slice_ds,
         )
+
+        tailored_ds = tailor_target_dataset(ctx, slice_ds)
         self.assertIsInstance(tailored_ds, xr.Dataset)
         self.assertEqual({"a", "b"}, set(tailored_ds.variables.keys()))
 
@@ -57,49 +65,45 @@ class TailorTargetDatasetTest(unittest.TestCase):
         self.assertEqual({"units": "g/m^3"}, b.attrs)
 
     def test_it_strips_vars(self):
-        ds = xr.Dataset(
+        slice_ds = xr.Dataset(
             {
                 "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
                 "b": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
             }
         )
 
-        tailored_ds = tailor_target_dataset(
-            ds, DatasetMetadata.from_dataset(ds, {"included_variables": ["b"]})
-        )
+        ctx = make_context({"included_variables": ["b"]}, slice_ds)
+        tailored_ds = tailor_target_dataset(ctx, slice_ds)
         self.assertEqual({"b"}, set(tailored_ds.variables.keys()))
 
-        tailored_ds = tailor_target_dataset(
-            ds, DatasetMetadata.from_dataset(ds, {"excluded_variables": ["b"]})
-        )
+        ctx = make_context({"excluded_variables": ["b"]}, slice_ds)
+        tailored_ds = tailor_target_dataset(ctx, slice_ds)
         self.assertEqual({"a"}, set(tailored_ds.variables.keys()))
 
     def test_it_completes_vars(self):
-        ds = xr.Dataset(
+        slice_ds = xr.Dataset(
             {
                 "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
             }
         )
-
-        tailored_ds = tailor_target_dataset(
-            ds,
-            DatasetMetadata.from_dataset(
-                ds,
-                {
-                    "variables": {
-                        "a": {"dims": ["time", "y", "x"]},
-                        "b": {
-                            "dims": ["time", "y", "x"],
-                            "encoding": {"dtype": "int16", "fill_value": 0},
-                        },
-                        "c": {
-                            "dims": ["time", "y", "x"],
-                            "encoding": {"dtype": "uint32"},
-                        },
+        ctx = make_context(
+            {
+                "variables": {
+                    "a": {"dims": ["time", "y", "x"]},
+                    "b": {
+                        "dims": ["time", "y", "x"],
+                        "encoding": {"dtype": "int16", "fill_value": 0},
+                    },
+                    "c": {
+                        "dims": ["time", "y", "x"],
+                        "encoding": {"dtype": "uint32"},
                     },
                 },
-            ),
+            },
+            slice_ds,
         )
+
+        tailored_ds = tailor_target_dataset(ctx, slice_ds)
         self.assertEqual({"a", "b", "c"}, set(tailored_ds.variables.keys()))
 
         b = tailored_ds.b
@@ -110,12 +114,72 @@ class TailorTargetDatasetTest(unittest.TestCase):
         self.assertEqual(np.dtype("uint32"), c.dtype)
         self.assertEqual(np.dtype("uint32"), c.encoding.get("dtype"))
 
-    # noinspection PyMethodMayBeStatic
+    def test_it_updates_attrs_according_to_update_mode(self):
+        target_ds = xr.Dataset(
+            {
+                "a": xr.DataArray(
+                    np.zeros((2, 3, 4)),
+                    dims=("time", "y", "x"),
+                ),
+            },
+            attrs={"Conventions": "CF-1.8"},
+        )
+
+        ctx = make_context(
+            {"attrs_update_mode": "keep", "attrs": {"a": 12, "b": True}}, target_ds
+        )
+        tailored_ds = tailor_target_dataset(ctx, target_ds)
+        self.assertEqual(
+            {
+                "Conventions": "CF-1.8",
+                "a": 12,
+                "b": True,
+            },
+            tailored_ds.attrs,
+        )
+
+        ctx = make_context(
+            {"attrs_update_mode": "replace", "attrs": {"a": 12, "b": True}}, target_ds
+        )
+        tailored_ds = tailor_target_dataset(ctx, target_ds)
+        self.assertEqual(
+            {
+                "Conventions": "CF-1.8",
+                "a": 12,
+                "b": True,
+            },
+            tailored_ds.attrs,
+        )
+
+        ctx = make_context(
+            {"attrs_update_mode": "update", "attrs": {"a": 12, "b": True}}, target_ds
+        )
+        tailored_ds = tailor_target_dataset(ctx, target_ds)
+        self.assertEqual(
+            {
+                "Conventions": "CF-1.8",
+                "a": 12,
+                "b": True,
+            },
+            tailored_ds.attrs,
+        )
+
+        ctx = make_context(
+            {"attrs_update_mode": "ignore", "attrs": {"a": 12, "b": True}}, target_ds
+        )
+        tailored_ds = tailor_target_dataset(ctx, target_ds)
+        self.assertEqual(
+            {
+                "a": 12,
+                "b": True,
+            },
+            tailored_ds.attrs,
+        )
 
 
 class TailorSliceDatasetTest(unittest.TestCase):
     def test_it_drops_constant_variables(self):
-        ds = xr.Dataset(
+        slice_ds = xr.Dataset(
             {
                 "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
                 "b": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
@@ -128,14 +192,13 @@ class TailorSliceDatasetTest(unittest.TestCase):
                 "y": xr.DataArray(np.linspace(0.0, 1.0, 3), dims="y"),
             },
         )
-        tailored_ds = tailor_slice_dataset(
-            ds, DatasetMetadata.from_dataset(ds, {}), "time"
-        )
+        ctx = make_context({}, slice_ds)
+        tailored_ds = tailor_slice_dataset(ctx, slice_ds)
         self.assertIsInstance(tailored_ds, xr.Dataset)
         self.assertEqual({"a", "b"}, set(tailored_ds.variables.keys()))
 
     def test_it_clears_var_encoding_and_attrs(self):
-        ds = xr.Dataset(
+        slice_ds = xr.Dataset(
             {
                 "a": xr.DataArray(
                     np.zeros((2, 3, 4)),
@@ -149,19 +212,16 @@ class TailorSliceDatasetTest(unittest.TestCase):
                 ),
             }
         )
-        tailored_ds = tailor_slice_dataset(
-            ds,
-            DatasetMetadata.from_dataset(
-                ds,
-                {
-                    "variables": {
-                        "a": {"encoding": {"dtype": "uint8", "fill_value": 0}},
-                        "b": {"encoding": {"dtype": "int8", "fill_value": -1}},
-                    }
-                },
-            ),
-            "time",
+        ctx = make_context(
+            {
+                "variables": {
+                    "a": {"encoding": {"dtype": "uint8", "fill_value": 0}},
+                    "b": {"encoding": {"dtype": "int8", "fill_value": -1}},
+                }
+            },
+            slice_ds,
         )
+        tailored_ds = tailor_slice_dataset(ctx, slice_ds)
         self.assertIsInstance(tailored_ds, xr.Dataset)
 
         self.assertIn("a", tailored_ds.variables)
@@ -194,11 +254,12 @@ class TailorSliceDatasetTest(unittest.TestCase):
             attrs={"title": "OCC 2024"},
         )
 
-        target_md = DatasetMetadata.from_dataset(target_ds)
-
-        tailored_ds = tailor_slice_dataset(
-            slice_ds, target_md, "time", "keep", {"a": 12, "b": True}
+        ctx = make_context(
+            {"attrs_update_mode": "keep", "attrs": {"a": 12, "b": True}},
+            target_ds,
+            True,
         )
+        tailored_ds = tailor_slice_dataset(ctx, slice_ds)
         self.assertEqual(
             {
                 "Conventions": "CF-1.8",
@@ -208,9 +269,12 @@ class TailorSliceDatasetTest(unittest.TestCase):
             tailored_ds.attrs,
         )
 
-        tailored_ds = tailor_slice_dataset(
-            slice_ds, target_md, "time", "replace", {"a": 12, "b": True}
+        ctx = make_context(
+            {"attrs_update_mode": "replace", "attrs": {"a": 12, "b": True}},
+            target_ds,
+            True,
         )
+        tailored_ds = tailor_slice_dataset(ctx, slice_ds)
         self.assertEqual(
             {
                 "title": "OCC 2024",
@@ -220,9 +284,12 @@ class TailorSliceDatasetTest(unittest.TestCase):
             tailored_ds.attrs,
         )
 
-        tailored_ds = tailor_slice_dataset(
-            slice_ds, target_md, "time", "update", {"a": 12, "b": True}
+        ctx = make_context(
+            {"attrs_update_mode": "update", "attrs": {"a": 12, "b": True}},
+            target_ds,
+            True,
         )
+        tailored_ds = tailor_slice_dataset(ctx, slice_ds)
         self.assertEqual(
             {
                 "Conventions": "CF-1.8",
@@ -233,9 +300,12 @@ class TailorSliceDatasetTest(unittest.TestCase):
             tailored_ds.attrs,
         )
 
-        tailored_ds = tailor_slice_dataset(
-            slice_ds, target_md, "time", "ignore", {"a": 12, "b": True}
+        ctx = make_context(
+            {"attrs_update_mode": "ignore", "attrs": {"a": 12, "b": True}},
+            target_ds,
+            True,
         )
+        tailored_ds = tailor_slice_dataset(ctx, slice_ds)
         self.assertEqual(
             {
                 "a": 12,

@@ -2,48 +2,50 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from typing import Any, Literal
-
 import dask.array
 import numpy as np
 import xarray as xr
 
-from .config import DEFAULT_APPEND_DIM
-from .config import DEFAULT_ATTRS_UPDATE_MODE
+from .context import Context
 from .log import logger
 from .metadata import DatasetMetadata
 
 
-# TODO: use ctx as only argument
-def tailor_target_dataset(
-    dataset: xr.Dataset, target_metadata: DatasetMetadata
-) -> xr.Dataset:
-    dataset = _strip_dataset(dataset, target_metadata)
-    dataset = _complete_dataset(dataset, target_metadata)
+def tailor_target_dataset(ctx: Context, slice_ds: xr.Dataset) -> xr.Dataset:
+    target_metadata = ctx.target_metadata
+    attrs_update_mode = ctx.attrs_update_mode
+    attrs = ctx.attrs
+
+    target_ds = _strip_dataset(slice_ds, target_metadata)
+    target_ds = _complete_dataset(target_ds, target_metadata)
 
     # TODO: use ctx.attrs_update_mode to set initial dataset attributes
 
     # Set initial dataset attributes
-    dataset.attrs = target_metadata.attrs
+    if attrs_update_mode == "ignore":
+        # Ignore attributes from slice dataset
+        target_ds.attrs = {}
+    else:
+        target_ds.attrs = target_metadata.attrs
+    if attrs:
+        # Always update by configured attributes
+        target_ds.attrs.update(attrs)
 
     # Set variable encoding and attributes
     for var_name, var_metadata in target_metadata.variables.items():
-        variable = dataset.variables[var_name]
+        variable = target_ds.variables[var_name]
         variable.encoding = var_metadata.encoding.to_dict()
         variable.attrs = var_metadata.attrs
-    return dataset
+
+    return target_ds
 
 
-# TODO: use ctx and slice_ds as only arguments
-def tailor_slice_dataset(
-    slice_ds: xr.Dataset,
-    target_metadata: DatasetMetadata,
-    append_dim: str = DEFAULT_APPEND_DIM,
-    attrs_update_mode: (
-        Literal["keep"] | Literal["replace"] | Literal["update"] | Literal["ignore"]
-    ) = DEFAULT_ATTRS_UPDATE_MODE,
-    attrs: dict[str, Any] | None = None,
-) -> xr.Dataset:
+def tailor_slice_dataset(ctx: Context, slice_ds: xr.Dataset) -> xr.Dataset:
+    target_metadata = ctx.target_metadata
+    append_dim = ctx.append_dim
+    attrs_update_mode = ctx.attrs_update_mode
+    attrs = ctx.attrs
+
     slice_ds = _strip_dataset(slice_ds, target_metadata)
     slice_ds = _complete_dataset(slice_ds, target_metadata)
 
