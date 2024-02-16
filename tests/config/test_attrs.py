@@ -7,6 +7,7 @@ import unittest
 from datetime import datetime
 
 import numpy as np
+import xarray as xr
 import pytest
 
 from zappend.config.attrs import ConfigAttrsUserFunctions
@@ -149,51 +150,56 @@ class HasDynConfigAttrsTest(unittest.TestCase):
 
 class EvalExprTest(unittest.TestCase):
     def test_all_cases(self):
+        # scalars
+        self.assertEqual(None, eval_expr("None", {}))
         self.assertEqual(True, eval_expr("True", {}))
         self.assertEqual(13, eval_expr("13", {}))
         self.assertEqual(0.5, eval_expr("0.5", {}))
         self.assertEqual("ABC", eval_expr("'ABC'", {}))
-
-        switches = np.array([True, False])
-        self.assertEqual(
-            True,
-            eval_expr("switches[0]", {"switches": switches}),
-        )
-
-        levels = [3, 4, 5]
-        self.assertIs(
-            levels,
-            eval_expr("levels", {"levels": levels}),
-        )
-
-        levels = np.array([3, 4, 5])
-        self.assertEqual(
-            3,
-            eval_expr("levels[0]", {"levels": levels}),
-        )
-
-        lon = np.array([11.05, 11.15, 11.25])
-        self.assertIs(
-            lon,
-            eval_expr("lon", {"lon": lon}),
-        )
-
-        lon = np.array([11.05, 11.15, 11.25])
-        self.assertEqual(
-            11.05,
-            eval_expr("lon[0]", {"lon": lon}),
-        )
-
-        names = np.array(["A", "B"])
-        self.assertEqual(
-            "A",
-            eval_expr("names[0]", {"names": names}),
-        )
-
         time = datetime.fromisoformat("2024-01-02T10:20:30")
         self.assertEqual(
             "2024-01-02T10:20:30",
-            eval_expr("time", {"time": time}),
+            eval_expr("time", dict(time=time)),
+        )
+
+        # arrays
+        self.assert_array_ok([True, False])
+        self.assert_array_ok([3, 4, 5])
+        self.assert_array_ok([11.05, 11.15, 11.25])
+        self.assert_array_ok(["A", "B"])
+        self.assert_array_ok(["2024-01-02T10:20:30"], dtype="datetime64[s]")
+
+    def assert_array_ok(self, a: list, dtype=None):
+        # Test list
+        self.assertEqual(
+            a,
+            eval_expr("a", dict(a=a)),
+        )
+        self.assertEqual(
+            a[0],
+            eval_expr("a[0]", dict(a=a)),
+        )
+
+        # Test numpy.ndarray
+        np_a = np.array(a, dtype=dtype) if dtype is not None else np.array(a)
+        self.assertEqual(
+            a,
+            eval_expr("a", dict(a=np_a)),
+        )
+        self.assertEqual(
+            a[0],
+            eval_expr("a[0]", dict(a=np_a)),
+        )
+
+        # Test xarray-DataArray
+        xr_a = xr.DataArray(np_a, dims="x")
+        self.assertEqual(
+            a,
+            eval_expr("a", dict(a=xr_a)),
+        )
+        self.assertEqual(
+            a[0],
+            eval_expr("a[0]", dict(a=xr_a)),
         )
 
 

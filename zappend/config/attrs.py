@@ -3,6 +3,7 @@
 # https://opensource.org/licenses/MIT.
 
 import datetime
+import math
 from typing import Any, Literal
 
 import numpy as np
@@ -64,24 +65,58 @@ def eval_attr_value(attr_value: Any, env: dict[str, Any]) -> Any:
 
 def eval_expr(expr: str, env: dict[str, Any]) -> Any:
     value = eval(expr, env)
-    if isinstance(value, (bool, int, float, str, type(None))):
+    return to_json(value)
+
+
+def to_json(value) -> Any:
+    if isinstance(value, float):
+        if math.isfinite(value):
+            return value
+        else:
+            # TODO: case cover by test
+            return str(value)
+    if isinstance(value, (bool, int, str, type(None))):
         return value
-    if isinstance(value, datetime.datetime):
-        return value.replace(microsecond=0).isoformat()
+    if isinstance(value, datetime.date):
+        if isinstance(value, datetime.datetime):
+            return value.replace(microsecond=0).isoformat()
+        else:
+            # TODO: cover case by test
+            return value.isoformat()
+
     try:
         if value.ndim == 0:
+            try:
+                # xarray.DataArray case
+                value = value.values
+            except AttributeError:
+                pass
+            if np.issubdtype(value.dtype, np.floating):
+                if np.isfinite(value):
+                    return float(value)
+                else:
+                    # TODO: cover case by test
+                    return str(value)
             if np.issubdtype(value.dtype, np.bool_):
                 return bool(value)
+            if np.issubdtype(value.dtype, np.str_):
+                return str(value)
             if np.issubdtype(value.dtype, np.integer):
                 return int(value)
-            if np.issubdtype(value.dtype, np.floating):
-                return float(value)
             if np.issubdtype(value.dtype, np.datetime64):
                 return np.datetime_as_string(value, unit="s")
+            # TODO: cover case by test
+            raise ValueError(
+                f"cannot serialize 0-d array of type {value.dtype}: {value}"
+            )
     except AttributeError:
         pass
-    # TODO: this is not right, handle remaining cases or raise
-    return value
+
+    if isinstance(value, dict):
+        # TODO: cover case by test
+        return {k: to_json(v) for k, v in value.items()}
+
+    return [to_json(v) for v in value]
 
 
 def get_dyn_config_attrs_env(ds: xr.Dataset, **kwargs):
