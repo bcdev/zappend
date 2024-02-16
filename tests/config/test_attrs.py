@@ -2,9 +2,9 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
+import datetime
 import json
 import unittest
-from datetime import datetime
 
 import numpy as np
 import xarray as xr
@@ -149,25 +149,76 @@ class HasDynConfigAttrsTest(unittest.TestCase):
 
 
 class EvalExprTest(unittest.TestCase):
-    def test_all_cases(self):
+    def test_scalar_result(self):
         # scalars
         self.assertEqual(None, eval_expr("None", {}))
         self.assertEqual(True, eval_expr("True", {}))
         self.assertEqual(13, eval_expr("13", {}))
+        self.assertEqual("nan", eval_expr("float('NaN')", {}))
         self.assertEqual(0.5, eval_expr("0.5", {}))
         self.assertEqual("ABC", eval_expr("'ABC'", {}))
-        time = datetime.fromisoformat("2024-01-02T10:20:30")
+        time = datetime.date.fromisoformat("2024-01-02")
+        self.assertEqual(
+            "2024-01-02",
+            eval_expr("time", dict(time=time)),
+        )
+        time = datetime.datetime.fromisoformat("2024-01-02T10:20:30")
         self.assertEqual(
             "2024-01-02T10:20:30",
             eval_expr("time", dict(time=time)),
         )
+        with pytest.raises(
+            ValueError, match="cannot serialize value of type <class 'object'>"
+        ):
+            eval_expr("obj", dict(obj=object()))
 
+    def test_dict_result(self):
+        self.assertEqual({}, eval_expr("d", dict(d={})))
+        self.assertEqual(
+            {
+                "b": True,
+                "i": 13,
+                "t": [1, "B", {}],
+                "f": 13.2,
+                "d": "2020-05-04",
+                "np_a": [0.1, 0.2],
+                "xr_a": [0.3, 0.4],
+            },
+            eval_expr(
+                "d",
+                dict(
+                    d={
+                        "b": True,
+                        "i": 13,
+                        "t": (1, "B", {}),
+                        "f": 13.2,
+                        "d": datetime.date.fromisoformat("2020-05-04"),
+                        "np_a": np.array([0.1, 0.2]),
+                        "xr_a": xr.DataArray(np.array([0.3, 0.4])),
+                    }
+                ),
+            ),
+        )
+
+    def test_array_1d_result(self):
         # arrays
         self.assert_array_ok([True, False])
         self.assert_array_ok([3, 4, 5])
         self.assert_array_ok([11.05, 11.15, 11.25])
+        self.assert_array_ok([11.05, "nan", 11.25], dtype="float64")
         self.assert_array_ok(["A", "B"])
         self.assert_array_ok(["2024-01-02T10:20:30"], dtype="datetime64[s]")
+        with pytest.raises(
+            ValueError,
+            match=(
+                "cannot serialize 0-d array"
+                " of type <class 'numpy.ndarray'>, dtype=dtype\\('O'\\)"
+            ),
+        ):
+            eval_expr("a", dict(a=xr.DataArray([object(), object()])))
+
+    def test_array_2d_result(self):
+        self.assert_array_ok([[3, 4], [5, 6]])
 
     def assert_array_ok(self, a: list, dtype=None):
         # Test list
@@ -192,7 +243,7 @@ class EvalExprTest(unittest.TestCase):
         )
 
         # Test xarray-DataArray
-        xr_a = xr.DataArray(np_a, dims="x")
+        xr_a = xr.DataArray(np_a)
         self.assertEqual(
             a,
             eval_expr("a", dict(a=xr_a)),

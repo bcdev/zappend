@@ -73,7 +73,6 @@ def to_json(value) -> Any:
         if math.isfinite(value):
             return value
         else:
-            # TODO: case cover by test
             return str(value)
     if isinstance(value, (bool, int, str, type(None))):
         return value
@@ -81,7 +80,6 @@ def to_json(value) -> Any:
         if isinstance(value, datetime.datetime):
             return value.replace(microsecond=0).isoformat()
         else:
-            # TODO: cover case by test
             return value.isoformat()
 
     try:
@@ -95,7 +93,6 @@ def to_json(value) -> Any:
                 if np.isfinite(value):
                     return float(value)
                 else:
-                    # TODO: cover case by test
                     return str(value)
             if np.issubdtype(value.dtype, np.bool_):
                 return bool(value)
@@ -105,18 +102,21 @@ def to_json(value) -> Any:
                 return int(value)
             if np.issubdtype(value.dtype, np.datetime64):
                 return np.datetime_as_string(value, unit="s")
-            # TODO: cover case by test
             raise ValueError(
-                f"cannot serialize 0-d array of type {value.dtype}: {value}"
+                f"cannot serialize 0-d array of type {type(value)}, dtype={value.dtype!r}"
             )
     except AttributeError:
         pass
 
     if isinstance(value, dict):
-        # TODO: cover case by test
         return {k: to_json(v) for k, v in value.items()}
 
-    return [to_json(v) for v in value]
+    try:
+        values = iter(value)
+    except TypeError:
+        raise ValueError(f"cannot serialize value of type {type(value)}")
+
+    return [to_json(v) for v in values]
 
 
 def get_dyn_config_attrs_env(ds: xr.Dataset, **kwargs):
