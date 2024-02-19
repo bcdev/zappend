@@ -17,6 +17,14 @@
 * Introduced new configuration setting `attrs_update_mode` that controls 
   how dataset attributes are updated. [#59]
 
+* Simplified logging to console. You can now set configuration setting `logging`
+  to a log level which will implicitly enable console logging with given log
+  level. [#64]
+
+* Added a section in the notebook `examples/zappend-demo.ipynb`
+  that demonstrates transaction rollbacks.
+
+
 * Added CLI option `--traceback`. [#57]
 
 * Added a section in the notebook `examples/zappend-demo.ipynb`

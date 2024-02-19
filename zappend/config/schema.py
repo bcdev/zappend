@@ -298,9 +298,9 @@ PROFILING_SCHEMA = {
 }
 
 
-LOGGING_SCHEMA = {
+DETAILED_LOGGING_SCHEMA = {
     "description": (
-        f"Logging configuration. For details refer to the"
+        f"Detailed logging configuration. For details refer to the"
         f" [dictionary schema]({LOG_REF_URL})"
         f" of the Python module `logging.config`."
     ),
@@ -440,6 +440,27 @@ LOGGING_SCHEMA = {
     ),
     "required": ["version"],
     "additionalProperties": True,
+}
+
+LOGGING_SCHEMA = {
+    "description": "Logging configuration.",
+    "oneOf": [
+        {
+            "description": (
+                "Shortform that enables logging to the console"
+                ' using log level `"INFO"`.'
+            ),
+            "type": "boolean",
+        },
+        {
+            "description": (
+                "Shortform that enables logging to the console"
+                " using the specified log level."
+            ),
+            "enum": LOG_LEVELS,
+        },
+        DETAILED_LOGGING_SCHEMA,
+    ],
 }
 
 CONFIG_SCHEMA_V1 = {
