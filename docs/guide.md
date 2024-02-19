@@ -691,14 +691,28 @@ the [Configuration Reference](config.md) for more details.
 ## Logging
 
 The `zappend` logging output is configured using the `logging` setting.
-Its configuration follows exactly the 
-[dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema)
-of the Python module `logging.config`. The logger used by the `zappend` tool is named 
-`zappend`. Note that you can also configure the logger of other Python modules, e.g.,
-`xarray` or `dask` using an entry in the `loggers` setting.
+In the simplest case, if you just want logging output from `zappend` to the console:
 
+```json
+{
+    "logging": true
+}
+```
+
+The above uses log level `INFO`. If you want a different log level, 
+just provide its name:
+
+```json
+{
+    "logging": "DEBUG"
+}
+```
+
+If you also want logging output in a file or using a different format or if you want to
+see logging output of other Python modules, you can configure Python's logging 
+system following the [logging dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema).
 Given here is an example that logs `zappend`'s output to the console using 
-the INFO level:
+the `INFO` level (same as `"logging": true`):
 
 ```json
 {
@@ -726,3 +740,5 @@ the INFO level:
 }
 ```
 
+Using the `loggers` entry you can configure the logger of other Python modules, e.g.,
+`xarray` or `dask`. The logger used by the `zappend` tool is named `zappend`. 

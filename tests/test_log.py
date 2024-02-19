@@ -11,12 +11,27 @@ from zappend.log import logger
 
 
 class LogTest(unittest.TestCase):
+    old_level = None
+    old_handlers = None
+
+    @classmethod
+    def setUpClass(cls):
+        cls.old_level = logger.level
+        cls.old_handlers = list(logger.handlers)
+        for h in cls.old_handlers:
+            logger.removeHandler(h)
+
+    def tearDown(self):
+        logger.setLevel(self.old_level)
+        for h in self.old_handlers:
+            logger.addHandler(h)
+
     def test_logger(self):
         self.assertIsInstance(logger, logging.Logger)
         self.assertEqual(logging.NOTSET, logger.level)
         self.assertEqual(1, len(logger.handlers))
 
-    def test_configure_logging(self):
+    def test_configure_logging_dict(self):
         logging_config = {
             "version": 1,
             "formatters": {
@@ -31,19 +46,31 @@ class LogTest(unittest.TestCase):
             "loggers": {"zappend": {"level": "INFO", "handlers": ["console"]}},
         }
 
-        old_level = logger.level
-        old_handlers = list(logger.handlers)
-        for h in old_handlers:
-            logger.removeHandler(h)
+        configure_logging(logging_config)
+        self.assertEqual(logging.INFO, logger.level)
+        self.assertEqual(1, len(logger.handlers))
+        self.assertIsInstance(logger.handlers[0], logging.StreamHandler)
 
-        try:
-            configure_logging(logging_config)
-            self.assertEqual(logging.INFO, logger.level)
-            self.assertEqual(1, len(logger.handlers))
-        finally:
-            logger.setLevel(old_level)
-            for h in old_handlers:
-                logger.addHandler(h)
+    def test_configure_logging_false(self):
+        logging_config = False
+        configure_logging(logging_config)
+        self.assertEqual(logging.NOTSET, logger.level)
+        self.assertEqual(1, len(logger.handlers))
+        self.assertIsInstance(logger.handlers[0], logging.StreamHandler)
+
+    def test_configure_logging_true(self):
+        logging_config = True
+        configure_logging(logging_config)
+        self.assertEqual(logging.INFO, logger.level)
+        self.assertEqual(1, len(logger.handlers))
+        self.assertIsInstance(logger.handlers[0], logging.StreamHandler)
+
+    def test_configure_logging_level(self):
+        logging_config = "WARNING"
+        configure_logging(logging_config)
+        self.assertEqual(logging.WARNING, logger.level)
+        self.assertEqual(1, len(logger.handlers))
+        self.assertIsInstance(logger.handlers[0], logging.StreamHandler)
 
     def test_get_log_level(self):
         self.assertEqual(logging.DEBUG, get_log_level("DEBUG"))
