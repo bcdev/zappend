@@ -297,87 +297,97 @@ Must be one of the following:
 
 ## `logging`
 
-Type _object_.
-Logging configuration. For details refer to the [dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema) of the Python module `logging.config`.
-The key `version` is required.
+Logging configuration.
+Must be one of the following:
 
-  * `version`:
-    Logging schema version.
-    Its value is `1`.
+  * Type _boolean_.
+    Shortform that enables logging to the console using log level `"INFO"`.
 
-  * `formatters`:
-    Type _object_.
-    Formatter definitions. Each key is a formatter id and each value is an object describing how to configure the corresponding formatter.
-    The object's values are of type _object_.
-    Formatter configuration.
-    
-      * `format`:
-        Type _string_.
-        Format string in the given `style`.
-        Defaults to `"%(message)s"`.
-    
-      * `datefmt`:
-        Type _string_.
-        Format string in the given `style` for the date/time portion.
-        Defaults to `"%Y-%m-%d %H:%M:%S,uuu"`.
-    
-      * `style`:
-        Determines how the format string will be merged with its data.
-        Must be one of `"%", "{", "$"`.
+  * Shortform that enables logging to the console using the specified log level.
+    Must be one of `"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"`.
 
-  * `filters`:
-    Type _object_.
-    Filter definitions. Each key is a filter id and each value is a dict describing how to configure the corresponding filter.
-    The object's values are of type _object_.
-    Filter configuration.
-
-  * `handlers`:
-    Type _object_.
-    Handler definitions. Each key is a handler id and each value is an object describing how to configure the corresponding handler.
-    The object's values are of type _object_.
-    Handler configuration. All keys other than the following are passed through as keyword arguments to the handler's constructor.
-    The key `class` is required.
+  * Type _object_.
+    Detailed logging configuration. For details refer to the [dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema) of the Python module `logging.config`.
+    The key `version` is required.
     
-      * `class`:
-        Type _string_.
-        The fully qualified name of the handler class. See [logging handlers](https://docs.python.org/3/library/logging.handlers.html).
+      * `version`:
+        Logging schema version.
+        Its value is `1`.
     
-      * `level`:
-        The level of the handler.
-        Must be one of `"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"`.
-    
-      * `formatter `:
-        Type _string_.
-        The id of the formatter for this handler.
+      * `formatters`:
+        Type _object_.
+        Formatter definitions. Each key is a formatter id and each value is an object describing how to configure the corresponding formatter.
+        The object's values are of type _object_.
+        Formatter configuration.
+        
+          * `format`:
+            Type _string_.
+            Format string in the given `style`.
+            Defaults to `"%(message)s"`.
+        
+          * `datefmt`:
+            Type _string_.
+            Format string in the given `style` for the date/time portion.
+            Defaults to `"%Y-%m-%d %H:%M:%S,uuu"`.
+        
+          * `style`:
+            Determines how the format string will be merged with its data.
+            Must be one of `"%", "{", "$"`.
     
       * `filters`:
-        Type _array_.
-        A list of ids of the filters for this logger.
-        The items of the array are of type _string_.
-
-  * `loggers`:
-    Type _object_.
-    Logger definitions. Each key is a logger name and each value is an object describing how to configure the corresponding logger. The tool's logger has the id `'zappend'`.
-    The object's values are of type _object_.
-    Logger configuration.
-    
-      * `level`:
-        The level of the logger.
-        Must be one of `"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"`.
-    
-      * `propagate `:
-        Type _boolean_.
-        The propagation setting of the logger.
-    
-      * `filters`:
-        Type _array_.
-        A list of ids of the filters for this logger.
-        The items of the array are of type _string_.
+        Type _object_.
+        Filter definitions. Each key is a filter id and each value is a dict describing how to configure the corresponding filter.
+        The object's values are of type _object_.
+        Filter configuration.
     
       * `handlers`:
-        Type _array_.
-        A list of ids of the handlers for this logger.
-        The items of the array are of type _string_.
+        Type _object_.
+        Handler definitions. Each key is a handler id and each value is an object describing how to configure the corresponding handler.
+        The object's values are of type _object_.
+        Handler configuration. All keys other than the following are passed through as keyword arguments to the handler's constructor.
+        The key `class` is required.
+        
+          * `class`:
+            Type _string_.
+            The fully qualified name of the handler class. See [logging handlers](https://docs.python.org/3/library/logging.handlers.html).
+        
+          * `level`:
+            The level of the handler.
+            Must be one of `"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"`.
+        
+          * `formatter `:
+            Type _string_.
+            The id of the formatter for this handler.
+        
+          * `filters`:
+            Type _array_.
+            A list of ids of the filters for this logger.
+            The items of the array are of type _string_.
+    
+      * `loggers`:
+        Type _object_.
+        Logger definitions. Each key is a logger name and each value is an object describing how to configure the corresponding logger. The tool's logger has the id `'zappend'`.
+        The object's values are of type _object_.
+        Logger configuration.
+        
+          * `level`:
+            The level of the logger.
+            Must be one of `"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"`.
+        
+          * `propagate `:
+            Type _boolean_.
+            The propagation setting of the logger.
+        
+          * `filters`:
+            Type _array_.
+            A list of ids of the filters for this logger.
+            The items of the array are of type _string_.
+        
+          * `handlers`:
+            Type _array_.
+            A list of ids of the handlers for this logger.
+            The items of the array are of type _string_.
+
 
 ## `dry_run`
 
