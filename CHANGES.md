@@ -1,4 +1,4 @@
-## Version 0.5.0 (in development)
+## Version 0.5.0 (2024-02-19)
 
 ### Enhancements
 
@@ -17,19 +17,23 @@
 * Introduced new configuration setting `attrs_update_mode` that controls 
   how dataset attributes are updated. [#59]
 
-* Simplified logging to console. You can now set configuration setting `logging`
-  to a log level which will implicitly enable console logging with given log
-  level. [#64]
+* Simplified logging to console. You can now set configuration setting 
+  `logging` to a log level which will implicitly enable console logging with
+  given log level. [#64]
 
 * Added a section in the notebook `examples/zappend-demo.ipynb`
   that demonstrates transaction rollbacks.
-
 
 * Added CLI option `--traceback`. [#57]
 
 * Added a section in the notebook `examples/zappend-demo.ipynb`
   that demonstrates transaction rollbacks.
 
+### Fixes
+
+* Fixed issue where a NetCDF package was missing to run the 
+  demo Notebook `examples/zappend-demo.ipynb` in 
+  [Binder](https://mybinder.readthedocs.io/). [#47]
 
 ## Version 0.4.1 (from 2024-02-13)
 
