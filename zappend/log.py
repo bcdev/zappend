@@ -25,6 +25,26 @@ def get_log_level(level_name: str) -> int:
     return _nameToLevel.get(level_name, logging.NOTSET)
 
 
-def configure_logging(logging_config: dict[str, Any] | None):
-    if logging_config:
-        logging.config.dictConfig(logging_config)
+def configure_logging(logging_config: dict[str, Any] | str | bool | None):
+    if not logging_config:
+        return
+    if isinstance(logging_config, (str, bool)):
+        logging_config = {
+            "version": 1,
+            "formatters": {
+                "normal": {
+                    "format": "%(asctime)s %(levelname)s %(message)s",
+                    "style": "%",
+                }
+            },
+            "handlers": {
+                "console": {"class": "logging.StreamHandler", "formatter": "normal"}
+            },
+            "loggers": {
+                "zappend": {
+                    "level": _nameToLevel.get(logging_config, logging.INFO),
+                    "handlers": ["console"],
+                }
+            },
+        }
+    logging.config.dictConfig(logging_config)
