@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.5">
     
     
       
@@ -313,11 +313,35 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#dataset-outline" class="md-nav__link">
+  <a href="#dataset-metadata" class="md-nav__link">
     <span class="md-ellipsis">
-      Dataset Outline
+      Dataset Metadata
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Dataset Metadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#outline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Outline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attributes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -341,7 +365,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#attributes" class="md-nav__link">
+  <a href="#attributes_1" class="md-nav__link">
     <span class="md-ellipsis">
       Attributes
     </span>
@@ -453,36 +477,36 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#str-and-zappendapifileobj" class="md-nav__link">
+  <a href="#types-str-and-fileobj" class="md-nav__link">
     <span class="md-ellipsis">
-      str and zappend.api.FileObj
+      Types str and FileObj
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#xarraydataset" class="md-nav__link">
+  <a href="#type-dataset" class="md-nav__link">
     <span class="md-ellipsis">
-      xarray.Dataset
+      Type Dataset
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#zappendapislicesource" class="md-nav__link">
+  <a href="#type-slicesource" class="md-nav__link">
     <span class="md-ellipsis">
-      zappend.api.SliceSource
+      Type SliceSource
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#zappendapislicefactory" class="md-nav__link">
+  <a href="#type-slicefactory" class="md-nav__link">
     <span class="md-ellipsis">
-      zappend.api.SliceFactory
+      Type SliceFactory
     </span>
   </a>
   
@@ -631,11 +655,35 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#dataset-outline" class="md-nav__link">
+  <a href="#dataset-metadata" class="md-nav__link">
     <span class="md-ellipsis">
-      Dataset Outline
+      Dataset Metadata
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Dataset Metadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#outline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Outline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attributes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -659,7 +707,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#attributes" class="md-nav__link">
+  <a href="#attributes_1" class="md-nav__link">
     <span class="md-ellipsis">
       Attributes
     </span>
@@ -771,36 +819,36 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#str-and-zappendapifileobj" class="md-nav__link">
+  <a href="#types-str-and-fileobj" class="md-nav__link">
     <span class="md-ellipsis">
-      str and zappend.api.FileObj
+      Types str and FileObj
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#xarraydataset" class="md-nav__link">
+  <a href="#type-dataset" class="md-nav__link">
     <span class="md-ellipsis">
-      xarray.Dataset
+      Type Dataset
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#zappendapislicesource" class="md-nav__link">
+  <a href="#type-slicesource" class="md-nav__link">
     <span class="md-ellipsis">
-      zappend.api.SliceSource
+      Type SliceSource
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#zappendapislicefactory" class="md-nav__link">
+  <a href="#type-slicefactory" class="md-nav__link">
     <span class="md-ellipsis">
-      zappend.api.SliceFactory
+      Type SliceFactory
     </span>
   </a>
   
@@ -920,7 +968,8 @@ number of multidimensional <em>Data Variables</em>, and usually 1-dimensional
 variables. A variable comprises the actual data array as well as metadata describing 
 the data dimensions, units, and encoding, such as chunking and compression.</p>
 </div>
-<h2 id="dataset-outline">Dataset Outline</h2>
+<h2 id="dataset-metadata">Dataset Metadata</h2>
+<h3 id="outline">Outline</h3>
 <p>If no further configuration is supplied, then the target dataset's outline and data 
 encoding is fully prescribed by the first slice dataset provided. By default, the
 dimension along which subsequent slice datasets are concatenated is <code>time</code>. If
@@ -973,6 +1022,75 @@ will be included:</p>
 <span class="w">    </span><span class="nt">&quot;excluded_variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;GridCellId&quot;</span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
+<h3 id="attributes">Attributes</h3>
+<p>The target dataset should exploit information about itself using global 
+metadata attributes.
+There are three choices to update the global attributes of the target 
+dataset from slices. The configuration setting <code>attrs_update_mode</code> 
+controls how this is done:</p>
+<ul>
+<li><code>"keep"</code> - use attributes from first slice dataset and keep them (default);</li>
+<li><code>"replace"</code> - replace existing attributes by attributes of last slice dataset;</li>
+<li><code>"update"</code> - update existing attributes by attributes of last slice dataset;</li>
+<li><code>"ignore"</code> - ignore attributes from slice datasets.</li>
+</ul>
+<p>Extra attributes can be added using the optional configuration setting <code>attrs</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;attrs_update_mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;keep&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;attrs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;Conventions&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CF-1.10&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SMOS Level 2C Soil Moisture 2-Days Composite&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Independently of the <code>attrs_update_mode</code> setting, extra attributes configured 
+by the <code>attrs</code> setting will always be used to update the resulting target 
+attributes. </p>
+<p>Attribute values in the <code>attrs</code> setting may also be computed dynamically using 
+the syntax <code>{{ expression }}</code>, where <code>expression</code> is an arbitrary Python 
+expression. For this to work, the setting <code>permit_eval</code> must be explicitly 
+set for security reasons:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;permit_eval&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;attrs_update_mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;keep&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;attrs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;time_coverage_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{ ds.time[0] }}&quot;</span><span class="p">,</span><span class="w"> </span>
+<span class="w">        </span><span class="nt">&quot;time_coverage_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{ ds.time[-1] }}&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Currently, the only variable accessible from expressions is <code>ds</code> which is 
+a reference to the current state of the target dataset after the last slice 
+append. It is of type 
+<a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a>.</p>
+<div class="admonition danger">
+<p class="admonition-title">Evil eval()</p>
+<p>The expressions in <code>{{ expression }}</code> are evaluated using the Python 
+<a href="https://docs.python.org/3/library/functions.html#eval">eval() function</a>.
+This can pose a threat to your application and environment. 
+Although <code>zappend</code> does not allow you to directly access Python built-in 
+functions via expressions, it should be used judiciously and with extreme 
+caution if used as part of a web service where configuration is injected 
+from the outside of your network.</p>
+</div>
+<p>The following utility functions can be used as well and are handy if you need 
+to store the upper and lower bounds of coordinates as attribute values:</p>
+<ul>
+<li><code>lower_bound(array, ref: "lower"|"upper"|"center" = "lower")</code>:
+  Return the lower bound of a one-dimensional (coordinate) array <code>array</code>.</li>
+<li><code>upper_bound(array, ref: "lower"|"upper"|"center" = "lower")</code>:
+  Return the upper bound of a one-dimensional (coordinate) array <code>array</code>.</li>
+</ul>
+<p>The <code>ref</code> value specifies the reference within an array element that is used 
+as a basis for the boundary computation. E.g., if coordinate labels refer to 
+array element centers, pass <code>ref="center"</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;attrs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;time_coverage_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{ lower_bound(ds.time, &#39;center&#39;) }}&quot;</span><span class="p">,</span><span class="w"> </span>
+<span class="w">        </span><span class="nt">&quot;time_coverage_end&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{ upper_bound(ds.time, &#39;center&#39;) }}&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="variable-metadata">Variable Metadata</h2>
 <p>Without any additional configuration, <code>zappend</code> uses the dimensions, attributes, 
 and encoding information from the data variables of the first slice dataset. 
@@ -1016,7 +1134,7 @@ named <code>chl</code> (Chlorophyll):</p>
 <span class="p">}</span>
 </code></pre></div>
 <p>An error will be raised if a variable from a subsequent slice has different dimensions.</p>
-<h3 id="attributes">Attributes</h3>
+<h3 id="attributes_1">Attributes</h3>
 <p>Extra variable attributes can be provided using the <code>attrs</code> setting:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -1260,18 +1378,19 @@ current processing context of type <code>zappend.api.Context</code>. </p>
 <p>If the <code>slice_source</code> setting is <em>not</em> specified, the slice items passed as <code>slices</code>
 argument to the <a href="../api/"><code>zappend</code></a> Python function can be one of the types described
 in the following subsections.</p>
-<h4 id="str-and-zappendapifileobj"><code>str</code> and <code>zappend.api.FileObj</code></h4>
+<h4 id="types-str-and-fileobj">Types <code>str</code> and <code>FileObj</code></h4>
 <p>A slice object of type <code>str</code> is interpreted as local file path or URI, in the case 
 the path has a protocol prefix, such as <code>s3://</code>.</p>
-<p>An alternative to providing the slice dataset as path or URI is using the <code>FileObj</code> 
-class, which combines a URI with dedicated filesystem storage options.</p>
+<p>An alternative to providing the slice dataset as path or URI is using the 
+<code>zappend.api.FileObj</code> class, which combines a URI with dedicated filesystem 
+storage options.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">FileObj</span>
 
 <span class="n">slice_obj</span> <span class="o">=</span> <span class="n">FileObj</span><span class="p">(</span><span class="n">slice_uri</span><span class="p">,</span> <span class="n">storage_options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> 
 </code></pre></div>
-<h4 id="xarraydataset"><code>xarray.Dataset</code></h4>
-<p>In-memory slice objects can be passed as <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a> objects. 
-Such objects may originate from opening datasets from some storage </p>
+<h4 id="type-dataset">Type <code>Dataset</code></h4>
+<p>In-memory slice objects can be passed as <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html"><code>xarray.Dataset</code></a> 
+objects. Such objects may originate from opening datasets from some storage </p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 
 <span class="n">slice_obj</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">slice_store</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span> 
@@ -1295,14 +1414,14 @@ using the <code>persist_mem_slice</code> setting: </p>
 <p>If the flag is set, in-memory slices will be persisted to a temporary Zarr before 
 appending them to the target dataset. It may prevent expensive re-computation of chunks 
 at the cost of additional i/o. It therefore defaults to <code>false</code>.</p>
-<h4 id="zappendapislicesource"><code>zappend.api.SliceSource</code></h4>
+<h4 id="type-slicesource">Type <code>SliceSource</code></h4>
 <p>Often you want to perform some custom cleanup after a slice has been processed and
 appended to the target dataset. In this case you can write your own 
 <code>zappend.api.SliceSource</code> by implementing its <code>get_dataset()</code> and <code>dispose()</code>
 methods. </p>
 <p>Slice source instances are supposed to be created by <em>slice factories</em>, see 
 subsection below.</p>
-<h4 id="zappendapislicefactory"><code>zappend.api.SliceFactory</code></h4>
+<h4 id="type-slicefactory">Type <code>SliceFactory</code></h4>
 <p>A slice factory is a 1-argument function that receives a processing context of type
 <code>zappend.api.Context</code> and yields a slice dataset object of one of the types
 described above. Since a slice factory cannot have additional arguments, it is 
@@ -1392,13 +1511,22 @@ control of the runtime logging: </p>
 the <a href="../config/">Configuration Reference</a> for more details.</p>
 <h2 id="logging">Logging</h2>
 <p>The <code>zappend</code> logging output is configured using the <code>logging</code> setting.
-Its configuration follows exactly the 
-<a href="https://docs.python.org/3/library/logging.config.html#logging-config-dictschema">dictionary schema</a>
-of the Python module <code>logging.config</code>. The logger used by the <code>zappend</code> tool is named 
-<code>zappend</code>. Note that you can also configure the logger of other Python modules, e.g.,
-<code>xarray</code> or <code>dask</code> using an entry in the <code>loggers</code> setting.</p>
-<p>Given here is an example that logs <code>zappend</code>'s output to the console using 
-the INFO level:</p>
+In the simplest case, if you just want logging output from <code>zappend</code> to the console:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;logging&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The above uses log level <code>INFO</code>. If you want a different log level, 
+just provide its name:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;logging&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DEBUG&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If you also want logging output in a file or using a different format or if you want to
+see logging output of other Python modules, you can configure Python's logging 
+system following the <a href="https://docs.python.org/3/library/logging.config.html#logging-config-dictschema">logging dictionary schema</a>.
+Given here is an example that logs <code>zappend</code>'s output to the console using 
+the <code>INFO</code> level (same as <code>"logging": true</code>):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;logging&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
@@ -1423,6 +1551,8 @@ the INFO level:</p>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
+<p>Using the <code>loggers</code> entry you can configure the logger of other Python modules, e.g.,
+<code>xarray</code> or <code>dask</code>. The logger used by the <code>zappend</code> tool is named <code>zappend</code>. </p>
 
 
 
@@ -1499,10 +1629,10 @@ the INFO level:</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.c18c5fb9.min.js"></script>
       
     
   </body>

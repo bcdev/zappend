@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.5">
     
     
       
@@ -497,18 +497,36 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#zappend.api.Context.append_dim_name" class="md-nav__link">
+  <a href="#zappend.api.Context.append_dim" class="md-nav__link">
     <span class="md-ellipsis">
-      append_dim_name
+      append_dim
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#zappend.api.Context.append_step_size" class="md-nav__link">
+  <a href="#zappend.api.Context.append_step" class="md-nav__link">
     <span class="md-ellipsis">
-      append_step_size
+      append_step
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.api.Context.attrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      attrs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.api.Context.attrs_update_mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      attrs_update_mode
     </span>
   </a>
   
@@ -536,6 +554,15 @@
   <a href="#zappend.api.Context.last_append_label" class="md-nav__link">
     <span class="md-ellipsis">
       last_append_label
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.api.Context.permit_eval" class="md-nav__link">
+    <span class="md-ellipsis">
+      permit_eval
     </span>
   </a>
   
@@ -1016,18 +1043,36 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#zappend.api.Context.append_dim_name" class="md-nav__link">
+  <a href="#zappend.api.Context.append_dim" class="md-nav__link">
     <span class="md-ellipsis">
-      append_dim_name
+      append_dim
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#zappend.api.Context.append_step_size" class="md-nav__link">
+  <a href="#zappend.api.Context.append_step" class="md-nav__link">
     <span class="md-ellipsis">
-      append_step_size
+      append_step
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.api.Context.attrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      attrs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.api.Context.attrs_update_mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      attrs_update_mode
     </span>
   </a>
   
@@ -1055,6 +1100,15 @@
   <a href="#zappend.api.Context.last_append_label" class="md-nav__link">
     <span class="md-ellipsis">
       last_append_label
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.api.Context.permit_eval" class="md-nav__link">
+    <span class="md-ellipsis">
+      permit_eval
     </span>
   </a>
   
@@ -1912,8 +1966,8 @@ target dataset:</p>
 
 
 
-<h3 id="zappend.api.Context.append_dim_name" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">append_dim_name</span><span class="p">:</span> <span class="nb">str</span></code>
+<h3 id="zappend.api.Context.append_dim" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">append_dim</span><span class="p">:</span> <span class="nb">str</span></code>
   
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
@@ -1934,8 +1988,8 @@ concatenated. Defaults to <code>"time"</code>.</p>
 
 
 
-<h3 id="zappend.api.Context.append_step_size" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">append_step_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span></code>
+<h3 id="zappend.api.Context.append_step" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">append_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span></code>
   
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
@@ -1948,6 +2002,50 @@ concatenated. Defaults to <code>"time"</code>.</p>
   
       <p>The enforced step size in the append dimension between two slices.
 Defaults to <code>None</code>.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.api.Context.attrs" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">attrs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Global dataset attributes. May include dynamically computed
+placeholders if the form <code>{{ expression }}</code>.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.api.Context.attrs_update_mode" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">attrs_update_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;keep&#39;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;replace&#39;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;update&#39;</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The mode used to deal with global slice dataset attributes.
+One of <code>"keep"</code>, <code>"replace"</code>, <code>"update"</code>.</p>
   </div>
 
 </div>
@@ -2013,6 +2111,30 @@ Defaults to <code>None</code>.</p>
       <p>The last label found in the coordinate variable that corresponds to
 the append dimension. Its value is <code>None</code> if no such variable exists or the
 variable is empty or if [append_step_size][] is <code>None</code>.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.api.Context.permit_eval" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">permit_eval</span><span class="p">:</span> <span class="nb">bool</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Check if dynamically computed values in dataset attributes <code>attrs</code>
+using the syntax <code>{{ expression }}</code> is permitted. Executing arbitrary
+Python expressions is a security risk, therefore this must be explicitly
+enabled.</p>
   </div>
 
 </div>
@@ -3115,10 +3237,10 @@ for a given processing context.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.c18c5fb9.min.js"></script>
       
     
   </body>
