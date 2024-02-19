@@ -29,6 +29,11 @@
 * Added a section in the notebook `examples/zappend-demo.ipynb`
   that demonstrates transaction rollbacks.
 
+### Fixes
+
+* Fixed issue where a NetCDF package was missing to run the 
+  demo Notebook `examples/zappend-demo.ipynb` in 
+  [Binder](https://mybinder.readthedocs.io/). [#47]
 
 ## Version 0.4.1 (from 2024-02-13)
 
