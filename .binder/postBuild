@@ -4,3 +4,4 @@
 
 set -ex
 pip install -r requirements.txt -r .binder/requirements.txt
+pip install -ve .
