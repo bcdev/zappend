@@ -143,6 +143,36 @@ Variable metadata.
     Type _object_.
     Arbitrary variable metadata attributes.
 
+## `attrs`
+
+Type _object_.
+Arbitrary dataset attributes. If `permit_eval` is set to `true`, string values may include Python expressions enclosed in `{{` and `}}` to dynamically compute attribute values; in the expression, the current dataset  is named `ds`. Refer to the user guide for more information.
+
+## `attrs_update_mode`
+
+The mode used update target attributes from slice attributes. Independently of this setting, extra attributes configured by the `attrs` setting will finally be used to update the resulting target attributes.
+Must be one of the following:
+
+  * Use attributes from first slice dataset and keep them.
+    Its value is `"keep"`.
+
+  * Replace existing attributes by attributes of last slice dataset.
+    Its value is `"replace"`.
+
+  * Update existing attributes by attributes of last slice dataset.
+    Its value is `"update"`.
+
+  * Ignore attributes from slice datasets.
+    Its value is `"ignore"`.
+
+Defaults to `"keep"`.
+
+## `permit_eval`
+
+Type _boolean_.
+Allow for dynamically computed values in dataset attributes `attrs` using the syntax `{{ expression }}`.  Executing arbitrary Python expressions is a security risk, therefore this must be explicitly enabled. Refer to the user guide for more information.
+Defaults to `false`.
+
 ## `target_dir`
 
 Type _string_.

@@ -3,12 +3,13 @@
 # https://opensource.org/licenses/MIT.
 
 import tempfile
-from typing import Any, Dict
+from typing import Any, Dict, Literal
 
 import xarray as xr
 
 from .config import DEFAULT_APPEND_DIM
 from .config import DEFAULT_APPEND_STEP
+from .config import DEFAULT_ATTRS_UPDATE_MODE
 from .config import DEFAULT_SLICE_POLLING_INTERVAL
 from .config import DEFAULT_SLICE_POLLING_TIMEOUT
 from .config import DEFAULT_ZARR_VERSION
@@ -36,16 +37,16 @@ class Context:
         target_storage_options = config.get("target_storage_options")
         self._target_dir = FileObj(target_uri, storage_options=target_storage_options)
 
-        self._append_dim_name = config.get("append_dim") or DEFAULT_APPEND_DIM
-        self._append_step_size = config.get("append_step") or DEFAULT_APPEND_STEP
+        self._append_dim = config.get("append_dim") or DEFAULT_APPEND_DIM
+        self._append_step = config.get("append_step") or DEFAULT_APPEND_STEP
         self._last_append_label = None
 
         try:
             with xr.open_zarr(
                 target_uri, storage_options=target_storage_options
             ) as target_dataset:
-                if self.append_step_size is not None:
-                    append_var = target_dataset.get(self._append_dim_name)
+                if self.append_step is not None:
+                    append_var = target_dataset.get(self._append_dim)
                     if append_var is not None and append_var.size > 0:
                         self._last_append_label = append_var[-1]
                 target_metadata = DatasetMetadata.from_dataset(target_dataset, config)
@@ -80,18 +81,34 @@ class Context:
         return self._config.get("zarr_version", DEFAULT_ZARR_VERSION)
 
     @property
-    def append_dim_name(self) -> str:
+    def append_dim(self) -> str:
         """The name of the append dimension along which slice datasets will be
         concatenated. Defaults to `"time"`.
         """
-        return self._append_dim_name
+        return self._append_dim
 
     @property
-    def append_step_size(self) -> int | float | str | None:
+    def append_step(self) -> int | float | str | None:
         """The enforced step size in the append dimension between two slices.
         Defaults to `None`.
         """
-        return self._append_step_size
+        return self._append_step
+
+    @property
+    def attrs(self) -> dict[str, Any]:
+        """Global dataset attributes. May include dynamically computed
+        placeholders if the form `{{ expression }}`.
+        """
+        return self._config.get("attrs") or {}
+
+    @property
+    def attrs_update_mode(
+        self,
+    ) -> Literal["keep"] | Literal["replace"] | Literal["update"]:
+        """The mode used to deal with global slice dataset attributes.
+        One of `"keep"`, `"replace"`, `"update"`.
+        """
+        return self._config.get("attrs_update_mode") or DEFAULT_ATTRS_UPDATE_MODE
 
     @property
     def last_append_label(self) -> Any | None:
@@ -100,6 +117,15 @@ class Context:
         variable is empty or if [append_step_size][append_step_size] is `None`.
         """
         return self._last_append_label
+
+    @property
+    def permit_eval(self) -> bool:
+        """Check if dynamically computed values in dataset attributes `attrs`
+        using the syntax `{{ expression }}` is permitted. Executing arbitrary
+        Python expressions is a security risk, therefore this must be explicitly
+        enabled.
+        """
+        return bool(self._config.get("permit_eval"))
 
     @property
     def target_metadata(self) -> DatasetMetadata | None:

@@ -2,6 +2,21 @@
 
 ### Enhancements
 
+* The configuration setting  `attrs` can now be used to define dynamically 
+  computed dataset attributes using the syntax `{{ expression }}`. [#60]
+  
+  Example:
+  ```yaml
+  permit_eval: true
+  attrs:
+    title: HROC Ocean Colour Monthly Composite
+    time_coverage_start: {{ lower_bound(ds.time) }}
+    time_coverage_end: {{ upper_bound(ds.time) }}
+  ```
+
+* Introduced new configuration setting `attrs_update_mode` that controls 
+  how dataset attributes are updated. [#59]
+
 * Simplified logging to console. You can now set configuration setting `logging`
   to a log level which will implicitly enable console logging with given log
   level. [#64]
@@ -9,7 +24,11 @@
 * Added a section in the notebook `examples/zappend-demo.ipynb`
   that demonstrates transaction rollbacks.
 
+
 * Added CLI option `--traceback`. [#57]
+
+* Added a section in the notebook `examples/zappend-demo.ipynb`
+  that demonstrates transaction rollbacks.
 
 
 ## Version 0.4.1 (from 2024-02-13)

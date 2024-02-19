@@ -7,6 +7,7 @@ from typing import Any, Literal
 
 from .defaults import DEFAULT_APPEND_DIM
 from .defaults import DEFAULT_APPEND_STEP
+from .defaults import DEFAULT_ATTRS_UPDATE_MODE
 from .defaults import DEFAULT_SLICE_POLLING_INTERVAL
 from .defaults import DEFAULT_SLICE_POLLING_TIMEOUT
 from .defaults import DEFAULT_ZARR_VERSION
@@ -178,7 +179,7 @@ VARIABLES_SCHEMA = {
             },
             encoding=VARIABLE_ENCODING_SCHEMA,
             attrs={
-                "description": "Arbitrary variable metadata" " attributes.",
+                "description": "Arbitrary variable metadata attributes.",
                 "type": "object",
                 "additionalProperties": True,
             },
@@ -541,6 +542,65 @@ CONFIG_SCHEMA_V1 = {
             "items": {"type": "string", "minLength": 1},
         },
         variables=VARIABLES_SCHEMA,
+        attrs={
+            "description": (
+                "Arbitrary dataset attributes."
+                " If `permit_eval` is set to `true`,"
+                " string values may include Python expressions"
+                " enclosed in `{{` and `}}` to dynamically compute"
+                " attribute values; in the expression, the current dataset "
+                " is named `ds`."
+                " Refer to the user guide for more information."
+            ),
+            "type": "object",
+            "additionalProperties": True,
+        },
+        attrs_update_mode={
+            "description": (
+                "The mode used update target attributes from slice"
+                " attributes. Independently of this setting, extra attributes"
+                " configured by the `attrs` setting will finally be used to"
+                " update the resulting target attributes."
+            ),
+            "oneOf": [
+                {
+                    "description": (
+                        "Use attributes from first slice dataset and keep them."
+                    ),
+                    "const": "keep",
+                },
+                {
+                    "description": (
+                        "Replace existing attributes by attributes"
+                        " of last slice dataset."
+                    ),
+                    "const": "replace",
+                },
+                {
+                    "description": (
+                        "Update existing attributes by attributes"
+                        " of last slice dataset."
+                    ),
+                    "const": "update",
+                },
+                {
+                    "description": "Ignore attributes from slice datasets.",
+                    "const": "ignore",
+                },
+            ],
+            "default": DEFAULT_ATTRS_UPDATE_MODE,
+        },
+        permit_eval={
+            "description": (
+                "Allow for dynamically computed values in dataset attributes"
+                " `attrs` using the syntax `{{ expression }}`. "
+                " Executing arbitrary Python expressions is a security"
+                " risk, therefore this must be explicitly enabled."
+                " Refer to the user guide for more information."
+            ),
+            "type": "boolean",
+            "default": False,
+        },
         target_dir={
             "description": (
                 "The URI or local path of the target Zarr dataset."
@@ -562,8 +622,8 @@ CONFIG_SCHEMA_V1 = {
                 " a slice source for each slice item. If a class is given, it must be "
                 " derived from `zappend.api.SliceSource`."
                 " If a function is given, it must return an instance of "
-                " `zappend.api.SliceSource`. Refer to the user guide for more"
-                " information."
+                " `zappend.api.SliceSource`."
+                " Refer to the user guide for more information."
             ),
             "type": "string",
             "minLength": 1,

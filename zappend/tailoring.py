@@ -6,56 +6,82 @@ import dask.array
 import numpy as np
 import xarray as xr
 
-from .metadata import DatasetMetadata
+from .context import Context
 from .log import logger
+from .metadata import DatasetMetadata
 
 
-def tailor_target_dataset(
-    dataset: xr.Dataset, target_metadata: DatasetMetadata
-) -> xr.Dataset:
-    dataset = _strip_dataset(dataset, target_metadata)
-    dataset = _complete_dataset(dataset, target_metadata)
+def tailor_target_dataset(ctx: Context, slice_ds: xr.Dataset) -> xr.Dataset:
+    target_metadata = ctx.target_metadata
+    attrs_update_mode = ctx.attrs_update_mode
+    attrs = ctx.attrs
 
-    # Complement dataset attributes and set
-    # variable encoding and attributes
-    dataset.attrs = target_metadata.attrs
+    target_ds = _strip_dataset(slice_ds, target_metadata)
+    target_ds = _complete_dataset(target_ds, target_metadata)
+
+    # TODO: use ctx.attrs_update_mode to set initial dataset attributes
+
+    # Set initial dataset attributes
+    if attrs_update_mode == "ignore":
+        # Ignore attributes from slice dataset
+        target_ds.attrs = {}
+    else:
+        target_ds.attrs = target_metadata.attrs
+    if attrs:
+        # Always update by configured attributes
+        target_ds.attrs.update(attrs)
+
+    # Set variable encoding and attributes
     for var_name, var_metadata in target_metadata.variables.items():
-        variable = dataset.variables[var_name]
+        variable = target_ds.variables[var_name]
         variable.encoding = var_metadata.encoding.to_dict()
         variable.attrs = var_metadata.attrs
-    return dataset
+
+    return target_ds
 
 
-def tailor_slice_dataset(
-    dataset: xr.Dataset, target_metadata: DatasetMetadata, append_dim_name: str
-) -> xr.Dataset:
-    dataset = _strip_dataset(dataset, target_metadata)
-    dataset = _complete_dataset(dataset, target_metadata)
+def tailor_slice_dataset(ctx: Context, slice_ds: xr.Dataset) -> xr.Dataset:
+    target_metadata = ctx.target_metadata
+    append_dim = ctx.append_dim
+    attrs_update_mode = ctx.attrs_update_mode
+    attrs = ctx.attrs
+
+    slice_ds = _strip_dataset(slice_ds, target_metadata)
+    slice_ds = _complete_dataset(slice_ds, target_metadata)
 
     const_variables = [
-        k for k, v in dataset.variables.items() if append_dim_name not in v.dims
+        k for k, v in slice_ds.variables.items() if append_dim not in v.dims
     ]
     if const_variables:
-        # Strip variables that do not have append_dim_name
+        # Strip variables that do not have append_dim
         # as dimension, e.g., "x", "y", "crs", ...
-        dataset = dataset.drop_vars(const_variables)
+        slice_ds = slice_ds.drop_vars(const_variables)
 
     # https://github.com/bcdev/zappend/issues/56
     # slice_dataset.to_zarr(store, mode="a", ...) will replace
     # global attributes.
-    # Therefore, we must replace slice dataset attributes by
-    # existing target dataset attributes.
-    # However, users should be able to select the appropriate
-    # operation, e.g., a new config setting target_attrs_op with
-    # values "first" (default), "last", "update".
-    dataset.attrs = target_metadata.attrs
+    # Therefore, we must take care how slice dataset attributes
+    # are updated.
+    # If attrs_update_op is "replace", we just keep slice attributes
+    if attrs_update_mode == "keep":
+        # Keep existing attributes
+        slice_ds.attrs = target_metadata.attrs
+    elif attrs_update_mode == "update":
+        # Update from last slice dataset
+        slice_ds.attrs = target_metadata.attrs | slice_ds.attrs
+    elif attrs_update_mode == "ignore":
+        # Ignore attributes from slice dataset
+        slice_ds.attrs = {}
+    if attrs:
+        # Always update by configured attributes
+        slice_ds.attrs.update(attrs)
 
     # Remove any encoding and attributes from slice,
     # since both are prescribed by target
-    for variable in dataset.variables.values():
+    for variable in slice_ds.variables.values():
         variable.encoding = {}
         variable.attrs = {}
-    return dataset
+    return slice_ds
 
 
 def _strip_dataset(dataset: xr.Dataset, target_metadata: DatasetMetadata) -> xr.Dataset:

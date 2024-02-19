@@ -84,7 +84,9 @@ This remainder of this guide explains the how to use the various `zappend`
     variables. A variable comprises the actual data array as well as metadata describing 
     the data dimensions, units, and encoding, such as chunking and compression.
 
-## Dataset Outline
+## Dataset Metadata
+
+### Outline
 
 If no further configuration is supplied, then the target dataset's outline and data 
 encoding is fully prescribed by the first slice dataset provided. By default, the
@@ -150,6 +152,85 @@ Often, it is easier to specify which variables should be excluded:
 ```json
 {
     "excluded_variables": ["GridCellId"]
+}
+```
+### Attributes
+
+The target dataset should exploit information about itself using global 
+metadata attributes.
+There are three choices to update the global attributes of the target 
+dataset from slices. The configuration setting `attrs_update_mode` 
+controls how this is done:
+
+* `"keep"` - use attributes from first slice dataset and keep them (default);
+* `"replace"` - replace existing attributes by attributes of last slice dataset;
+* `"update"` - update existing attributes by attributes of last slice dataset;
+* `"ignore"` - ignore attributes from slice datasets.
+
+Extra attributes can be added using the optional configuration setting `attrs`:
+
+```json
+{
+    "attrs_update_mode": "keep",
+    "attrs": {
+        "Conventions": "CF-1.10",
+        "title": "SMOS Level 2C Soil Moisture 2-Days Composite"
+    }
+}
+```
+
+Independently of the `attrs_update_mode` setting, extra attributes configured 
+by the `attrs` setting will always be used to update the resulting target 
+attributes. 
+
+Attribute values in the `attrs` setting may also be computed dynamically using 
+the syntax `{{ expression }}`, where `expression` is an arbitrary Python 
+expression. For this to work, the setting `permit_eval` must be explicitly 
+set for security reasons:
+
+```json
+{
+    "permit_eval": true,
+    "attrs_update_mode": "keep",
+    "attrs": {
+        "time_coverage_start": "{{ ds.time[0] }}", 
+        "time_coverage_end": "{{ ds.time[-1] }}"
+    }
+}
+```
+
+Currently, the only variable accessible from expressions is `ds` which is 
+a reference to the current state of the target dataset after the last slice 
+append. It is of type 
+[xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html).
+
+!!! danger "Evil eval()"
+    The expressions in `{{ expression }}` are evaluated using the Python 
+    [eval() function](https://docs.python.org/3/library/functions.html#eval).
+    This can pose a threat to your application and environment. 
+    Although `zappend` does not allow you to directly access Python built-in 
+    functions via expressions, it should be used judiciously and with extreme 
+    caution if used as part of a web service where configuration is injected 
+    from the outside of your network.
+
+The following utility functions can be used as well and are handy if you need 
+to store the upper and lower bounds of coordinates as attribute values:
+
+* `lower_bound(array, ref: "lower"|"upper"|"center" = "lower")`:
+  Return the lower bound of a one-dimensional (coordinate) array `array`.
+* `upper_bound(array, ref: "lower"|"upper"|"center" = "lower")`:
+  Return the upper bound of a one-dimensional (coordinate) array `array`.
+ 
+The `ref` value specifies the reference within an array element that is used 
+as a basis for the boundary computation. E.g., if coordinate labels refer to 
+array element centers, pass `ref="center"`.
+    
+```json
+{
+    "attrs": {
+        "time_coverage_start": "{{ lower_bound(ds.time, 'center') }}", 
+        "time_coverage_end": "{{ upper_bound(ds.time, 'center') }}"
+    }
 }
 ```
 

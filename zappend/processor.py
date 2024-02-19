@@ -2,15 +2,21 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from typing import Iterable
+from typing import Iterable, Any
+import collections.abc
 
 import numpy as np
 import xarray as xr
+import zarr.attrs
+import zarr.convenience
 
 from .config import ConfigLike
 from .config import exclude_from_config
 from .config import normalize_config
 from .config import validate_config
+from .config import eval_dyn_config_attrs
+from .config import get_dyn_config_attrs_env
+from .config import has_dyn_config_attrs
 from .context import Context
 from .fsutil.transaction import Transaction
 from .fsutil.transaction import RollbackCallback
@@ -20,8 +26,8 @@ from .profiler import Profiler
 from .rollbackstore import RollbackStore
 from .slice import SliceObj
 from .slice import open_slice_source
-from .tailoring import tailor_target_dataset
 from .tailoring import tailor_slice_dataset
+from .tailoring import tailor_target_dataset
 
 
 class Processor:
@@ -98,7 +104,7 @@ class Processor:
                 ctx.target_metadata = slice_metadata
             else:
                 ctx.target_metadata.assert_compatible_slice(
-                    slice_metadata, ctx.append_dim_name
+                    slice_metadata, ctx.append_dim
                 )
 
             verify_append_labels(ctx, slice_dataset)
@@ -118,11 +124,12 @@ def create_target_from_slice(
 ):
     target_dir = ctx.target_dir
     logger.info(f"Creating target dataset {target_dir.uri}")
-    target_ds = tailor_target_dataset(slice_ds, ctx.target_metadata)
+
+    target_ds = tailor_target_dataset(ctx, slice_ds)
+
     if ctx.dry_run:
         return
-    # TODO: adjust global attributes dependent on append_dim,
-    #  e.g., time coverage
+
     try:
         target_ds.to_zarr(
             store=target_dir.uri,
@@ -131,6 +138,9 @@ def create_target_from_slice(
             write_empty_chunks=False,
             consolidated=True,
         )
+
+        post_create_target(ctx, target_ds)
+
     finally:
         if target_dir.exists():
             rollback_cb("delete_dir", "", None)
@@ -141,34 +151,76 @@ def update_target_from_slice(
 ):
     target_dir = ctx.target_dir
     logger.info(f"Updating target dataset {target_dir.uri}")
-    append_dim_name = ctx.append_dim_name
 
-    slice_ds = tailor_slice_dataset(slice_ds, ctx.target_metadata, append_dim_name)
+    slice_ds = tailor_slice_dataset(ctx, slice_ds)
 
     if ctx.dry_run:
         return
 
-    # TODO: adjust global attributes dependent on append_dim,
-    #  e.g., time coverage
-
-    store = RollbackStore(target_dir.fs.get_mapper(root=target_dir.path), rollback_cb)
+    target_store = RollbackStore(
+        target_dir.fs.get_mapper(root=target_dir.path), rollback_cb
+    )
     slice_ds.to_zarr(
-        store=store,
+        store=target_store,
         write_empty_chunks=False,
         consolidated=True,
         mode="a",
-        append_dim=append_dim_name,
+        append_dim=ctx.append_dim,
     )
+
+    post_update_target(ctx, target_store, slice_ds)
+
+
+def post_create_target(ctx: Context, target_ds: xr.Dataset):
+    """Post-process the target dataset given by `target_ds`
+    that has just been created.
+
+    Args:
+        ctx: Current processing context.
+        target_ds: The target dataset.
+    """
+    target_attrs = target_ds.attrs
+    if ctx.permit_eval and has_dyn_config_attrs(target_attrs):
+        target_store = ctx.target_dir.fs.get_mapper(root=ctx.target_dir.path)
+        resolve_target_attrs(target_store, target_ds, target_attrs)
+
+
+def post_update_target(ctx: Context, target_store: RollbackStore, slice_ds: xr.Dataset):
+    """Post-process the target dataset given by `target_store` that has just
+    been updated by `slice_ds`.
+
+    Args:
+        ctx: Current processing context.
+        target_store: The target dataset as a rollback store.
+        slice_ds: The current slice dataset that has already been appended.
+    """
+    target_attrs = slice_ds.attrs
+    if ctx.permit_eval and has_dyn_config_attrs(target_attrs):
+        with xr.open_zarr(target_store) as target_ds:
+            resolve_target_attrs(target_store, target_ds, target_attrs)
+
+
+def resolve_target_attrs(
+    target_store: collections.abc.MutableMapping,
+    target_ds: xr.Dataset,
+    target_attrs: dict[str, Any],
+):
+    resolved_attrs = eval_dyn_config_attrs(
+        target_attrs,
+        get_dyn_config_attrs_env(target_ds),
+    )
+    zarr.attrs.Attributes(target_store).update(resolved_attrs)
+    # noinspection PyTypeChecker
+    zarr.convenience.consolidate_metadata(target_store)
 
 
 def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):
-    append_step_size = ctx.append_step_size
+    append_step_size = ctx.append_step
     if append_step_size is None:
         # If step size is not specified, there is nothing to do
         return
 
-    append_dim_name = ctx.append_dim_name
-    append_labels: xr.DataArray = slice_ds.get(append_dim_name)
+    append_labels: xr.DataArray = slice_ds.get(ctx.append_dim)
     if append_labels is None:
         # It is ok to not have append-labels in the dataset
         return

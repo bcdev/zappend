@@ -37,16 +37,16 @@ class ContextTest(unittest.TestCase):
 
     def test_append_dim(self):
         ctx = Context({"target_dir": "memory://target.zarr"})
-        self.assertEqual("time", ctx.append_dim_name)
+        self.assertEqual("time", ctx.append_dim)
         ctx = Context({"target_dir": "memory://target.zarr", "append_dim": "depth"})
-        self.assertEqual("depth", ctx.append_dim_name)
+        self.assertEqual("depth", ctx.append_dim)
 
     def test_append_step(self):
         make_test_dataset(uri="memory://target.zarr")
         ctx = Context({"target_dir": "memory://target.zarr"})
-        self.assertEqual(None, ctx.append_step_size)
+        self.assertEqual(None, ctx.append_step)
         ctx = Context({"target_dir": "memory://target.zarr", "append_step": "1D"})
-        self.assertEqual("1D", ctx.append_step_size)
+        self.assertEqual("1D", ctx.append_step)
 
     def test_last_append_label(self):
         make_test_dataset(uri="memory://target.zarr")
@@ -56,6 +56,24 @@ class ContextTest(unittest.TestCase):
         self.assertEqual(None, ctx.last_append_label)
         ctx = Context({"target_dir": "memory://target.zarr", "append_step": "1D"})
         self.assertEqual(np.datetime64("2024-01-03"), ctx.last_append_label)
+
+    def test_attrs(self):
+        make_test_dataset(uri="memory://target.zarr")
+        ctx = Context({"target_dir": "memory://target.zarr"})
+        self.assertEqual({}, ctx.attrs)
+        self.assertEqual("keep", ctx.attrs_update_mode)
+        self.assertEqual(False, ctx.permit_eval)
+        ctx = Context(
+            {
+                "target_dir": "memory://target.zarr",
+                "attrs": {"title": "OCC 2024"},
+                "attrs_update_mode": "update",
+                "permit_eval": True,
+            }
+        )
+        self.assertEqual({"title": "OCC 2024"}, ctx.attrs)
+        self.assertEqual("update", ctx.attrs_update_mode)
+        self.assertEqual(True, ctx.permit_eval)
 
     def test_slice_polling(self):
         ctx = Context({"target_dir": "memory://target.zarr"})
