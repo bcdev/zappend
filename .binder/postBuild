@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# See https://mybinder.readthedocs.io/en/latest/using/config_files.html
+
+set -ex
+pip install -r requirements.txt -r .binder/requirements.txt
+pip install -ve .
