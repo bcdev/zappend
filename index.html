@@ -14,7 +14,7 @@
       
       
       <link rel="icon" href="assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.5">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
     
     
       
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#the-zappend-tool" class="md-skip">
+        <a href="#zappend-documentation" class="md-skip">
           Skip to content
         </a>
       
@@ -495,36 +495,40 @@
 
 <!--- Align following section with README.md -->
 
-<h1 id="the-zappend-tool">The zappend Tool</h1>
-<p><code>zappend</code> is a tool written in Python that is used for robustly creating and updating 
-Zarr datacubes from smaller dataset slices. It is built on top of the awesome Python
-packages <a href="https://docs.xarray.dev/">xarray</a> and <a href="https://zarr.readthedocs.io/">zarr</a>.</p>
+<h1 id="zappend-documentation">zappend Documentation</h1>
+<p><code>zappend</code> is a tool written in Python that is used for robustly creating and 
+updating Zarr datacubes from smaller dataset slices. It is built on top of the 
+awesome Python packages <a href="https://docs.xarray.dev/">xarray</a> and <a href="https://zarr.readthedocs.io/">zarr</a>.</p>
 <h2 id="motivation">Motivation</h2>
-<p>The objective of <code>zappend</code> is to address recurring memory issues when generating large 
-geospatial datacubes using the <a href="https://zarr.readthedocs.io/en/stable/spec/v2.html">Zarr format</a> 
-by subsequently concatenating data slices along an append dimension, e.g., <code>time</code> 
-(the default) for geospatial satellite observations.<br />
-Each append step is atomic, that is, the append operation is a transaction that can be 
-rolled back, in case the append operation fails. This ensures integrity of the target 
-data cube. </p>
+<p>The objective of <code>zappend</code> is empowering geodata scientists and developers to 
+robustly create large data cubes. The tool performs transaction-based dataset 
+appends to existing data cubes in the 
+<a href="https://zarr.readthedocs.io/en/stable/spec/v2.html">Zarr format</a>. If an error 
+occurs during an append step — typically due to I/O problems or out-of-memory 
+conditions — <code>zappend</code> will automatically roll back the operation, ensuring that 
+the existing data cube maintains its structural integrity. The design drivers 
+behind zappend are first ease of use and secondly, high configurability 
+regarding filesystems, data source types, data cube outline and encoding. </p>
 <h2 id="features">Features</h2>
 <p>The <code>zappend</code> tool provides the following features:</p>
 <ul>
-<li><strong>Locking</strong>: While the target dataset is being modified, a file lock is created, 
-  effectively preventing concurrent dataset modifications.</li>
+<li><strong>Locking</strong>: While the target dataset is being modified, a file lock is 
+  created, effectively preventing concurrent dataset modifications.</li>
 <li><strong>Transaction-based dataset appends</strong>: On failure during an append step, 
   the transaction is rolled back, so that the target dataset remains valid and 
   preserves its integrity.</li>
-<li><strong>Filesystem transparency</strong>: The target dataset may be generated and updated in 
-  any writable filesystems supported by the 
+<li><strong>Filesystem transparency</strong>: The target dataset may be generated and updated 
+  in any writable filesystems supported by the 
   <a href="https://filesystem-spec.readthedocs.io/">fsspec</a> package. 
   The same holds for the slice datasets to be appended.</li>
 <li><strong>Dataset polling</strong>: The tool can be configured to wait for slice datasets to 
   become available. </li>
-<li><strong>CLI and Python API</strong>: The tool can be used in a shell using the <a href="cli/"><code>zappend</code></a>
-  command or from Python. When used from Python using the 
-  <a href="api/"><code>zappend()</code></a> function, slice datasets can be passed as local file paths, 
-  URIs, as datasets of type 
+<li><strong>Dynamic attributes</strong>: Use syntax <code>{{ expression }}</code> to update the target 
+  dataset with dynamically computed attribute values. </li>
+<li><strong>CLI and Python API</strong>: The tool can be used in a shell using the 
+  <a href="cli/"><code>zappend</code></a> command or from Python. When used from Python using the 
+  <a href="api/"><code>zappend()</code></a> function, slice datasets can be passed as local file 
+  paths, URIs, as datasets of type 
   <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a>, or as custom 
   <a href="https://bcdev.github.io/zappend/api/#class-slicesource">zappend.api.SliceSource</a> objects.</li>
 </ul>
@@ -625,10 +629,10 @@ not exist yet or updates it with the current slice, if it already exists.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.c18c5fb9.min.js"></script>
+      <script src="assets/javascripts/bundle.d7c377c4.min.js"></script>
       
     
   </body>
