@@ -18,6 +18,28 @@ class TransactionTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
 
+    def test_rollback_after_create_dir(self):
+        """See https://github.com/bcdev/zappend/issues/69"""
+        test_root = FileObj("memory://test")
+        test_root.mkdir()
+        target_dir = test_root / "target.zarr"
+        try:
+            with Transaction(target_dir, FileObj("memory://temp")) as rollback_cb:
+                try:
+                    # create target directory
+                    target_dir.mkdir()
+                    # and then suddenly fail
+                    raise OSError("core meltdown")
+                finally:
+                    # assert target directory created
+                    self.assertTrue(target_dir.exists())
+                    # notify this
+                    rollback_cb("delete_dir", "", None)
+        except OSError:
+            # assert that it correctly rolled back
+            # creating of target directory
+            self.assertFalse(target_dir.exists())
+
     def test_transaction_success(self):
         self._run_transaction_test(fail=False, rollback=True)
 
@@ -79,14 +101,14 @@ class TransactionTest(unittest.TestCase):
                 if rollback:
                     rollback_data = rollback_file.read(mode="rt")
                     rollback_records = [
-                        line.split()[:2] for line in rollback_data.split("\n")
+                        line.split(";")[:2] for line in rollback_data.split("\n")
                     ]
                     self.assertEqual(
                         [
                             ["replace_file", "file-1.txt"],
                             ["delete_file", "file-2.txt"],
                             ["delete_dir", "folder"],
-                            [],
+                            [""],
                         ],
                         rollback_records,
                     )

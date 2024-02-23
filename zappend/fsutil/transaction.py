@@ -23,6 +23,7 @@ RollbackCallback = Callable[
 
 LOCK_EXT = ".lock"
 ROLLBACK_FILE = "__rollback__.txt"
+ROLLBACK_CSV_SEP = ";"
 
 ROLLBACK_ACTIONS = "delete_dir", "delete_file", "replace_file"
 
@@ -141,8 +142,10 @@ class Transaction:
             rollback_txt = self._rollback_file.read(mode="r")
             rollback_records = [
                 record
-                for record in [line.split() for line in rollback_txt.split("\n")]
-                if record
+                for record in [
+                    line.split(ROLLBACK_CSV_SEP) for line in rollback_txt.split("\n")
+                ]
+                if record and record != [""]
             ]
 
             if rollback_records:
@@ -209,13 +212,14 @@ class Transaction:
             return
 
         assert hasattr(self, "_" + action)
+
         if data is not None:
             backup_id = str(uuid.uuid4())
             backup_file = self._rollback_dir.for_path(backup_id)
             backup_file.write(data)
-            rollback_entry = f"{action} {path} {backup_id}"
+            rollback_entry = ROLLBACK_CSV_SEP.join((action, path, backup_id))
         else:
-            rollback_entry = f"{action} {path}"
+            rollback_entry = ROLLBACK_CSV_SEP.join((action, path))
 
         logger.debug(f"Recording rollback record: {rollback_entry!r}")
         self._rollback_file.write(rollback_entry + "\n", mode="a")
