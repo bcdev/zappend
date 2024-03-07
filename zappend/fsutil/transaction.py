@@ -84,14 +84,17 @@ class Transaction:
     ):
         transaction_id = f"zappend-{uuid.uuid4()}"
         rollback_dir = temp_dir / transaction_id
-        lock_file = target_dir.parent / (target_dir.filename + LOCK_EXT)
         self._id = transaction_id
         self._rollback_dir = rollback_dir
         self._rollback_file = rollback_dir / ROLLBACK_FILE
         self._target_dir = target_dir
-        self._lock_file = lock_file
+        self._lock_file = self.get_lock_file(target_dir)
         self._disable_rollback = disable_rollback
         self._entered_ctx = False
+
+    @classmethod
+    def get_lock_file(cls, file_obj: FileObj) -> FileObj:
+        return file_obj.parent / (file_obj.filename + LOCK_EXT)
 
     @property
     def target_dir(self) -> FileObj:

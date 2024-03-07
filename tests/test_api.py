@@ -13,6 +13,7 @@ import xarray as xr
 from zappend.api import FileObj
 from zappend.api import SliceSource
 from zappend.api import zappend
+from zappend.fsutil.transaction import Transaction
 from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
@@ -107,6 +108,39 @@ class ApiTest(unittest.TestCase):
             shutil.rmtree(target_dir, ignore_errors=True)
             for slice_dir in slices:
                 shutil.rmtree(slice_dir, ignore_errors=True)
+
+    def test_some_slices_local_output_to_existing_dir_force_new(self):
+        target_dir = "memory://target.zarr"
+        slices = [
+            "memory://slice-0.zarr",
+            "memory://slice-1.zarr",
+            "memory://slice-2.zarr",
+            "memory://slice-3.zarr",
+        ]
+        for uri in slices:
+            make_test_dataset(uri=uri)
+
+        # Expect nothing else to happen, even that force_new=True.
+        zappend(slices[:1], target_dir=target_dir, force_new=True)
+        target_ds = xr.open_zarr(target_dir)
+        self.assertEqual({"time": 3, "y": 50, "x": 100}, target_ds.sizes)
+
+        # Expect deletion of existing target_dir
+        zappend(slices[1:], target_dir=target_dir, force_new=True)
+        target_ds = xr.open_zarr(target_dir)
+        self.assertEqual({"time": 9, "y": 50, "x": 100}, target_ds.sizes)
+
+        # Expect no changes, even if force_new=True
+        zappend(slices, target_dir=target_dir, force_new=True, dry_run=True)
+        target_ds = xr.open_zarr(target_dir)
+        self.assertEqual({"time": 9, "y": 50, "x": 100}, target_ds.sizes)
+
+        # Expect a lock file to be deleted to
+        lock_file = Transaction.get_lock_file(FileObj(target_dir))
+        lock_file.write("")
+        self.assertEqual(True, lock_file.exists())
+        zappend(slices, target_dir=target_dir, force_new=True)
+        self.assertEqual(False, lock_file.exists())
 
     def test_some_slices_with_class_slice_source(self):
         target_dir = "memory://target.zarr"
