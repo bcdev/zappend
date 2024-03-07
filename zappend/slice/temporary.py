@@ -27,7 +27,7 @@ class TemporarySliceSource(MemorySliceSource):
 
     def get_dataset(self) -> xr.Dataset:
         slice_index = self._slice_index
-        temp_slice_dir = self.ctx.temp_dir / f"slice-{slice_index}.zarr"
+        temp_slice_dir = self.ctx.config.temp_dir / f"slice-{slice_index}.zarr"
         self._temp_slice_dir = temp_slice_dir
         temp_slice_store = temp_slice_dir.fs.get_mapper(
             temp_slice_dir.path, create=True

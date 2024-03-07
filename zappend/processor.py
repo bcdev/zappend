@@ -10,7 +10,7 @@ import xarray as xr
 import zarr.attrs
 import zarr.convenience
 
-from .config import ConfigLike
+from .config import ConfigLike, Config
 from .config import eval_dyn_config_attrs
 from .config import exclude_from_config
 from .config import get_dyn_config_attrs_env
@@ -18,7 +18,6 @@ from .config import has_dyn_config_attrs
 from .config import normalize_config
 from .config import validate_config
 from .context import Context
-from .fsutil import FileObj
 from .fsutil.transaction import RollbackCallback
 from .fsutil.transaction import Transaction
 from .log import configure_logging
@@ -36,7 +35,7 @@ class Processor:
 
     Args:
         config: Processor configuration.
-            May be a file path or URI, a `dict`, `None`, or a sequence of
+            It may be a file path or URI, a `dict`, `None`, or a sequence of
             the aforementioned. If a sequence is used, subsequent configurations
             are incremental to the previous ones.
         kwargs: Additional configuration parameters.
@@ -49,17 +48,18 @@ class Processor:
         # Validate value of slice_source later,
         # it could be a callable instead of a str
         # See https://github.com/bcdev/zappend/issues/49
-        with exclude_from_config(config, "slice_source") as _config:
-            validate_config(_config)
-        configure_logging(config.get("logging"))
-        self._profiler = Profiler(config.get("profiling"))
-        self._config = config
-        if config.get("force_new"):
+        with exclude_from_config(config, "slice_source") as c:
+            validate_config(c)
+        _config = Config(config)
+        configure_logging(_config.logging)
+        if _config.force_new:
             logger.warning(
                 f"Setting 'force_new' is enabled. This will"
                 f" permanently delete existing targets (no rollback)."
             )
-            delete_target_permanently(config)
+            delete_target_permanently(_config)
+        self._config = _config
+        self._profiler = Profiler(_config.profiling)
 
     def process_slices(self, slices: Iterable[SliceObj]):
         """Process the given `slices`.
@@ -111,13 +111,15 @@ class Processor:
                 ctx.target_metadata = slice_metadata
             else:
                 ctx.target_metadata.assert_compatible_slice(
-                    slice_metadata, ctx.append_dim
+                    slice_metadata, ctx.config.append_dim
                 )
 
             verify_append_labels(ctx, slice_dataset)
 
             transaction = Transaction(
-                ctx.target_dir, ctx.temp_dir, disable_rollback=ctx.disable_rollback
+                ctx.config.target_dir,
+                ctx.config.temp_dir,
+                disable_rollback=ctx.config.disable_rollback,
             )
             with transaction as rollback_callback:
                 if ctx.target_metadata is slice_metadata:
@@ -126,42 +128,35 @@ class Processor:
                     update_target_from_slice(ctx, slice_dataset, rollback_callback)
 
 
-def delete_target_permanently(config: dict[str, Any]):
-    # TODO: I'm not happy with the config being a dict here, because it
-    #   implies and hence duplicates definition of default values.
-    #   Make Processor constructor turn config dict into config object,
-    #   Pass config object to Context and publish via ctx.config property.
-    dry_run = config.get("dry_run", False)
-    target_uri = config.get("target_dir")
-    target_storage_options = config.get("target_storage_options")
-    target_dir = FileObj(target_uri, storage_options=target_storage_options)
+def delete_target_permanently(config: Config):
+    target_dir = config.target_dir
     if target_dir.exists():
         logger.warning(f"Permanently deleting {target_dir}")
-        if not dry_run:
+        if not config.dry_run:
             target_dir.delete(recursive=True)
     target_lock = Transaction.get_lock_file(target_dir)
     if target_lock.exists():
         logger.warning(f"Permanently deleting {target_lock}")
-        if not dry_run:
+        if not config.dry_run:
             target_lock.delete()
 
 
 def create_target_from_slice(
     ctx: Context, slice_ds: xr.Dataset, rollback_cb: RollbackCallback
 ):
-    target_dir = ctx.target_dir
+    target_dir = ctx.config.target_dir
     logger.info(f"Creating target dataset {target_dir.uri}")
 
     target_ds = tailor_target_dataset(ctx, slice_ds)
 
-    if ctx.dry_run:
+    if ctx.config.dry_run:
         return
 
     try:
         target_ds.to_zarr(
             store=target_dir.uri,
             storage_options=target_dir.storage_options,
-            zarr_version=ctx.zarr_version,
+            zarr_version=ctx.config.zarr_version,
             write_empty_chunks=False,
             consolidated=True,
         )
@@ -176,12 +171,12 @@ def create_target_from_slice(
 def update_target_from_slice(
     ctx: Context, slice_ds: xr.Dataset, rollback_cb: RollbackCallback
 ):
-    target_dir = ctx.target_dir
+    target_dir = ctx.config.target_dir
     logger.info(f"Updating target dataset {target_dir.uri}")
 
     slice_ds = tailor_slice_dataset(ctx, slice_ds)
 
-    if ctx.dry_run:
+    if ctx.config.dry_run:
         return
 
     target_store = RollbackStore(
@@ -192,7 +187,7 @@ def update_target_from_slice(
         write_empty_chunks=False,
         consolidated=True,
         mode="a",
-        append_dim=ctx.append_dim,
+        append_dim=ctx.config.append_dim,
     )
 
     post_update_target(ctx, target_store, slice_ds)
@@ -207,8 +202,10 @@ def post_create_target(ctx: Context, target_ds: xr.Dataset):
         target_ds: The target dataset.
     """
     target_attrs = target_ds.attrs
-    if ctx.permit_eval and has_dyn_config_attrs(target_attrs):
-        target_store = ctx.target_dir.fs.get_mapper(root=ctx.target_dir.path)
+    if ctx.config.permit_eval and has_dyn_config_attrs(target_attrs):
+        target_store = ctx.config.target_dir.fs.get_mapper(
+            root=ctx.config.target_dir.path
+        )
         resolve_target_attrs(target_store, target_ds, target_attrs)
 
 
@@ -222,7 +219,7 @@ def post_update_target(ctx: Context, target_store: RollbackStore, slice_ds: xr.D
         slice_ds: The current slice dataset that has already been appended.
     """
     target_attrs = slice_ds.attrs
-    if ctx.permit_eval and has_dyn_config_attrs(target_attrs):
+    if ctx.config.permit_eval and has_dyn_config_attrs(target_attrs):
         with xr.open_zarr(target_store) as target_ds:
             resolve_target_attrs(target_store, target_ds, target_attrs)
 
@@ -242,12 +239,12 @@ def resolve_target_attrs(
 
 
 def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):
-    append_step_size = ctx.append_step
-    if append_step_size is None:
+    append_step = ctx.config.append_step
+    if append_step is None:
         # If step size is not specified, there is nothing to do
         return
 
-    append_labels: xr.DataArray = slice_ds.get(ctx.append_dim)
+    append_labels: xr.DataArray = slice_ds.get(ctx.config.append_dim)
     if append_labels is None:
         # It is ok to not have append-labels in the dataset
         return
@@ -266,13 +263,13 @@ def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):
 
     zero = step_sizes.dtype.type(0)
 
-    if append_step_size == "+":
+    if append_step == "+":
         # Force monotonically increasing labels
         if not np.all(step_sizes > zero):
             raise ValueError(
                 "Cannot append slice because labels must be monotonically increasing."
             )
-    elif append_step_size == "-":
+    elif append_step == "-":
         # Force monotonically decreasing labels
         if not np.all(step_sizes < zero):
             raise ValueError(
@@ -281,9 +278,9 @@ def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):
     else:
         # Force fixed step size
         if np.issubdtype(step_sizes.dtype, np.timedelta64):
-            deltas = step_sizes - to_timedelta(append_step_size)
+            deltas = step_sizes - to_timedelta(append_step)
         else:
-            deltas = step_sizes - append_step_size
+            deltas = step_sizes - append_step
         if not np.all(deltas == zero):
             raise ValueError(
                 f"Cannot append slice because this would"
@@ -291,19 +288,19 @@ def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):
             )
 
 
-def to_timedelta(append_step_size: str | int | float) -> np.timedelta64:
-    if isinstance(append_step_size, str):
+def to_timedelta(append_step: str | int | float) -> np.timedelta64:
+    if isinstance(append_step, str):
         i = 0
-        for i in range(len(append_step_size)):
-            if append_step_size[i].isalpha():
+        for i in range(len(append_step)):
+            if append_step[i].isalpha():
                 break
         if i == 0:
             count = 1
-            unit = append_step_size
+            unit = append_step
         else:
-            count = int(append_step_size[0:i])
-            unit = append_step_size[i:]
+            count = int(append_step[0:i])
+            unit = append_step[i:]
     else:
-        count = int(append_step_size)
+        count = int(append_step)
         unit = "s"
     return np.timedelta64(count, unit)

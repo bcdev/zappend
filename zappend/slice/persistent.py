@@ -40,7 +40,7 @@ class PersistentSliceSource(SliceSource):
         super().dispose()
 
     def _wait_for_slice_dataset(self) -> xr.Dataset:
-        interval, timeout = self.ctx.slice_polling
+        interval, timeout = self.ctx.config.slice_polling
         if timeout is None:
             return self._open_slice_dataset()
 
@@ -60,14 +60,14 @@ class PersistentSliceSource(SliceSource):
                 time.sleep(interval)
 
     def _open_slice_dataset(self) -> xr.Dataset:
-        engine = self.ctx.slice_engine
+        engine = self.ctx.config.slice_engine
         if engine is None and (
             self._slice_file.path.endswith(".zarr")
             or self._slice_file.path.endswith(".zarr.zip")
         ):
             engine = "zarr"
         if engine == "zarr":
-            storage_options = self.ctx.slice_storage_options
+            storage_options = self.ctx.config.slice_storage_options
             return xr.open_zarr(self._slice_file.uri, storage_options=storage_options)
 
         fs = self._slice_file.fs

@@ -2,147 +2,182 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from typing import Any
-import contextlib
-import io
-import json
-import os.path
-import string
+import tempfile
+from typing import Any, Dict, Literal, Callable
 
-import jsonschema
-import jsonschema.exceptions
-import yaml
-
-from zappend.fsutil.fileobj import FileObj
-from zappend.log import logger
-
-from .schema import CONFIG_SCHEMA_V1
+from .defaults import DEFAULT_APPEND_DIM
+from .defaults import DEFAULT_APPEND_STEP
+from .defaults import DEFAULT_ATTRS_UPDATE_MODE
+from .defaults import DEFAULT_SLICE_POLLING_INTERVAL
+from .defaults import DEFAULT_SLICE_POLLING_TIMEOUT
+from .defaults import DEFAULT_ZARR_VERSION
+from ..fsutil.fileobj import FileObj
 
 
-ConfigItem = FileObj | str | dict[str, Any]
-"""The possible types used to represent zappend configuration."""
-
-ConfigList = list[ConfigItem] | tuple[ConfigItem]
-"""A sequence of possible zappend configuration types."""
-
-ConfigLike = ConfigItem | ConfigList | None
-"""Type for a zappend configuration-like object."""
-
-
-def validate_config(config_like: ConfigLike) -> dict[str, Any]:
-    """Validate configuration and return normalized form.
-
-    First normalizes the configuration-like value `config_like`
-    using [normalize_config()][zappend.config.config.normalize_config],
-    then validates and returns the result.
+class Config:
+    """Provides access to configuration values and values derived from it.
 
     Args:
-        config_like: A configuration-like value.
+        config_dict: A validated configuration dictionary.
 
-    Returns:
-        The normalized and validated configuration dictionary.
+    Raises:
+        ValueError: If `target_dir` is missing in the configuration.
     """
-    config = normalize_config(config_like)
-    try:
-        jsonschema.validate(config, CONFIG_SCHEMA_V1)
-    except jsonschema.exceptions.ValidationError as e:
-        raise ValueError(
-            f"Invalid configuration: {e.message}" f" for {'.'.join(map(str, e.path))}"
+
+    def __init__(self, config_dict: Dict[str, Any]):
+        self._config = config_dict
+
+        target_uri = config_dict.get("target_dir")
+        if not target_uri:
+            raise ValueError("Missing 'target_dir' in configuration")
+        target_storage_options = config_dict.get("target_storage_options")
+        self._target_dir = FileObj(target_uri, storage_options=target_storage_options)
+
+        temp_dir_uri = config_dict.get("temp_dir", tempfile.gettempdir())
+        temp_storage_options = config_dict.get("temp_storage_options")
+        self._temp_dir = FileObj(temp_dir_uri, storage_options=temp_storage_options)
+
+        # local import to avoid recursion
+        from ..slice.factory import to_slice_source_type
+
+        slice_source = config_dict.get("slice_source")
+        self._slice_source = to_slice_source_type(slice_source)
+
+    @property
+    def zarr_version(self) -> int:
+        """The configured Zarr version for the target dataset."""
+        return self._config.get("zarr_version", DEFAULT_ZARR_VERSION)
+
+    @property
+    def fixed_dims(self) -> dict[str, int] | None:
+        return self._config.get("fixed_dims") or None
+
+    @property
+    def append_dim(self) -> str:
+        """The name of the append dimension along which slice datasets will be
+        concatenated. Defaults to `"time"`.
+        """
+        return self._config.get("append_dim") or DEFAULT_APPEND_DIM
+
+    @property
+    def append_step(self) -> int | float | str | None:
+        """The enforced step size in the append dimension between two slices.
+        Defaults to `None`.
+        """
+        return self._config.get("append_step") or DEFAULT_APPEND_STEP
+
+    @property
+    def included_variables(self) -> list[str]:
+        """Names of included variables."""
+        return self._config.get("included_variables") or []
+
+    @property
+    def excluded_variables(self) -> list[str]:
+        """Names of excluded variables."""
+        return self._config.get("excluded_variables") or []
+
+    @property
+    def variables(self) -> dict[str, Any]:
+        """Variable definitions."""
+        return self._config.get("variables") or {}
+
+    @property
+    def attrs(self) -> dict[str, Any]:
+        """Global dataset attributes. May include dynamically computed
+        placeholders if the form `{{ expression }}`.
+        """
+        return self._config.get("attrs") or {}
+
+    @property
+    def attrs_update_mode(
+        self,
+    ) -> Literal["keep"] | Literal["replace"] | Literal["update"]:
+        """The mode used to deal with global slice dataset attributes.
+        One of `"keep"`, `"replace"`, `"update"`.
+        """
+        return self._config.get("attrs_update_mode") or DEFAULT_ATTRS_UPDATE_MODE
+
+    @property
+    def permit_eval(self) -> bool:
+        """Check if dynamically computed values in dataset attributes `attrs`
+        using the syntax `{{ expression }}` is permitted. Executing arbitrary
+        Python expressions is a security risk, therefore this must be explicitly
+        enabled.
+        """
+        return bool(self._config.get("permit_eval"))
+
+    @property
+    def target_dir(self) -> FileObj:
+        """The configured directory that represents the target datacube
+        in Zarr format."""
+        return self._target_dir
+
+    @property
+    def slice_engine(self) -> str | None:
+        """The configured slice engine to be used if a slice object is not a Zarr.
+        If defined, it will be passed to the `xarray.open_dataset()` function.
+        """
+        return self._config.get("slice_engine")
+
+    @property
+    def slice_source(self) -> Callable[["Context", ...], "SliceSource"] | None:
+        """The configured slice source, if any."""
+        return self._slice_source
+
+    @property
+    def slice_storage_options(self) -> dict[str, Any] | None:
+        """The configured slice storage options to be used
+        if a slice object is a Zarr.
+        """
+        return self._config.get("slice_storage_options")
+
+    @property
+    def slice_polling(self) -> tuple[float, float] | tuple[None, None]:
+        """The configured slice dataset polling.
+        If slice polling is enabled, returns tuple (interval, timeout)
+        in seconds, otherwise, return (None, None).
+        """
+        slice_polling = self._config.get("slice_polling", False)
+        if slice_polling is False:
+            return None, None
+        if slice_polling is True:
+            slice_polling = {}
+        return (
+            slice_polling.get("interval", DEFAULT_SLICE_POLLING_INTERVAL),
+            slice_polling.get("timeout", DEFAULT_SLICE_POLLING_TIMEOUT),
         )
-    return config
 
+    @property
+    def temp_dir(self) -> FileObj:
+        """The configured directory used for temporary files such as rollback data."""
+        return self._temp_dir
 
-def normalize_config(config_like: ConfigLike) -> dict[str, Any]:
-    """Normalize the configuration-like value `config_like`
-    into a configuration dictionary.
+    @property
+    def persist_mem_slices(self) -> bool:
+        """Whether to persist in-memory slice datasets."""
+        return bool(self._config.get("persist_mem_slices"))
 
-    The configuration-like value `config_like`
+    @property
+    def force_new(self) -> bool:
+        """If set, an existing target dataset will be deleted."""
+        return bool(self._config.get("force_new"))
 
-    * can be a dict (the configuration itself),
-    * a str or a FileObj (configuration loaded from URI),
-    * a sequence of configuration-like values.
-    * or None.
+    @property
+    def disable_rollback(self) -> bool:
+        """Whether to disable transaction rollbacks."""
+        return bool(self._config.get("disable_rollback"))
 
-    The values of a sequence will be normalized first, then all
-    resulting configuration dictionaries will be merged in to one.
+    @property
+    def dry_run(self) -> bool:
+        """Whether to run in dry mode."""
+        return bool(self._config.get("dry_run"))
 
-    Args:
-        config_like: A configuration-like value.
+    @property
+    def logging(self) -> dict[str, Any] | str | bool | None:
+        """Logging configuration."""
+        return self._config.get("logging")
 
-    Returns:
-        The normalized configuration dictionary.
-    """
-    if isinstance(config_like, dict):
-        return config_like
-    if config_like is None:
-        return {}
-    if isinstance(config_like, FileObj):
-        return load_config(config_like)
-    if isinstance(config_like, str):
-        return load_config(FileObj(config_like))
-    if isinstance(config_like, (list, tuple)):
-        return merge_configs(*[normalize_config(c) for c in config_like])
-    raise TypeError(
-        "config_like must of type NoneType, FileObj, dict,"
-        " str, or a sequence of such values"
-    )
-
-
-def load_config(config_file: FileObj) -> dict[str, Any]:
-    yaml_extensions = {".yml", ".yaml", ".YML", ".YAML"}
-    logger.info(f"Reading configuration {config_file.uri}")
-    _, ext = os.path.splitext(config_file.path)
-    with config_file.fs.open(config_file.path, "rt") as f:
-        source = f.read()
-    source = string.Template(source).safe_substitute(os.environ)
-    stream = io.StringIO(source)
-    if ext in yaml_extensions:
-        config = yaml.safe_load(stream)
-    else:
-        config = json.load(stream)
-    if not isinstance(config, dict):
-        raise TypeError(
-            f"Invalid configuration:" f" {config_file.uri}: object expected"
-        )
-    return config
-
-
-def merge_configs(*configs: dict[str, Any]) -> dict[str, Any]:
-    if not configs:
-        return {}
-    merged_config = dict(configs[0])
-    for config in configs[1:]:
-        merged_config = _merge_dicts(merged_config, config)
-    return merged_config
-
-
-def _merge_dicts(dict_1: dict[str, Any], dict_2: dict[str, Any]) -> dict[str, Any]:
-    merged = dict(dict_1)
-    for key in dict_2.keys():
-        if key in merged:
-            merged[key] = _merge_values(merged[key], dict_2[key])
-        else:
-            merged[key] = dict_2[key]
-    return merged
-
-
-# noinspection PyUnusedLocal
-def _merge_lists(list_1: list[Any], list_2: list[Any]) -> list[Any]:
-    # alternative strategies:
-    # return list(set(list_1) + set(list_2))  # unite
-    # return list_1 + list_2  # concat
-    # return list_1  # keep
-    return list_2  # replace
-
-
-def _merge_values(value_1: Any, value_2: Any) -> Any:
-    if isinstance(value_1, dict) and isinstance(value_2, dict):
-        return _merge_dicts(value_1, value_2)
-    if isinstance(value_1, (list, tuple)) and isinstance(value_2, (list, tuple)):
-        return _merge_lists(value_1, value_2)
-    return value_2
-
-
-@contextlib.contextmanager
-def exclude_from_config(config: dict[str, Any], *keys: str) -> dict[str, Any]:
-    yield {k: v for k, v in config.items() if k not in keys}
+    @property
+    def profiling(self) -> dict[str, Any] | str | bool | None:
+        """Profiling configuration."""
+        return self._config.get("profiling") or {}

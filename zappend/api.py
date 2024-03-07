@@ -4,6 +4,7 @@
 
 from typing import Any, Iterable
 
+from .config import Config
 from .config import ConfigItem
 from .config import ConfigLike
 from .config import ConfigList
@@ -18,6 +19,7 @@ from .slice import to_slice_factory
 
 
 __all__ = [
+    "Config",
     "ConfigItem",
     "ConfigLike",
     "ConfigList",
@@ -37,16 +39,15 @@ def zappend(
     config: ConfigLike = None,
     **kwargs: Any,
 ):
-    """
-    Robustly create or update a Zarr dataset from dataset slices.
+    """Robustly create or update a Zarr dataset from dataset slices.
 
-    The `zappend` function concatenates the dataset slices from given `slices` along a
-    given append dimension, e.g., `"time"` (the default) for geospatial satellite
-    observations.
+    The `zappend` function concatenates the dataset slices from given
+    `slices` along a given append dimension, e.g., `"time"` (the default)
+    for geospatial satellite observations.
     Each append step is atomic, that is, the append operation is a transaction
     that can be rolled back, in case the append operation fails.
-    This ensures integrity of the  target data cube `target_dir` given in `config`
-    or `kwargs`.
+    This ensures integrity of the  target data cube `target_dir` given
+    in `config` or `kwargs`.
 
     Args:
         slices: An iterable that yields slice objects. A slice object is
@@ -57,8 +58,8 @@ def zappend(
             configuration parameter `slice_storage_options`.
         config: Processor configuration.
             May be a file path or URI, a `dict`, `None`, or a sequence of
-            the aforementioned. If a sequence is used, subsequent configurations
-            are incremental to the previous ones.
+            the aforementioned. If a sequence is used, subsequent
+            configurations are incremental to the previous ones.
         kwargs: Additional configuration parameters.
             Can be used to pass or override configuration values in *config*.
     """
