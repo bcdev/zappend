@@ -120,7 +120,7 @@ class Config:
         return self._config.get("slice_engine")
 
     @property
-    def slice_source(self) -> Callable[["Context", ...], "SliceSource"] | None:
+    def slice_source(self) -> Callable | None:
         """The configured slice source, if any."""
         return self._slice_source
 
