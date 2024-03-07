@@ -56,7 +56,7 @@ class Processor:
         self._config = config
         if config.get("force_new"):
             logger.warning(
-                f"Setting 'force_new' is enabled. This will "
+                f"Setting 'force_new' is enabled. This will"
                 f" permanently delete existing targets (no rollback)."
             )
             delete_target_permanently(config)
