@@ -135,7 +135,7 @@ class ApiTest(unittest.TestCase):
         target_ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 50, "x": 100}, target_ds.sizes)
 
-        # Expect a lock file to be deleted to
+        # Expect the lock file to be deleted too
         lock_file = Transaction.get_lock_file(FileObj(target_dir))
         lock_file.write("")
         self.assertEqual(True, lock_file.exists())
