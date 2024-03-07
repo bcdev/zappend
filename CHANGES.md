@@ -1,3 +1,16 @@
+## Version 0.5.2 (in development)
+
+
+
+## Version 0.5.1 (2024-02-23)
+
+* Fixed rollback for situations where writing to Zarr fails shortly after the
+  Zarr directory has been created. [#69]
+  
+  In this case the error message was
+  ```TypeError: Transaction._delete_dir() missing 1 required positional argument: 'target_path'```. 
+
+
 ## Version 0.5.0 (2024-02-19)
 
 ### Enhancements
