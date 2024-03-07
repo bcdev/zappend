@@ -130,7 +130,7 @@ class ApiTest(unittest.TestCase):
         target_ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 50, "x": 100}, target_ds.sizes)
 
-        # Expect no changes, even if force_new=True
+        # Expect no changes, even if force_new=True, because dry_run=True
         zappend(slices, target_dir=target_dir, force_new=True, dry_run=True)
         target_ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 50, "x": 100}, target_ds.sizes)
