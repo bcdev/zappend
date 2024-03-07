@@ -4,8 +4,8 @@
 
 import unittest
 
-import pytest
 import numpy as np
+import pytest
 import xarray as xr
 
 from zappend.context import Context
@@ -34,6 +34,12 @@ class ContextTest(unittest.TestCase):
         self.assertIsInstance(ctx.target_dir, FileObj)
         self.assertEqual(target_dir, ctx.target_dir.uri)
         self.assertIsInstance(ctx.target_metadata, DatasetMetadata)
+
+    def test_force_new(self):
+        ctx = Context({"target_dir": "memory://target.zarr"})
+        self.assertEqual(False, ctx.force_new)
+        ctx = Context({"target_dir": "memory://target.zarr", "force_new": True})
+        self.assertEqual(True, ctx.force_new)
 
     def test_append_dim(self):
         ctx = Context({"target_dir": "memory://target.zarr"})

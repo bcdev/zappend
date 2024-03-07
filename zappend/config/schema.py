@@ -674,6 +674,16 @@ CONFIG_SCHEMA_V1 = {
             "type": "object",
             "additionalProperties": True,
         },
+        force_new={
+            "description": (
+                "Force creation of a new target dataset. "
+                " An existing target dataset (and its lock) will be"
+                " permanently deleted before appending of slice datasets"
+                " begins. WARNING: the deletion cannot be rolled back."
+            ),
+            "type": "boolean",
+            "default": False,
+        },
         disable_rollback={
             "description": (
                 "Disable rolling back dataset changes on failure."

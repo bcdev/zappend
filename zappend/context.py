@@ -190,6 +190,11 @@ class Context:
         return self._config.get("persist_mem_slices", False)
 
     @property
+    def force_new(self) -> bool:
+        """If set, an existing target dataset will be deleted."""
+        return self._config.get("force_new", False)
+
+    @property
     def disable_rollback(self) -> bool:
         """Whether to disable transaction rollbacks."""
         return self._config.get("disable_rollback", False)

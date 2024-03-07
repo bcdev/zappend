@@ -1,6 +1,8 @@
 ## Version 0.5.2 (in development)
 
-
+* Added configuration setting `force_new`, which forces creation of a new 
+  target dataset. An existing target dataset (and its lock) will be
+  permanently deleted before appending of slice datasets begins. [#72]
 
 ## Version 0.5.1 (2024-02-23)
 

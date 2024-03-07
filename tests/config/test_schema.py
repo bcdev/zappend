@@ -21,6 +21,7 @@ class ConfigSchemaTest(unittest.TestCase):
                 "disable_rollback",
                 "dry_run",
                 "excluded_variables",
+                "force_new",
                 "fixed_dims",
                 "included_variables",
                 "logging",

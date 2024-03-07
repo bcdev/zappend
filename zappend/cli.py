@@ -13,21 +13,35 @@ import click
     "-c",
     metavar="CONFIG",
     multiple=True,
-    help="Configuration JSON or YAML file."
-    " If multiple are passed, subsequent configurations"
-    " are incremental to the previous ones.",
+    help=(
+        "Configuration JSON or YAML file."
+        " If multiple are passed, subsequent configurations"
+        " are incremental to the previous ones."
+    ),
 )
 @click.option(
     "--target",
     "-t",
     metavar="TARGET",
-    help="Target Zarr dataset path or URI."
-    " Overrides the 'target_dir' configuration field.",
+    help=(
+        "Target Zarr dataset path or URI."
+        " Overrides the 'target_dir' configuration field."
+    ),
+)
+@click.option(
+    "--force-new",
+    is_flag=True,
+    help=(
+        "Force creation of a new target dataset."
+        " An existing target dataset (and its lock) will be"
+        " permanently deleted before appending of slice datasets"
+        " begins. WARNING: the deletion cannot be rolled back."
+    ),
 )
 @click.option(
     "--dry-run",
     is_flag=True,
-    help="Run the tool without creating, changing," " or deleting any files.",
+    help="Run the tool without creating, changing, or deleting any files.",
 )
 @click.option(
     "--traceback",
@@ -49,6 +63,7 @@ def zappend(
     slices: tuple[str, ...],
     config: tuple[str, ...],
     target: str | None,
+    force_new: bool,
     dry_run: bool,
     traceback: bool,
     version: bool,
@@ -78,7 +93,13 @@ def zappend(
 
     # noinspection PyBroadException
     try:
-        zappend(slices, config=config, target_dir=target, dry_run=dry_run)
+        zappend(
+            slices,
+            config=config,
+            target_dir=target,
+            force_new=force_new,
+            dry_run=dry_run,
+        )
     except BaseException as e:
         if traceback:
             import traceback as tb

@@ -2,8 +2,8 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from typing import Iterable, Any
 import collections.abc
+from typing import Iterable, Any
 
 import numpy as np
 import xarray as xr
@@ -11,17 +11,18 @@ import zarr.attrs
 import zarr.convenience
 
 from .config import ConfigLike
-from .config import exclude_from_config
-from .config import normalize_config
-from .config import validate_config
 from .config import eval_dyn_config_attrs
+from .config import exclude_from_config
 from .config import get_dyn_config_attrs_env
 from .config import has_dyn_config_attrs
+from .config import normalize_config
+from .config import validate_config
 from .context import Context
-from .fsutil.transaction import Transaction
+from .fsutil import FileObj
 from .fsutil.transaction import RollbackCallback
-from .log import logger
+from .fsutil.transaction import Transaction
 from .log import configure_logging
+from .log import logger
 from .profiler import Profiler
 from .rollbackstore import RollbackStore
 from .slice import SliceObj
@@ -53,6 +54,12 @@ class Processor:
         configure_logging(config.get("logging"))
         self._profiler = Profiler(config.get("profiling"))
         self._config = config
+        if config.get("force_new"):
+            logger.warning(
+                f"Setting 'force_new' is enabled. This will"
+                f" permanently delete existing targets (no rollback)."
+            )
+            delete_target_permanently(config)
 
     def process_slices(self, slices: Iterable[SliceObj]):
         """Process the given `slices`.
@@ -117,6 +124,26 @@ class Processor:
                     create_target_from_slice(ctx, slice_dataset, rollback_callback)
                 else:
                     update_target_from_slice(ctx, slice_dataset, rollback_callback)
+
+
+def delete_target_permanently(config: dict[str, Any]):
+    # TODO: I'm not happy with the config being a dict here, because it
+    #   implies and hence duplicates definition of default values.
+    #   Make Processor constructor turn config dict into config object,
+    #   Pass config object to Context and publish via ctx.config property.
+    dry_run = config.get("dry_run", False)
+    target_uri = config.get("target_dir")
+    target_storage_options = config.get("target_storage_options")
+    target_dir = FileObj(target_uri, storage_options=target_storage_options)
+    if target_dir.exists():
+        logger.warning(f"Permanently deleting {target_dir}")
+        if not dry_run:
+            target_dir.delete(recursive=True)
+    target_lock = Transaction.get_lock_file(target_dir)
+    if target_lock.exists():
+        logger.warning(f"Permanently deleting {target_lock}")
+        if not dry_run:
+            target_lock.delete()
 
 
 def create_target_from_slice(
