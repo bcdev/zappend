@@ -120,7 +120,7 @@ class ApiTest(unittest.TestCase):
         for uri in slices:
             make_test_dataset(uri=uri)
 
-        # Expect nothing else to happen, even that force_new=True.
+        # Expect nothing else to happen, even though force_new=True.
         zappend(slices[:1], target_dir=target_dir, force_new=True)
         target_ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 3, "y": 50, "x": 100}, target_ds.sizes)
