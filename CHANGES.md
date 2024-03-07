@@ -1,3 +1,7 @@
+## Version 0.5.2 (in development)
+
+
+
 ## Version 0.5.1 (2024-02-23)
 
 * Fixed rollback for situations where writing to Zarr fails shortly after the
