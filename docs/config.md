@@ -243,7 +243,7 @@ Options for the filesystem given by the protocol of `temp_dir`.
 ## `force_new`
 
 Type _boolean_.
-Force creation of a new target dataset.  An existing target dataset (and its lock) will be permanently deleted before appending of slice datasets begins. WARNING: the deletion cannot be rolled back.
+Force creation of a new target dataset. An existing target dataset (and its lock) will be permanently deleted before appending of slice datasets begins. WARNING: the deletion cannot be rolled back.
 Defaults to `false`.
 
 ## `disable_rollback`

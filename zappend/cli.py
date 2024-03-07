@@ -32,7 +32,7 @@ import click
     "--force-new",
     is_flag=True,
     help=(
-        "Force creation of a new target dataset. "
+        "Force creation of a new target dataset."
         " An existing target dataset (and its lock) will be"
         " permanently deleted before appending of slice datasets"
         " begins. WARNING: the deletion cannot be rolled back."

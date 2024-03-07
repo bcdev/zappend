@@ -20,7 +20,7 @@ Options:
                          the previous ones.
   -t, --target TARGET    Target Zarr dataset path or URI. Overrides the
                          'target_dir' configuration field.
-  --force-new            Force creation of a new target dataset.  An existing
+  --force-new            Force creation of a new target dataset. An existing
                          target dataset (and its lock) will be permanently
                          deleted before appending of slice datasets begins.
                          WARNING: the deletion cannot be rolled back.
