@@ -674,6 +674,15 @@ CONFIG_SCHEMA_V1 = {
             "type": "object",
             "additionalProperties": True,
         },
+        force_new={
+            "description": (
+                "If set, an existing target dataset will be deleted at the"
+                " location specified by `target_dir` before appending of slice"
+                " datasets begins. WARNING: This operation cannot be rolled back!"
+            ),
+            "type": "boolean",
+            "default": False,
+        },
         disable_rollback={
             "description": (
                 "Disable rolling back dataset changes on failure."
