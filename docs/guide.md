@@ -532,6 +532,27 @@ passed using the optional `target_storage_options` setting.
 }
 ```
 
+Sometimes you may want to start a new target dataset from scratch when calling 
+`zappend`. A typical case is testing if a given configuration yields the desired
+results. The configuration flag `force_new` can be used to delete existing
+target datasets (and an existing lock) upfront. 
+
+```json
+{
+    "target_dir": "s3://wqservices/cubes/chl-2023.zarr",
+    "force_new": true
+}
+```
+
+However, keep in mind, the deletion is not a transaction that can be rolled 
+back. Therefore, a log message with warning level will be emitted if the
+`force_new` flag is set.
+
+!!! danger "Setting `force_new`"
+    The configuration flag `force_new` will force generating a new
+    target dataset. If it already exists, it will be **permanently deleted**! 
+    If the deletion fails, there will be no rollback.
+
 ### Slice Datasets
 
 If the slice paths passed to the `zappend` tool are given as URIs,
