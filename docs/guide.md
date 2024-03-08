@@ -544,7 +544,7 @@ target datasets (and an existing lock) upfront.
 }
 ```
 
-However, keep in mind, the deletion is not a transaction that can be rolled 
+However, keep in mind that the deletion is not a transaction that can be rolled 
 back. Therefore, a log message with warning level will be emitted if the
 `force_new` flag is set.
 
