@@ -85,9 +85,16 @@ Variable metadata.
         
           * Type _array_.
             Chunk sizes in the order of the dimensions.
-            The items of the array are of type _integer_.
+            The items of the array must be one of the following:
+            
+              * Type _integer_.
+                Dimension is chunked using given size.
+            
+              * No chunking in this dimension.
+                Its value is `null`.
+            
         
-          * Disable chunking.
+          * Disable chunking in all dimensions.
             Its value is `null`.
         
     
@@ -243,7 +250,7 @@ Options for the filesystem given by the protocol of `temp_dir`.
 ## `force_new`
 
 Type _boolean_.
-Force creation of a new target dataset. An existing target dataset (and its lock) will be permanently deleted before appending of slice datasets begins. WARNING: the deletion cannot be rolled back.
+Force creation of a new target dataset.  An existing target dataset (and its lock) will be permanently deleted before appending of slice datasets begins. WARNING: the deletion cannot be rolled back.
 Defaults to `false`.
 
 ## `disable_rollback`

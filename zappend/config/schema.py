@@ -73,11 +73,23 @@ VARIABLE_ENCODING_SCHEMA = {
             "description": "Storage chunking.",
             "oneOf": [
                 {
-                    "description": "Chunk sizes in the order of the dimensions.",
+                    "description": "Chunk sizes for each dimension of the variable.",
                     "type": "array",
-                    "items": {"type": "integer", "minimum": 1},
+                    "items": {
+                        "oneOf": [
+                            {
+                                "description": "Dimension is chunked using given size.",
+                                "type": "integer",
+                                "minimum": 1,
+                            },
+                            {
+                                "description": "Disable chunking in this dimension.",
+                                "const": None,
+                            },
+                        ]
+                    },
                 },
-                {"description": "Disable chunking.", "const": None},
+                {"description": "Disable chunking in all dimensions.", "const": None},
             ],
         },
         fill_value={

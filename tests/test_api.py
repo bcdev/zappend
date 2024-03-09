@@ -177,6 +177,10 @@ class ApiTest(unittest.TestCase):
             ds.attrs,
         )
 
+    def test_some_slices_with_cropping_slice_source(self):
+        # TODO: implement me after #78
+        pass
+
     def test_some_slices_with_inc_append_step(self):
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset(index=i, shape=(1, 50, 100)) for i in range(3)]
