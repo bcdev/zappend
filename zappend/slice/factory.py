@@ -69,22 +69,23 @@ def open_slice_source(
     Returns:
         A new slice source instance
     """
-    if ctx.slice_source is not None:
+    _slice_source = ctx.config.slice_source
+    if _slice_source is not None:
         slice_args, slice_kwargs = normalize_slice_arg(slice_obj)
-        slice_factory = to_slice_factory(ctx.slice_source, *slice_args, **slice_kwargs)
+        slice_factory = to_slice_factory(_slice_source, *slice_args, **slice_kwargs)
         slice_source = slice_factory(ctx)
         if not isinstance(slice_source, SliceSource):
             raise TypeError(
                 f"expected an instance of SliceSource"
-                f" returned from {ctx.slice_source.__name__!r},"
+                f" returned from {_slice_source.__name__!r},"
                 f" but got {type(slice_source)}"
             )
         return slice_source
 
-    return _get_slice_dataset_recursive(ctx, slice_obj, slice_index)
+    return _get_slice_dataset_recursively(ctx, slice_obj, slice_index)
 
 
-def _get_slice_dataset_recursive(
+def _get_slice_dataset_recursively(
     ctx: Context,
     slice_obj: SliceObj | SliceFactory,
     slice_index: int,
@@ -93,19 +94,21 @@ def _get_slice_dataset_recursive(
         return slice_obj
     if isinstance(slice_obj, (str, FileObj)):
         if isinstance(slice_obj, str):
-            slice_file = FileObj(slice_obj, storage_options=ctx.slice_storage_options)
+            slice_file = FileObj(
+                slice_obj, storage_options=ctx.config.slice_storage_options
+            )
         else:
             slice_file = slice_obj
         return PersistentSliceSource(ctx, slice_file)
     if isinstance(slice_obj, xr.Dataset):
-        if ctx.persist_mem_slices:
+        if ctx.config.persist_mem_slices:
             return TemporarySliceSource(ctx, slice_obj, slice_index)
         else:
             return MemorySliceSource(ctx, slice_obj, slice_index)
     if callable(slice_obj):
         slice_factory: SliceFactory = slice_obj
         slice_obj = slice_factory(ctx)
-        return _get_slice_dataset_recursive(ctx, slice_obj, slice_index)
+        return _get_slice_dataset_recursively(ctx, slice_obj, slice_index)
     raise TypeError(
         "slice_obj must be a"
         " str,"

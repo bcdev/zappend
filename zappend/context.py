@@ -2,18 +2,11 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-import tempfile
-from typing import Any, Dict, Literal
+from typing import Any, Dict
 
 import xarray as xr
 
-from .config import DEFAULT_APPEND_DIM
-from .config import DEFAULT_APPEND_STEP
-from .config import DEFAULT_ATTRS_UPDATE_MODE
-from .config import DEFAULT_SLICE_POLLING_INTERVAL
-from .config import DEFAULT_SLICE_POLLING_TIMEOUT
-from .config import DEFAULT_ZARR_VERSION
-from .fsutil.fileobj import FileObj
+from .config import Config
 from .metadata import DatasetMetadata
 
 
@@ -21,111 +14,44 @@ class Context:
     """Provides access to configuration values and values derived from it.
 
     Args:
-        config: A validated configuration.
+        config: A validated configuration dictionary or a `Config` instance.
 
     Raises:
         ValueError: If `target_dir` is missing in the configuration.
     """
 
-    def __init__(self, config: Dict[str, Any]):
-        self._config = config
-
-        target_uri = config.get("target_dir")
-        if not target_uri:
-            raise ValueError("Missing 'target_dir' in configuration")
-
-        target_storage_options = config.get("target_storage_options")
-        self._target_dir = FileObj(target_uri, storage_options=target_storage_options)
-
-        self._append_dim = config.get("append_dim") or DEFAULT_APPEND_DIM
-        self._append_step = config.get("append_step") or DEFAULT_APPEND_STEP
-        self._last_append_label = None
-
+    def __init__(self, config: Dict[str, Any] | Config):
+        _config: Config = config if isinstance(config, Config) else Config(config)
+        last_append_label = None
         try:
             with xr.open_zarr(
-                target_uri, storage_options=target_storage_options
+                _config.target_dir.uri,
+                storage_options=_config.target_dir.storage_options,
             ) as target_dataset:
-                if self.append_step is not None:
-                    append_var = target_dataset.get(self._append_dim)
+                if _config.append_step is not None:
+                    append_var = target_dataset.get(_config.append_dim)
                     if append_var is not None and append_var.size > 0:
-                        self._last_append_label = append_var[-1]
-                target_metadata = DatasetMetadata.from_dataset(target_dataset, config)
+                        last_append_label = append_var[-1]
+                target_metadata = DatasetMetadata.from_dataset(target_dataset, _config)
         except FileNotFoundError:
             target_metadata = None
 
+        self._config = _config
+        self._last_append_label = last_append_label
         self._target_metadata = target_metadata
 
-        temp_dir_uri = config.get("temp_dir", tempfile.gettempdir())
-        temp_storage_options = config.get("temp_storage_options")
-        self._temp_dir = FileObj(temp_dir_uri, storage_options=temp_storage_options)
-
-        from .slice.factory import to_slice_source_type
-
-        slice_source = config.get("slice_source")
-        self._slice_source = to_slice_source_type(slice_source)
-
-    def get_dataset_metadata(self, dataset: xr.Dataset) -> DatasetMetadata:
-        """Get the dataset metadata from configuration and the given dataset.
-
-        Args:
-            dataset: The dataset
-
-        Returns:
-            The dataset metadata
-        """
-        return DatasetMetadata.from_dataset(dataset, self._config)
-
     @property
-    def zarr_version(self) -> int:
-        """The configured Zarr version for the target dataset."""
-        return self._config.get("zarr_version", DEFAULT_ZARR_VERSION)
-
-    @property
-    def append_dim(self) -> str:
-        """The name of the append dimension along which slice datasets will be
-        concatenated. Defaults to `"time"`.
-        """
-        return self._append_dim
-
-    @property
-    def append_step(self) -> int | float | str | None:
-        """The enforced step size in the append dimension between two slices.
-        Defaults to `None`.
-        """
-        return self._append_step
-
-    @property
-    def attrs(self) -> dict[str, Any]:
-        """Global dataset attributes. May include dynamically computed
-        placeholders if the form `{{ expression }}`.
-        """
-        return self._config.get("attrs") or {}
-
-    @property
-    def attrs_update_mode(
-        self,
-    ) -> Literal["keep"] | Literal["replace"] | Literal["update"]:
-        """The mode used to deal with global slice dataset attributes.
-        One of `"keep"`, `"replace"`, `"update"`.
-        """
-        return self._config.get("attrs_update_mode") or DEFAULT_ATTRS_UPDATE_MODE
+    def config(self) -> Config:
+        """The processor configuration."""
+        return self._config
 
     @property
     def last_append_label(self) -> Any | None:
         """The last label found in the coordinate variable that corresponds to
         the append dimension. Its value is `None` if no such variable exists or the
-        variable is empty or if [append_step_size][append_step_size] is `None`.
+        variable is empty or if `config.append_step` is `None`.
         """
         return self._last_append_label
-
-    @property
-    def permit_eval(self) -> bool:
-        """Check if dynamically computed values in dataset attributes `attrs`
-        using the syntax `{{ expression }}` is permitted. Executing arbitrary
-        Python expressions is a security risk, therefore this must be explicitly
-        enabled.
-        """
-        return bool(self._config.get("permit_eval"))
 
     @property
     def target_metadata(self) -> DatasetMetadata | None:
@@ -138,68 +64,13 @@ class Context:
     def target_metadata(self, value: DatasetMetadata):
         self._target_metadata = value
 
-    @property
-    def target_dir(self) -> FileObj:
-        """The configured directory that represents the target datacube
-        in Zarr format."""
-        return self._target_dir
+    def get_dataset_metadata(self, dataset: xr.Dataset) -> DatasetMetadata:
+        """Get the dataset metadata from configuration and the given dataset.
 
-    @property
-    def slice_engine(self) -> str | None:
-        """The configured slice engine to be used if a slice object is not a Zarr.
-        If defined, it will be passed to the `xarray.open_dataset()` function.
+        Args:
+            dataset: The dataset
+
+        Returns:
+            The dataset metadata
         """
-        return self._config.get("slice_engine")
-
-    @property
-    def slice_source(self) -> Any | None:
-        """The configured slice source, if any."""
-        return self._slice_source
-
-    @property
-    def slice_storage_options(self) -> dict[str, Any] | None:
-        """The configured slice storage options to be used
-        if a slice object is a Zarr.
-        """
-        return self._config.get("slice_storage_options")
-
-    @property
-    def slice_polling(self) -> tuple[float, float] | tuple[None, None]:
-        """The configured slice dataset polling.
-        If slice polling is enabled, returns tuple (interval, timeout)
-        in seconds, otherwise, return (None, None).
-        """
-        slice_polling = self._config.get("slice_polling", False)
-        if slice_polling is False:
-            return None, None
-        if slice_polling is True:
-            slice_polling = {}
-        return (
-            slice_polling.get("interval", DEFAULT_SLICE_POLLING_INTERVAL),
-            slice_polling.get("timeout", DEFAULT_SLICE_POLLING_TIMEOUT),
-        )
-
-    @property
-    def temp_dir(self) -> FileObj:
-        """The configured directory used for temporary files such as rollback data."""
-        return self._temp_dir
-
-    @property
-    def persist_mem_slices(self) -> bool:
-        """Whether to persist in-memory slice datasets."""
-        return self._config.get("persist_mem_slices", False)
-
-    @property
-    def force_new(self) -> bool:
-        """If set, an existing target dataset will be deleted."""
-        return self._config.get("force_new", False)
-
-    @property
-    def disable_rollback(self) -> bool:
-        """Whether to disable transaction rollbacks."""
-        return self._config.get("disable_rollback", False)
-
-    @property
-    def dry_run(self) -> bool:
-        """Whether to run in dry mode."""
-        return self._config.get("dry_run", False)
+        return DatasetMetadata.from_dataset(dataset, self._config)

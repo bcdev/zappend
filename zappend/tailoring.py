@@ -13,13 +13,11 @@ from .metadata import DatasetMetadata
 
 def tailor_target_dataset(ctx: Context, slice_ds: xr.Dataset) -> xr.Dataset:
     target_metadata = ctx.target_metadata
-    attrs_update_mode = ctx.attrs_update_mode
-    attrs = ctx.attrs
+    attrs_update_mode = ctx.config.attrs_update_mode
+    attrs = ctx.config.attrs
 
     target_ds = _strip_dataset(slice_ds, target_metadata)
     target_ds = _complete_dataset(target_ds, target_metadata)
-
-    # TODO: use ctx.attrs_update_mode to set initial dataset attributes
 
     # Set initial dataset attributes
     if attrs_update_mode == "ignore":
@@ -42,9 +40,9 @@ def tailor_target_dataset(ctx: Context, slice_ds: xr.Dataset) -> xr.Dataset:
 
 def tailor_slice_dataset(ctx: Context, slice_ds: xr.Dataset) -> xr.Dataset:
     target_metadata = ctx.target_metadata
-    append_dim = ctx.append_dim
-    attrs_update_mode = ctx.attrs_update_mode
-    attrs = ctx.attrs
+    append_dim = ctx.config.append_dim
+    attrs_update_mode = ctx.config.attrs_update_mode
+    attrs = ctx.config.attrs
 
     slice_ds = _strip_dataset(slice_ds, target_metadata)
     slice_ds = _complete_dataset(slice_ds, target_metadata)

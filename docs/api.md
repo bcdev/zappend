@@ -28,6 +28,10 @@ All described objects can be imported from the `zappend.api` module.
 
 ::: zappend.api.Context
 
+## Class `Config`
+
+::: zappend.api.Config
+
 ## Class `FileObj`
 
 ::: zappend.api.FileObj

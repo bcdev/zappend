@@ -2,267 +2,183 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-import json
-import os
 import unittest
 
-import fsspec
 import pytest
-import yaml
+import xarray as xr
 
-from zappend.config import exclude_from_config
-from zappend.config import merge_configs
-from zappend.config import normalize_config
-from zappend.config import validate_config
+from zappend.config import Config
+from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
+from zappend.slice import SliceSource
 from ..helpers import clear_memory_fs
+from ..helpers import make_test_dataset
 
 
-class ConfigValidateTest(unittest.TestCase):
-    def test_validate_empty_ok(self):
-        config = {}
-        self.assertIs(config, validate_config(config))
-
-    def test_validate_versions_ok(self):
-        config = {"version": 1, "zarr_version": 2}
-        self.assertIs(config, validate_config(config))
-
-    # noinspection PyMethodMayBeStatic
-    def test_validate_versions_fail(self):
-        config = {"zarr_version": 1}
-        with pytest.raises(
-            ValueError,
-            match="Invalid configuration:" " 2 was expected for zarr_version",
-        ):
-            validate_config(config)
-
-    # noinspection PyMethodMayBeStatic
-    def test_validate_variable_fail(self):
-        config = {
-            "zarr_version": 2,
-            "variables": {
-                "chl": {
-                    "dims": [10, 20, 30],
-                    "encoding": {
-                        "dtype": "int32",
-                    },
-                }
-            },
-        }
-        with pytest.raises(
-            ValueError,
-            match="Invalid configuration:"
-            " 10 is not of type 'string'"
-            " for variables.chl.dims.0",
-        ):
-            validate_config(config)
-
-
-class ConfigNormalizeTest(unittest.TestCase):
+class ConfigTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
 
-    def test_normalize_dict(self):
-        config = {"version": 1, "zarr_version": 2}
-        self.assertIs(config, normalize_config(config))
+    def test_target_dir(self):
+        target_dir = "memory://target.zarr"
+        config = Config({"target_dir": target_dir})
+        self.assertIsInstance(config.target_dir, FileObj)
+        self.assertEqual(target_dir, config.target_dir.uri)
 
-    def test_normalize_none(self):
-        self.assertEqual({}, normalize_config(None))
+    def test_force_new(self):
+        config = Config({"target_dir": "memory://target.zarr"})
+        self.assertEqual(False, config.force_new)
+        config = Config({"target_dir": "memory://target.zarr", "force_new": True})
+        self.assertEqual(True, config.force_new)
 
-    def test_normalize_json_uri(self):
-        uri = "memory://config.json"
-        config = {"version": 1, "zarr_version": 2}
-        with fsspec.open(uri, "w") as f:
-            f.write(json.dumps(config))
-        self.assertEqual(config, normalize_config(uri))
+    def test_append_dim(self):
+        config = Config({"target_dir": "memory://target.zarr"})
+        self.assertEqual("time", config.append_dim)
+        config = Config({"target_dir": "memory://target.zarr", "append_dim": "depth"})
+        self.assertEqual("depth", config.append_dim)
 
-    def test_normalize_yaml_uri(self):
-        uri = "memory://config.yaml"
-        config = {"version": 1, "zarr_version": 2}
-        with fsspec.open(uri, "w") as f:
-            f.write(yaml.dump(config))
-        self.assertEqual(config, normalize_config(uri))
+    def test_append_step(self):
+        make_test_dataset(uri="memory://target.zarr")
+        config = Config({"target_dir": "memory://target.zarr"})
+        self.assertEqual(None, config.append_step)
+        config = Config({"target_dir": "memory://target.zarr", "append_step": "1D"})
+        self.assertEqual("1D", config.append_step)
 
-    def test_interpolate_env_vars_json(self):
-        uri = "memory://config.json"
-        config = {
-            "slice_storage_options": {
-                "key": "${_TEST_S3_KEY}",
-                "secret": "$_TEST_S3_SECRET",
+    def test_attrs(self):
+        make_test_dataset(uri="memory://target.zarr")
+        config = Config({"target_dir": "memory://target.zarr"})
+        self.assertEqual({}, config.attrs)
+        self.assertEqual("keep", config.attrs_update_mode)
+        self.assertEqual(False, config.permit_eval)
+        config = Config(
+            {
+                "target_dir": "memory://target.zarr",
+                "attrs": {"title": "OCC 2024"},
+                "attrs_update_mode": "update",
+                "permit_eval": True,
             }
-        }
-        with fsspec.open(uri, "wt") as f:
-            f.write(json.dumps(config))
-        os.environ["_TEST_S3_KEY"] = "abc"
-        os.environ["_TEST_S3_SECRET"] = "123"
-        self.assertEqual(
-            {"slice_storage_options": {"key": "abc", "secret": "123"}},
-            normalize_config(uri),
         )
+        self.assertEqual({"title": "OCC 2024"}, config.attrs)
+        self.assertEqual("update", config.attrs_update_mode)
+        self.assertEqual(True, config.permit_eval)
 
-    def test_interpolate_env_vars_yaml(self):
-        uri = "memory://config.yaml"
-        config = {
-            "slice_storage_options": {
-                "key": "${_TEST_S3_KEY}",
-                "secret": "$_TEST_S3_SECRET",
+    def test_slice_polling(self):
+        config = Config({"target_dir": "memory://target.zarr"})
+        self.assertEqual((None, None), config.slice_polling)
+        config = Config({"target_dir": "memory://target.zarr", "slice_polling": False})
+        self.assertEqual((None, None), config.slice_polling)
+        config = Config({"target_dir": "memory://target.zarr", "slice_polling": True})
+        self.assertEqual((2, 60), config.slice_polling)
+        config = Config(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_polling": {"interval": 1, "timeout": 10},
             }
-        }
-        with fsspec.open(uri, "w") as f:
-            f.write(yaml.dump(config))
-        os.environ["_TEST_S3_KEY"] = "abc"
-        os.environ["_TEST_S3_SECRET"] = "123"
-        self.assertEqual(
-            {"slice_storage_options": {"key": "abc", "secret": 123}},
-            normalize_config(uri),
         )
+        self.assertEqual((1, 10), config.slice_polling)
 
-    def test_normalize_file_obj(self):
-        file_obj = FileObj("memory://config.yaml")
-        config = {"version": 1, "zarr_version": 2}
-        file_obj.write(yaml.dump(config))
-        self.assertEqual(config, normalize_config(file_obj))
+    def test_temp_dir(self):
+        config = Config({"target_dir": "memory://target.zarr"})
+        self.assertIsInstance(config.temp_dir, FileObj)
+        self.assertTrue(config.temp_dir.exists())
 
-    # noinspection PyMethodMayBeStatic
-    def test_it_raises_if_config_is_not_object(self):
-        file_obj = FileObj("memory://config.yaml")
-        file_obj.write("what?")
+    def test_disable_rollback(self):
+        config = Config({"target_dir": "memory://target.zarr"})
+        self.assertFalse(config.disable_rollback)
+        config = Config(
+            {"target_dir": "memory://target.zarr", "disable_rollback": True}
+        )
+        self.assertTrue(config.disable_rollback)
+
+    def test_dry_run(self):
+        config = Config({"target_dir": "memory://target.zarr"})
+        self.assertEqual(False, config.dry_run)
+        config = Config({"target_dir": "memory://target.zarr", "dry_run": True})
+        self.assertEqual(True, config.dry_run)
+
+    def test_slice_source_as_name(self):
+        config = Config(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source": "tests.config.test_config.new_custom_slice_source",
+            }
+        )
+        self.assertEqual(new_custom_slice_source, config.slice_source)
+
+        config = Config(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source": "tests.config.test_config.CustomSliceSource",
+            }
+        )
+        self.assertEqual(CustomSliceSource, config.slice_source)
+
+        # staticmethod
+        config = Config(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source": "tests.config.test_config.CustomSliceSource.new1",
+            }
+        )
+        self.assertEqual(CustomSliceSource.new1, config.slice_source)
+
+        # classmethod
+        config = Config(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source": "tests.config.test_config.CustomSliceSource.new2",
+            }
+        )
+        self.assertEqual(CustomSliceSource.new2, config.slice_source)
+
+    def test_slice_source_as_type(self):
+        config = Config(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source": new_custom_slice_source,
+            }
+        )
+        self.assertIs(new_custom_slice_source, config.slice_source)
+
+        config = Config(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source": CustomSliceSource,
+            }
+        )
+        self.assertIs(CustomSliceSource, config.slice_source)
+
         with pytest.raises(
             TypeError,
-            match="Invalid configuration:" " memory://config.yaml: object expected",
+            match=(
+                "slice_source must a callable"
+                " or the fully qualified name of a callable"
+            ),
         ):
-            normalize_config(file_obj)
-
-    def test_normalize_sequence(self):
-        configs = (
-            {
-                "version": 1,
-                "zarr_version": 2,
-                "fixed_dims": {
-                    "x": 200,
-                },
-                "append_dim": "time",
-            },
-            {
-                "fixed_dims": {
-                    "y": 100,
-                },
-                "variables": {
-                    "time": {
-                        "dims": "time",
-                        "encoding": {
-                            "dtype": "uint64",
-                        },
-                    },
-                    "y": {
-                        "dims": "y",
-                        "encoding": {
-                            "dtype": "float64",
-                        },
-                    },
-                    "x": {
-                        "dims": "x",
-                        "encoding": {
-                            "dtype": "float64",
-                        },
-                    },
-                },
-            },
-            {
-                "variables": {
-                    "chl": {
-                        "dims": ("time", "y", "x"),
-                        "encoding": {
-                            "dtype": "float32",
-                            "chunks": (1, 20, 30),
-                            "fill_value": None,
-                        },
-                    },
-                    "tsm": {
-                        "dims": ("time", "y", "x"),
-                        "encoding": {
-                            "dtype": "float32",
-                            "chunks": (1, 20, 30),
-                            "fill_value": None,
-                        },
-                    },
+            Config(
+                {
+                    "target_dir": "memory://target.zarr",
+                    "slice_source": 11,
                 }
-            },
-        )
-        self.assertEqual(
-            {
-                "version": 1,
-                "zarr_version": 2,
-                "fixed_dims": {
-                    "x": 200,
-                    "y": 100,
-                },
-                "append_dim": "time",
-                "variables": {
-                    "x": {
-                        "dims": "x",
-                        "encoding": {"dtype": "float64"},
-                    },
-                    "y": {
-                        "dims": "y",
-                        "encoding": {"dtype": "float64"},
-                    },
-                    "time": {
-                        "dims": "time",
-                        "encoding": {"dtype": "uint64"},
-                    },
-                    "chl": {
-                        "dims": ("time", "y", "x"),
-                        "encoding": {
-                            "dtype": "float32",
-                            "chunks": (1, 20, 30),
-                            "fill_value": None,
-                        },
-                    },
-                    "tsm": {
-                        "dims": ("time", "y", "x"),
-                        "encoding": {
-                            "dtype": "float32",
-                            "chunks": (1, 20, 30),
-                            "fill_value": None,
-                        },
-                    },
-                },
-            },
-            normalize_config(configs),
-        )
+            )
 
-    # noinspection PyMethodMayBeStatic
-    def test_normalize_invalid(self):
-        with pytest.raises(TypeError):
-            normalize_config(42)
-        with pytest.raises(TypeError):
-            normalize_config(True)
-        with pytest.raises(TypeError):
-            normalize_config(bytes())
 
-    def test_merge_config(self):
-        self.assertEqual({}, merge_configs())
-        self.assertEqual({}, merge_configs({}))
-        self.assertEqual({}, merge_configs({}, {}))
-        self.assertEqual({"a": 1}, merge_configs({"a": 1}))
-        self.assertEqual({"a": 2}, merge_configs({"a": 1}, {"a": 2}))
-        self.assertEqual({"a": None}, merge_configs({"a": 1}, {"a": None}))
-        self.assertEqual({"a": 2}, merge_configs({"a": None}, {"a": 2}))
-        self.assertEqual({"a": [3, 4]}, merge_configs({"a": [1, 2]}, {"a": [3, 4]}))
-        self.assertEqual(
-            {"a": {"b": 3, "c": 4}},
-            merge_configs({"a": {"b": 2, "c": 4}}, {"a": {"b": 3}}),
-        )
+def new_custom_slice_source(ctx: Context, index: int):
+    return CustomSliceSource(ctx, index)
 
-    def test_exclude_from_config(self):
-        with exclude_from_config({}) as config:
-            self.assertEqual({}, config)
-        with exclude_from_config({"a": 1, "b": 2}) as config:
-            self.assertEqual({"a": 1, "b": 2}, config)
-        with exclude_from_config({}, "a") as config:
-            self.assertEqual({}, config)
-        with exclude_from_config({"a": 1, "b": 2}, "a") as config:
-            self.assertEqual({"b": 2}, config)
-        with exclude_from_config({"a": 1, "b": 2}, "b", "a") as config:
-            self.assertEqual({}, config)
+
+class CustomSliceSource(SliceSource):
+    def __init__(self, ctx: Context, index: int):
+        super().__init__(ctx)
+        self.index = index
+
+    def get_dataset(self) -> xr.Dataset:
+        return make_test_dataset(index=self.index)
+
+    @staticmethod
+    def new1(ctx: Context, index: int):
+        return CustomSliceSource(ctx, index)
+
+    @classmethod
+    def new2(cls, ctx: Context, index: int):
+        return cls(ctx, index)

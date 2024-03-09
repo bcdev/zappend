@@ -9,7 +9,8 @@ import numcodecs.abc
 import numpy as np
 import xarray as xr
 
-from .config import merge_configs, DEFAULT_APPEND_DIM
+from .config import Config
+from .config import merge_configs
 from .log import logger
 
 
@@ -174,7 +175,7 @@ class DatasetMetadata:
                 )
 
     @classmethod
-    def from_dataset(cls, dataset: xr.Dataset, config: dict[str, Any] | None = None):
+    def from_dataset(cls, dataset: xr.Dataset, config: Config):
         """Get dataset metadata for the given dataset and processor configuration.
 
         Information given in the configuration has priority over metadata in
@@ -193,7 +194,7 @@ class DatasetMetadata:
 
         Args:
             dataset: A dataset
-            config: Optional processor configuration
+            config: Processor configuration
 
         Returns:
             The dataset's metadata.
@@ -202,22 +203,22 @@ class DatasetMetadata:
             ValueError: if the dataset does not comply to information given in
                 the configuration.
         """
-        config = config or {}
+        config = config if isinstance(config, Config) else Config(config)
 
         sizes = _get_effective_sizes(
             dataset,
-            config.get("fixed_dims"),
-            config.get("append_dim") or DEFAULT_APPEND_DIM,
+            config.fixed_dims,
+            config.append_dim,
         )
 
         variables = _get_effective_variables(
             dataset,
-            config.get("included_variables") or [],
-            config.get("excluded_variables") or [],
-            config.get("variables") or {},
+            config.included_variables,
+            config.excluded_variables,
+            config.variables,
         )
 
-        attrs = merge_configs(dataset.attrs, config.get("attrs") or {})
+        attrs = merge_configs(dataset.attrs, config.attrs)
 
         return DatasetMetadata(sizes=sizes, variables=variables, attrs=attrs)
 
