@@ -69,11 +69,11 @@ class Processor:
             slices: Slice objects.
         """
         with self._profiler:
-            for slice_index, slice_obj in enumerate(slices):
-                self.process_slice(slice_obj, slice_index=slice_index)
+            for slice_index, slice_item in enumerate(slices):
+                self.process_slice(slice_item, slice_index=slice_index)
 
-    def process_slice(self, slice_obj: SliceObj, slice_index: int = 0):
-        """Process a single slice object *slice_obj*.
+    def process_slice(self, slice_item: SliceObj, slice_index: int = 0):
+        """Process a single slice object *slice_item*.
 
         A slice object is
         either a `str`, `xarray.Dataset`, `SliceSource`` or a factory
@@ -99,13 +99,13 @@ class Processor:
         * update target from slice
 
         Args:
-            slice_obj: The slice object.
+            slice_item: The slice object.
             slice_index: An index identifying the slice.
         """
 
         ctx = Context(self._config)
 
-        with open_slice_source(ctx, slice_obj, slice_index) as slice_dataset:
+        with open_slice_source(ctx, slice_item, slice_index) as slice_dataset:
             slice_metadata = ctx.get_dataset_metadata(slice_dataset)
             if ctx.target_metadata is None:
                 ctx.target_metadata = slice_metadata
