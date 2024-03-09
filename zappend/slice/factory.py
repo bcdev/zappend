@@ -26,10 +26,10 @@ for a given processing context.
 
 def open_slice_source(
     ctx: Context,
-    slice_obj: SliceObj | SliceFactory | Any,
+    slice_item: SliceObj | SliceFactory | Any,
     slice_index: int = 0,
 ) -> SliceSource:
-    """Open the slice source for given slice object `slice_obj`.
+    """Open the slice source for given slice object `slice_item`.
 
     The intended and only use of the returned slice source is as context
     manager. When used as context manager the slice source yields a slice
@@ -39,7 +39,7 @@ def open_slice_source(
     class derived from `zappend.slice.SliceSource` or a function that returns
     instances of `zappend.slice.SliceSource`. The retrieved slice source will
     be returned by this function. The class or function will receive positional
-    and keyword arguments derived from `slice_obj` as follows:
+    and keyword arguments derived from `slice_item` as follows:
 
     * `tuple`: a pair of the form `(args, kwargs)`, where `args` is a list
       or tuple of positional arguments and `kwargs` is a dictionary of keyword
@@ -49,7 +49,7 @@ def open_slice_source(
     * Any other type is interpreted as single positional argument.
 
     If `slice_source` is not specified in the configuration, the slice object
-    `slice_obj` may have one of the following types:
+    `slice_item` may have one of the following types:
 
     * `str`: A local file path or URI pointing to a dataset file such as a
       Zarr or NetCDF. If it is a URI, the `ctx.slice_storage_options` apply.
@@ -63,7 +63,7 @@ def open_slice_source(
 
     Args:
         ctx: The processing context
-        slice_obj: A slice object
+        slice_item: An slice item
         slice_index: Optional slice index, used for dataset identification
 
     Returns:
@@ -71,46 +71,38 @@ def open_slice_source(
     """
     _slice_source = ctx.config.slice_source
     if _slice_source is not None:
-        slice_args, slice_kwargs = normalize_slice_arg(slice_obj)
-        slice_factory = to_slice_factory(_slice_source, *slice_args, **slice_kwargs)
-        slice_source = slice_factory(ctx)
-        if not isinstance(slice_source, SliceSource):
-            raise TypeError(
-                f"expected an instance of SliceSource"
-                f" returned from {_slice_source.__name__!r},"
-                f" but got {type(slice_source)}"
-            )
-        return slice_source
+        slice_args, slice_kwargs = normalize_slice_arg(slice_item)
+        slice_item = to_slice_factory(_slice_source, *slice_args, **slice_kwargs)
 
-    return _get_slice_dataset_recursively(ctx, slice_obj, slice_index)
+    return _get_slice_dataset_recursively(ctx, slice_item, slice_index)
 
 
 def _get_slice_dataset_recursively(
     ctx: Context,
-    slice_obj: SliceObj | SliceFactory,
+    slice_item: SliceObj | SliceFactory,
     slice_index: int,
 ) -> SliceSource:
-    if isinstance(slice_obj, SliceSource):
-        return slice_obj
-    if isinstance(slice_obj, (str, FileObj)):
-        if isinstance(slice_obj, str):
+    if isinstance(slice_item, SliceSource):
+        return slice_item
+    if isinstance(slice_item, (str, FileObj)):
+        if isinstance(slice_item, str):
             slice_file = FileObj(
-                slice_obj, storage_options=ctx.config.slice_storage_options
+                slice_item, storage_options=ctx.config.slice_storage_options
             )
         else:
-            slice_file = slice_obj
+            slice_file = slice_item
         return PersistentSliceSource(ctx, slice_file)
-    if isinstance(slice_obj, xr.Dataset):
+    if isinstance(slice_item, xr.Dataset):
         if ctx.config.persist_mem_slices:
-            return TemporarySliceSource(ctx, slice_obj, slice_index)
+            return TemporarySliceSource(ctx, slice_item, slice_index)
         else:
-            return MemorySliceSource(ctx, slice_obj, slice_index)
-    if callable(slice_obj):
-        slice_factory: SliceFactory = slice_obj
-        slice_obj = slice_factory(ctx)
-        return _get_slice_dataset_recursively(ctx, slice_obj, slice_index)
+            return MemorySliceSource(ctx, slice_item, slice_index)
+    if callable(slice_item):
+        slice_factory: SliceFactory = slice_item
+        slice_item = slice_factory(ctx)
+        return _get_slice_dataset_recursively(ctx, slice_item, slice_index)
     raise TypeError(
-        "slice_obj must be a"
+        "slice_item must be a"
         " str,"
         " zappend.fsutil.FileObj,"
         " zappend.slice.SliceSource,"

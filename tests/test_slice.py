@@ -1,6 +1,7 @@
 # Copyright © 2024 Norman Fomferra
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
+
 import shutil
 import unittest
 import warnings
@@ -60,8 +61,8 @@ class OpenSliceSourceTest(unittest.TestCase):
         with pytest.raises(
             TypeError,
             match=(
-                "expected an instance of SliceSource returned from"
-                " 'false_slice_source_function', but got <class 'int'>"
+                "slice_item must be a str, zappend.fsutil.FileObj,"
+                " zappend.slice.SliceSource, xarray.Dataset, or a callable"
             ),
         ):
             open_slice_source(ctx, "test.nc")
@@ -69,9 +70,9 @@ class OpenSliceSourceTest(unittest.TestCase):
     def test_slice_source_slice_source(self):
         dataset = make_test_dataset()
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        slice_obj = MemorySliceSource(ctx, dataset, 0)
-        slice_source = open_slice_source(ctx, slice_obj)
-        self.assertIs(slice_obj, slice_source)
+        slice_item = MemorySliceSource(ctx, dataset, 0)
+        slice_source = open_slice_source(ctx, slice_item)
+        self.assertIs(slice_item, slice_source)
 
     def test_slice_factory_slice_source(self):
         dataset = make_test_dataset()
@@ -189,7 +190,7 @@ class OpenSliceSourceTest(unittest.TestCase):
     # noinspection PyMethodMayBeStatic
     def test_it_raises_on_invalid_type(self):
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        with pytest.raises(TypeError, match="slice_obj must be a str, "):
+        with pytest.raises(TypeError, match="slice_item must be a str, "):
             # noinspection PyTypeChecker
             open_slice_source(ctx, 42)
 
