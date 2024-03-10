@@ -4,10 +4,10 @@
 
 import xarray as xr
 
+from zappend.context import Context
+from zappend.fsutil.fileobj import FileObj
+from zappend.log import logger
 from .memory import MemorySliceSource
-from ..context import Context
-from ..fsutil.fileobj import FileObj
-from ..log import logger
 
 
 class TemporarySliceSource(MemorySliceSource):

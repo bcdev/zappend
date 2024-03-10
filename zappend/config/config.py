@@ -38,7 +38,7 @@ class Config:
         self._temp_dir = FileObj(temp_dir_uri, storage_options=temp_storage_options)
 
         # avoid cyclic import
-        from ..slice.factory import to_slice_callable
+        from ..slice.callable import to_slice_callable
 
         slice_source = config_dict.get("slice_source")
         self._slice_source = to_slice_callable(slice_source)

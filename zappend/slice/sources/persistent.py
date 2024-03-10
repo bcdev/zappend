@@ -7,10 +7,10 @@ import time
 import fsspec.implementations.local
 import xarray as xr
 
-from ..context import Context
-from ..fsutil.fileobj import FileObj
-from ..log import logger
-from .abc import SliceSource
+from zappend.context import Context
+from zappend.fsutil.fileobj import FileObj
+from zappend.log import logger
+from ..source import SliceSource
 
 
 class PersistentSliceSource(SliceSource):

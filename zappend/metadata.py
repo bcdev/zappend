@@ -310,7 +310,7 @@ def _get_effective_variables(
             # is complete to create new dataset variables later
             config_var_dims = config_var_def.get("dims")
             if config_var_dims is None:
-                raise ValueError(f"Missing dimensions" f" of variable {var_name!r}")
+                raise ValueError(f"Missing dimensions of variable {var_name!r}")
             for dim in config_var_dims:
                 if dim not in dataset.sizes:
                     raise ValueError(

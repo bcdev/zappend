@@ -4,8 +4,8 @@
 
 import xarray as xr
 
-from ..log import logger
-from .abc import SliceSource
+from zappend.log import logger
+from ..source import SliceSource
 
 
 class MemorySliceSource(SliceSource):
