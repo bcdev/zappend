@@ -24,8 +24,8 @@ from .log import configure_logging
 from .log import logger
 from .profiler import Profiler
 from .rollbackstore import RollbackStore
-from .slice import SliceObj
-from .slice import open_slice_source
+from .slice import SliceItem
+from .slice import open_slice_dataset
 from .tailoring import tailor_slice_dataset
 from .tailoring import tailor_target_dataset
 
@@ -35,9 +35,6 @@ class Processor:
 
     Args:
         config: Processor configuration.
-            It may be a file path or URI, a `dict`, `None`, or a sequence of
-            the aforementioned. If a sequence is used, subsequent configurations
-            are incremental to the previous ones.
         kwargs: Additional configuration parameters.
             Can be used to pass or override configuration values in `config`.
     """
@@ -61,26 +58,19 @@ class Processor:
         self._config = _config
         self._profiler = Profiler(_config.profiling)
 
-    def process_slices(self, slices: Iterable[SliceObj]):
+    def process_slices(self, slices: Iterable[SliceItem]):
         """Process the given `slices`.
         Passes each slice in `slices` to the `process_slice()` method.
 
         Args:
-            slices: Slice objects.
+            slices: Iterable of slice items.
         """
         with self._profiler:
-            for slice_index, slice_obj in enumerate(slices):
-                self.process_slice(slice_obj, slice_index=slice_index)
+            for slice_index, slice_item in enumerate(slices):
+                self.process_slice(slice_item, slice_index=slice_index)
 
-    def process_slice(self, slice_obj: SliceObj, slice_index: int = 0):
-        """Process a single slice object *slice_obj*.
-
-        A slice object is
-        either a `str`, `xarray.Dataset`, `SliceSource`` or a factory
-        function that returns a slice object. If `str` is used,
-        it is interpreted as local dataset path or dataset URI.
-        If a URI is used, protocol-specific parameters apply, given by
-        configuration parameter `slice_storage_options`.
+    def process_slice(self, slice_item: SliceItem, slice_index: int = 0):
+        """Process a single slice item *slice_item*.
 
         If there is no target yet, just config and slice:
 
@@ -99,13 +89,13 @@ class Processor:
         * update target from slice
 
         Args:
-            slice_obj: The slice object.
+            slice_item: The slice item.
             slice_index: An index identifying the slice.
         """
 
         ctx = Context(self._config)
 
-        with open_slice_source(ctx, slice_obj, slice_index) as slice_dataset:
+        with open_slice_dataset(ctx, slice_item, slice_index) as slice_dataset:
             slice_metadata = ctx.get_dataset_metadata(slice_dataset)
             if ctx.target_metadata is None:
                 ctx.target_metadata = slice_metadata

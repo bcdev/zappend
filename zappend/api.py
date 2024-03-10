@@ -11,11 +11,9 @@ from .config import ConfigList
 from .context import Context
 from .fsutil import FileObj
 from .processor import Processor
-from .slice import SliceFactory
-from .slice import SliceObj
+from .slice import SliceCallable
+from .slice import SliceItem
 from .slice import SliceSource
-from .slice import to_slice_factories
-from .slice import to_slice_factory
 
 
 __all__ = [
@@ -25,17 +23,15 @@ __all__ = [
     "ConfigList",
     "Context",
     "FileObj",
+    "SliceCallable",
+    "SliceItem",
     "SliceSource",
-    "SliceFactory",
-    "SliceObj",
     "zappend",
-    "to_slice_factories",
-    "to_slice_factory",
 ]
 
 
 def zappend(
-    slices: Iterable[SliceObj | SliceFactory],
+    slices: Iterable[Any],
     config: ConfigLike = None,
     **kwargs: Any,
 ):
@@ -50,10 +46,11 @@ def zappend(
     in `config` or `kwargs`.
 
     Args:
-        slices: An iterable that yields slice objects. A slice object is
-            either a `str`, `xarray.Dataset`, `SliceSource` or a factory
-            function that returns a slice object. If `str` is used,
-            it is interpreted as local dataset path or dataset URI.
+        slices: An iterable that yields slice items. A slice item is
+            either a `str`, `FileObj`, `xarray.Dataset`, `SliceSource`,
+            or represents arguments passed to a configured `slice_source`.
+            If `str` or `FileObj` are used, they are interpreted as
+            local dataset path or dataset URI.
             If a URI is used, protocol-specific parameters apply, given by
             configuration parameter `slice_storage_options`.
         config: Processor configuration.

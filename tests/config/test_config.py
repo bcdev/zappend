@@ -169,11 +169,14 @@ def new_custom_slice_source(ctx: Context, index: int):
 
 class CustomSliceSource(SliceSource):
     def __init__(self, ctx: Context, index: int):
-        super().__init__(ctx)
+        self.ctx = ctx
         self.index = index
 
     def get_dataset(self) -> xr.Dataset:
         return make_test_dataset(index=self.index)
+
+    def dispose(self):
+        pass
 
     @staticmethod
     def new1(ctx: Context, index: int):

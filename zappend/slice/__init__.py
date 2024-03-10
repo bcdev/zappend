@@ -2,10 +2,9 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from .abc import SliceSource
-from .factory import SliceFactory
-from .factory import SliceObj
-from .factory import open_slice_source
-from .factory import to_slice_factories
-from .factory import to_slice_factory
-from .factory import to_slice_source_type
+from .callable import SliceCallable
+from .callable import invoke_slice_callable
+from .callable import to_slice_callable
+from .cm import open_slice_dataset
+from .source import SliceItem
+from .source import SliceSource
