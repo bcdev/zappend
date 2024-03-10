@@ -39,7 +39,7 @@ def open_slice_dataset(
     slice_item: Any,
     slice_index: int = 0,
 ) -> SliceSourceContextManager:
-    """Open the slice source for given slice object `slice_item`.
+    """Open the slice source for given slice item `slice_item`.
 
     The intended and only use of the returned slice source is as context
     manager. When used as context manager the slice source yields a slice
@@ -58,7 +58,7 @@ def open_slice_dataset(
     * `dict`: keyword arguments only;
     * Any other type is interpreted as single positional argument.
 
-    If `slice_source` is not specified in the configuration, the slice object
+    If `slice_source` is not specified in the configuration, the slice item
     `slice_item` may have one of the following types:
 
     * `str`: A local file path or URI pointing to a dataset file such as a

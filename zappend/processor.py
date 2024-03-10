@@ -63,14 +63,14 @@ class Processor:
         Passes each slice in `slices` to the `process_slice()` method.
 
         Args:
-            slices: Slice objects.
+            slices: Iterable of slice items.
         """
         with self._profiler:
             for slice_index, slice_item in enumerate(slices):
                 self.process_slice(slice_item, slice_index=slice_index)
 
     def process_slice(self, slice_item: SliceItem, slice_index: int = 0):
-        """Process a single slice object *slice_item*.
+        """Process a single slice item *slice_item*.
 
         If there is no target yet, just config and slice:
 
@@ -89,7 +89,7 @@ class Processor:
         * update target from slice
 
         Args:
-            slice_item: The slice object.
+            slice_item: The slice item.
             slice_index: An index identifying the slice.
         """
 

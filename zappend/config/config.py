@@ -114,7 +114,8 @@ class Config:
 
     @property
     def slice_engine(self) -> str | None:
-        """The configured slice engine to be used if a slice object is not a Zarr.
+        """The configured slice engine to be used if a slice path or URI does not
+        point to a dataset in Zarr format.
         If defined, it will be passed to the `xarray.open_dataset()` function.
         """
         return self._config.get("slice_engine")
@@ -122,14 +123,15 @@ class Config:
     @property
     def slice_source(self) -> Callable[[...], Any] | None:
         """The configured slice source type. If given, it must be
-        a callable that returns a `SliceObj` or a class that is derived from
-         `SliceSource` or implements its interface."""
+        a callable that returns a value of type `SliceItem` or a class that is
+        derived from `SliceSource` abstract base class.
+        """
         return self._slice_source
 
     @property
     def slice_storage_options(self) -> dict[str, Any] | None:
         """The configured slice storage options to be used
-        if a slice object is a Zarr.
+        if a slice item is a URI.
         """
         return self._config.get("slice_storage_options")
 
