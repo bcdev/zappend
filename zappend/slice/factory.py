@@ -2,12 +2,15 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from typing import Any, Callable, Iterable, Type, Iterator
+import importlib
 import inspect
+from typing import Any, Callable, Iterable, Type, Iterator
+
 
 import xarray as xr
 
 from .abc import SliceSource
+from .cm import SliceSourceContextManager
 from .memory import MemorySliceSource
 from .persistent import PersistentSliceSource
 from .temporary import TemporarySliceSource
@@ -20,7 +23,17 @@ SliceObj = str | FileObj | xr.Dataset | SliceSource
 
 SliceFactory = Callable[[Context], SliceObj]
 """The type for a factory function that returns a slice object
-for a given processing context.
+for a given processing context `ctx` of type `Context` as only
+argument.
+"""
+
+SliceCallable = Type[SliceSource] | Callable[[...], SliceObj]
+"""This type that is either a class derived from `SliceSource` 
+or a callable that returns a `SliceObj`. Both can be invoked
+with any number of positional or keyword arguments. The processing 
+context, if used, is passed either as 1st positional argument or 
+as keyword argument and must be named `ctx` and must have 
+type `Context`.
 """
 
 
@@ -28,7 +41,7 @@ def open_slice_source(
     ctx: Context,
     slice_item: SliceObj | SliceFactory | Any,
     slice_index: int = 0,
-) -> SliceSource:
+) -> SliceSourceContextManager:
     """Open the slice source for given slice object `slice_item`.
 
     The intended and only use of the returned slice source is as context
@@ -74,49 +87,51 @@ def open_slice_source(
         slice_args, slice_kwargs = normalize_slice_arg(slice_item)
         slice_item = to_slice_factory(_slice_source, *slice_args, **slice_kwargs)
 
-    return _get_slice_dataset_recursively(ctx, slice_item, slice_index)
+    slice_source = _get_slice_source(ctx, slice_item, slice_index)
+    return SliceSourceContextManager(slice_source)
 
 
-def _get_slice_dataset_recursively(
+def _get_slice_source(
     ctx: Context,
     slice_item: SliceObj | SliceFactory,
     slice_index: int,
 ) -> SliceSource:
     if isinstance(slice_item, SliceSource):
         return slice_item
-    if isinstance(slice_item, (str, FileObj)):
-        if isinstance(slice_item, str):
-            slice_file = FileObj(
-                slice_item, storage_options=ctx.config.slice_storage_options
-            )
-        else:
-            slice_file = slice_item
+    if isinstance(slice_item, str):
+        slice_file = FileObj(
+            slice_item, storage_options=ctx.config.slice_storage_options
+        )
         return PersistentSliceSource(ctx, slice_file)
+    if isinstance(slice_item, FileObj):
+        return PersistentSliceSource(ctx, slice_item)
     if isinstance(slice_item, xr.Dataset):
         if ctx.config.persist_mem_slices:
             return TemporarySliceSource(ctx, slice_item, slice_index)
         else:
-            return MemorySliceSource(ctx, slice_item, slice_index)
+            return MemorySliceSource(slice_item, slice_index)
     if callable(slice_item):
         slice_factory: SliceFactory = slice_item
         slice_item = slice_factory(ctx)
-        return _get_slice_dataset_recursively(ctx, slice_item, slice_index)
+        return _get_slice_source(ctx, slice_item, slice_index)
     raise TypeError(
-        "slice_item must be a"
-        " str,"
-        " zappend.fsutil.FileObj,"
-        " zappend.slice.SliceSource,"
-        " xarray.Dataset,"
-        " or a callable"
+        f"slice_item must have type"
+        f" str,"
+        f" xarray.Dataset,"
+        f" zappend.fsutil.FileObj,"
+        f" zappend.slice.SliceSource,"
+        f" zappend.slice.SliceFactory,"
+        f" but was type {type(slice_item).__name__}"
     )
 
 
 def to_slice_factories(
-    slice_callable: Callable[[...], SliceObj] | Type[SliceSource],
+    slice_callable: SliceCallable,
     slice_inputs: Iterable[Any],
 ) -> Iterator[SliceFactory]:
     """Utility function that generates slice factories for the given callable
-    `slice_callable` and iterable of slice inputs `slice_inputs`.
+    `slice_callable` of type [SliceCallable][SliceCallable] and iterable of
+    slice inputs `slice_inputs`.
 
     If the callable defines an argument named `ctx`, the current processing
     context of type [Context][zappend.api.Context] will be passed to it. If it
@@ -154,12 +169,12 @@ def to_slice_factories(
 
 
 def to_slice_factory(
-    slice_callable: Callable[[...], SliceObj] | Type[SliceSource],
+    slice_callable: SliceCallable,
     *slice_args: Any,
     **slice_kwargs: Any,
 ) -> SliceFactory:
     """Utility function that generates a slice factory (closure) for the given
-    callable and arguments.
+    `slice_callable` and provided arguments.
 
     If the callable defines an argument named `ctx`, the current processing
     context of type [Context][zappend.api.Context] will be passed to it.
@@ -223,7 +238,7 @@ def normalize_slice_arg(arg: Any) -> tuple[tuple[...], dict[str, Any]]:
     return args, kwargs
 
 
-def to_slice_source_type(slice_source_type: str | Type) -> Callable | None:
+def to_slice_callable(slice_source_type: str | Type) -> SliceCallable | None:
     if not slice_source_type:
         return None
     if isinstance(slice_source_type, str):
@@ -236,8 +251,6 @@ def to_slice_source_type(slice_source_type: str | Type) -> Callable | None:
 
 
 def import_attribute(name: str) -> Any:
-    import importlib
-
     parts = [part for part in name.split(".") if part]
 
     module = None

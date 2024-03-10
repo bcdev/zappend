@@ -11,6 +11,7 @@ from .config import ConfigList
 from .context import Context
 from .fsutil import FileObj
 from .processor import Processor
+from .slice import SliceCallable
 from .slice import SliceFactory
 from .slice import SliceObj
 from .slice import SliceSource
@@ -25,9 +26,10 @@ __all__ = [
     "ConfigList",
     "Context",
     "FileObj",
-    "SliceSource",
+    "SliceCallable",
     "SliceFactory",
     "SliceObj",
+    "SliceSource",
     "zappend",
     "to_slice_factories",
     "to_slice_factory",

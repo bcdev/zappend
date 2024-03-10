@@ -5,20 +5,8 @@ All described objects can be imported from the `zappend.api` module.
 ## Function `zappend()`
 
 ::: zappend.api.zappend
-    options:
-        show_root_heading: true
-
-## Function `to_slice_factories()`
-
-::: zappend.api.to_slice_factories
-    options:
-        show_root_heading: true
-
-## Function `to_slice_factory()`
-
-::: zappend.api.to_slice_factory
-    options:
-        show_root_heading: true
+options:
+show_root_heading: true
 
 ## Class `SliceSource`
 
@@ -39,22 +27,21 @@ All described objects can be imported from the `zappend.api` module.
 ## Types
 
 ::: zappend.api.SliceObj
-    options:
-        show_root_heading: true
+options:
+show_root_heading: true
 
-::: zappend.api.SliceFactory
-    options:
-        show_root_heading: true
-
+::: zappend.api.SliceCallable
+options:
+show_root_heading: true
 
 ::: zappend.api.ConfigItem
-    options:
-        show_root_heading: true
+options:
+show_root_heading: true
 
 ::: zappend.api.ConfigList
-    options:
-        show_root_heading: true
+options:
+show_root_heading: true
 
 ::: zappend.api.ConfigLike
-    options:
-        show_root_heading: true
+options:
+show_root_heading: true

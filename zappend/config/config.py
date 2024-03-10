@@ -37,11 +37,11 @@ class Config:
         temp_storage_options = config_dict.get("temp_storage_options")
         self._temp_dir = FileObj(temp_dir_uri, storage_options=temp_storage_options)
 
-        # local import to avoid recursion
-        from ..slice.factory import to_slice_source_type
+        # avoid cyclic import
+        from ..slice.factory import to_slice_callable
 
         slice_source = config_dict.get("slice_source")
-        self._slice_source = to_slice_source_type(slice_source)
+        self._slice_source = to_slice_callable(slice_source)
 
     @property
     def zarr_version(self) -> int:
@@ -120,8 +120,10 @@ class Config:
         return self._config.get("slice_engine")
 
     @property
-    def slice_source(self) -> Callable | None:
-        """The configured slice source, if any."""
+    def slice_source(self) -> Callable[[...], Any] | None:
+        """The configured slice source type. If given, it must be
+        a callable that returns a `SliceObj` or a class that is derived from
+         `SliceSource` or implements its interface."""
         return self._slice_source
 
     @property

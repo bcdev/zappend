@@ -12,6 +12,7 @@ import xarray as xr
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.slice.abc import SliceSource
+from zappend.slice.cm import SliceSourceContextManager
 from zappend.slice.factory import open_slice_source
 from zappend.slice.factory import import_attribute
 from zappend.slice.factory import to_slice_factories
@@ -35,9 +36,11 @@ class OpenSliceSourceTest(unittest.TestCase):
                 slice_source="tests.config.test_config.CustomSliceSource",
             )
         )
-        slice_source = open_slice_source(ctx, 7)
-        self.assertIsInstance(slice_source, CustomSliceSource)
-        self.assertEqual(7, slice_source.index)
+        slice_cm = open_slice_source(ctx, 7)
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
+        self.assertIsInstance(slice_cm.slice_source, CustomSliceSource)
+        # noinspection PyUnresolvedReferences
+        self.assertEqual(7, slice_cm.slice_source.index)
 
     def test_slice_source_func_slice_source(self):
         ctx = Context(
@@ -46,9 +49,11 @@ class OpenSliceSourceTest(unittest.TestCase):
                 slice_source="tests.config.test_config.new_custom_slice_source",
             )
         )
-        slice_source = open_slice_source(ctx, 13)
-        self.assertIsInstance(slice_source, CustomSliceSource)
-        self.assertEqual(13, slice_source.index)
+        slice_cm = open_slice_source(ctx, 13)
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
+        self.assertIsInstance(slice_cm.slice_source, CustomSliceSource)
+        # noinspection PyUnresolvedReferences
+        self.assertEqual(13, slice_cm.slice_source.index)
 
     # noinspection PyMethodMayBeStatic
     def test_slice_source_class_slice_source_fails(self):
@@ -61,8 +66,9 @@ class OpenSliceSourceTest(unittest.TestCase):
         with pytest.raises(
             TypeError,
             match=(
-                "slice_item must be a str, zappend.fsutil.FileObj,"
-                " zappend.slice.SliceSource, xarray.Dataset, or a callable"
+                "slice_item must have type str, xarray.Dataset,"
+                " zappend.fsutil.FileObj, zappend.slice.SliceSource,"
+                " zappend.slice.SliceFactory, but was type int"
             ),
         ):
             open_slice_source(ctx, "test.nc")
@@ -70,9 +76,9 @@ class OpenSliceSourceTest(unittest.TestCase):
     def test_slice_source_slice_source(self):
         dataset = make_test_dataset()
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        slice_item = MemorySliceSource(ctx, dataset, 0)
-        slice_source = open_slice_source(ctx, slice_item)
-        self.assertIs(slice_item, slice_source)
+        slice_item = MemorySliceSource(dataset, 0)
+        slice_cm = open_slice_source(ctx, slice_item)
+        self.assertIs(slice_item, slice_cm.slice_source)
 
     def test_slice_factory_slice_source(self):
         dataset = make_test_dataset()
@@ -82,43 +88,46 @@ class OpenSliceSourceTest(unittest.TestCase):
             self.assertIs(ctx, _ctx)
             return dataset
 
-        slice_source = open_slice_source(ctx, factory)
-        self.assertIsInstance(slice_source, MemorySliceSource)
-        with slice_source as slice_ds:
+        slice_cm = open_slice_source(ctx, factory)
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
+        self.assertIsInstance(slice_cm.slice_source, MemorySliceSource)
+        with slice_cm as slice_ds:
             self.assertIs(dataset, slice_ds)
 
     def test_memory_slice_source(self):
         dataset = make_test_dataset()
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        slice_source = open_slice_source(ctx, dataset)
-        self.assertIsInstance(slice_source, MemorySliceSource)
-        with slice_source as slice_ds:
+        slice_cm = open_slice_source(ctx, dataset)
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
+        self.assertIsInstance(slice_cm.slice_source, MemorySliceSource)
+        with slice_cm as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
     def test_temporary_slice_source(self):
         dataset = make_test_dataset()
         ctx = Context(dict(target_dir="memory://target.zarr", persist_mem_slices=True))
-        slice_source = open_slice_source(ctx, dataset)
-        self.assertIsInstance(slice_source, TemporarySliceSource)
-        with slice_source as slice_ds:
+        slice_cm = open_slice_source(ctx, dataset)
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
+        self.assertIsInstance(slice_cm.slice_source, TemporarySliceSource)
+        with slice_cm as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
     def test_file_obj_slice_source(self):
         slice_dir = FileObj("memory://slice.zarr")
         make_test_dataset(uri=slice_dir.uri)
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        slice_source = open_slice_source(ctx, slice_dir)
-        self.assertIsInstance(slice_source, PersistentSliceSource)
-        with slice_source as slice_ds:
+        slice_cm = open_slice_source(ctx, slice_dir)
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
+        with slice_cm as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
     def test_persistent_slice_source_for_zarr(self):
         slice_dir = FileObj("memory://slice.zarr")
         make_test_dataset(uri=slice_dir.uri)
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        slice_source = open_slice_source(ctx, slice_dir.uri)
-        self.assertIsInstance(slice_source, PersistentSliceSource)
-        with slice_source as slice_ds:
+        slice_cm = open_slice_source(ctx, slice_dir.uri)
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
+        with slice_cm as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
     def test_persistent_slice_source_for_nc_nonlocal(self):
@@ -130,10 +139,11 @@ class OpenSliceSourceTest(unittest.TestCase):
             # noinspection PyTypeChecker
             slice_ds.to_netcdf(stream, engine=engine, format=format)
         ctx = Context(dict(target_dir="memory://target.zarr", slice_engine=engine))
-        slice_source = open_slice_source(ctx, slice_file.uri)
-        self.assertIsInstance(slice_source, PersistentSliceSource)
+        slice_cm = open_slice_source(ctx, slice_file.uri)
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
+        self.assertIsInstance(slice_cm.slice_source, PersistentSliceSource)
         try:
-            with slice_source as slice_ds:
+            with slice_cm as slice_ds:
                 self.assertIsInstance(slice_ds, xr.Dataset)
         except KeyError as e:
             # This is unexpected! xarray cannot open the NetCDF file it just
@@ -151,9 +161,10 @@ class OpenSliceSourceTest(unittest.TestCase):
         # noinspection PyTypeChecker
         slice_ds.to_netcdf(slice_file.path, engine=engine, format=format)
         try:
-            slice_source = open_slice_source(ctx, slice_file.uri)
-            self.assertIsInstance(slice_source, PersistentSliceSource)
-            with slice_source as slice_ds:
+            slice_cm = open_slice_source(ctx, slice_file.uri)
+            self.assertIsInstance(slice_cm, SliceSourceContextManager)
+            self.assertIsInstance(slice_cm.slice_source, PersistentSliceSource)
+            with slice_cm as slice_ds:
                 self.assertIsInstance(slice_ds, xr.Dataset)
         finally:
             shutil.rmtree(target_dir.path, ignore_errors=True)
@@ -168,9 +179,10 @@ class OpenSliceSourceTest(unittest.TestCase):
                 slice_polling=dict(timeout=0.1, interval=0.02),
             )
         )
-        slice_source = open_slice_source(ctx, slice_dir.uri)
-        self.assertIsInstance(slice_source, PersistentSliceSource)
-        with slice_source as slice_ds:
+        slice_cm = open_slice_source(ctx, slice_dir.uri)
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
+        self.assertIsInstance(slice_cm.slice_source, PersistentSliceSource)
+        with slice_cm as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
     # noinspection PyMethodMayBeStatic
@@ -182,15 +194,22 @@ class OpenSliceSourceTest(unittest.TestCase):
                 slice_polling=dict(timeout=0.1, interval=0.02),
             )
         )
-        slice_source = open_slice_source(ctx, slice_dir.uri)
+        slice_cm = open_slice_source(ctx, slice_dir.uri)
         with pytest.raises(FileNotFoundError, match=slice_dir.uri):
-            with slice_source:
+            with slice_cm:
                 pass
 
     # noinspection PyMethodMayBeStatic
     def test_it_raises_on_invalid_type(self):
         ctx = Context(dict(target_dir="memory://target.zarr"))
-        with pytest.raises(TypeError, match="slice_item must be a str, "):
+        with pytest.raises(
+            TypeError,
+            match=(
+                "slice_item must have type str, xarray.Dataset,"
+                " zappend.fsutil.FileObj, zappend.slice.SliceSource,"
+                " zappend.slice.SliceFactory, but was type int"
+            ),
+        ):
             # noinspection PyTypeChecker
             open_slice_source(ctx, 42)
 
@@ -242,11 +261,14 @@ class YieldSlicesTest(unittest.TestCase):
     def test_slice_source_class(self):
         class MyClass(SliceSource):
             def __init__(self, ctx: Context, path: str):
-                super().__init__(ctx)
+                self.ctx = ctx
                 self.path = "s3://" + path
 
             def get_dataset(self) -> xr.Dataset:
                 return xr.open_dataset(self.path)
+
+            def dispose(self):
+                pass
 
         factories = list(
             to_slice_factories(MyClass, [(["a"], {}), (["b"], {}), (["c"], {})])

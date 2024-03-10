@@ -4,6 +4,11 @@
   target dataset. An existing target dataset (and its lock) will be
   permanently deleted before appending of slice datasets begins. [#72]
 
+* Simplified writing custom slice sources. The configuration setting
+  `slice_source` can now be any function that returns an `xarray.Dataset`
+  or any object that can be used to finally yield an `xarray.Dataset`: 
+  `str` (local file path or URI), or a `SliceSource` instance. [#78]
+
 * Internal refactoring: Extracted `Config` class out of `Context` and 
   made available via new `Context.config: Config` property.
   The change concerns any usages of the `ctx: Context` argument passed to
