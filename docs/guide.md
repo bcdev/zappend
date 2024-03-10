@@ -537,12 +537,12 @@ passed using the optional `target_storage_options` setting.
 A _slice dataset_ is the dataset that is appended for every slice item passed 
 to `zappend`. Slice datasets can be provided in various ways.
 
-* When using the `zappend` CLI command, slice datasets are passed as local file path 
-  or URI argument.
+* When using the [zappend CLI command](cli.md), slice items are passed as 
+  command arguments where they point to slice datasets by local file paths or URIs.
 
-* When using the [`zappend`](api.md) Python function, slice datasets are passed 
-  using the `slices` argument, which must be iterable. You can pass a list or tuple
-  of slice items or provide a generator that provides the slice items.
+* When using the [zappend Python function](api.md), slice items are passed 
+  using the `slices` argument, which is a Python iterable. You can pass a list or tuple
+  of slice items or provide a Python generator that provides the slice items.
 
 Each slice item can be a local file path or URI of type `str` or `FileObj`, 
 a dataset of type `xarray.Dataset`, or a `SliceSource` object explained in more detail 
