@@ -26,7 +26,7 @@ All described objects can be imported from the `zappend.api` module.
 
 ## Types
 
-::: zappend.api.SliceObj
+::: zappend.api.SliceItem
     options:
         show_root_heading: true
 

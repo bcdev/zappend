@@ -550,7 +550,7 @@ below.
 
 #### Paths and URIs
 
-A slice object of type `str` is interpreted as local file path or URI, in the case 
+A slice item of type `str` is interpreted as local file path or URI, in the case 
 the path has a protocol prefix, such as `s3://` as described above.
 
 In the majority of `zappend` use cases the slice datasets to be appended to a target 
