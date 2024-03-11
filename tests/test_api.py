@@ -159,8 +159,8 @@ class ApiTest(unittest.TestCase):
         )
 
     def test_some_slices_with_func_slice_source(self):
-        def process_slice(ctx, slice_ds: xr.Dataset) -> SliceSource:
-            return MySliceSource(ctx, slice_ds)
+        def process_slice(slice_ds: xr.Dataset) -> SliceSource:
+            return MySliceSource(slice_ds)
 
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset(index=3 * i) for i in range(3)]
@@ -394,9 +394,11 @@ class ApiTest(unittest.TestCase):
 
 
 class MySliceSource(SliceSource):
-    def __init__(self, ctx, slice_ds):
-        super().__init__(ctx)
+    def __init__(self, slice_ds):
         self.slice_ds = slice_ds
 
     def get_dataset(self) -> xr.Dataset:
         return self.slice_ds.drop_vars(["tsm"])
+
+    def dispose(self):
+        pass

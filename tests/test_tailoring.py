@@ -11,6 +11,7 @@ import xarray as xr
 from zappend.context import Context
 from zappend.tailoring import tailor_target_dataset
 from zappend.tailoring import tailor_slice_dataset
+from .helpers import clear_memory_fs
 
 
 def make_context(config: dict, target_ds: xr.Dataset, write: bool = False) -> Context:
@@ -23,6 +24,9 @@ def make_context(config: dict, target_ds: xr.Dataset, write: bool = False) -> Co
 
 
 class TailorTargetDatasetTest(unittest.TestCase):
+    def setUp(self):
+        clear_memory_fs()
+
     def test_it_sets_vars_metadata(self):
         slice_ds = xr.Dataset(
             {
@@ -178,6 +182,9 @@ class TailorTargetDatasetTest(unittest.TestCase):
 
 
 class TailorSliceDatasetTest(unittest.TestCase):
+    def setUp(self):
+        clear_memory_fs()
+
     def test_it_drops_constant_variables(self):
         slice_ds = xr.Dataset(
             {

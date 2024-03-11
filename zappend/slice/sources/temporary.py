@@ -4,10 +4,10 @@
 
 import xarray as xr
 
+from zappend.context import Context
+from zappend.fsutil.fileobj import FileObj
+from zappend.log import logger
 from .memory import MemorySliceSource
-from ..context import Context
-from ..fsutil.fileobj import FileObj
-from ..log import logger
 
 
 class TemporarySliceSource(MemorySliceSource):
@@ -21,13 +21,14 @@ class TemporarySliceSource(MemorySliceSource):
     """
 
     def __init__(self, ctx: Context, slice_ds: xr.Dataset, slice_index: int):
-        super().__init__(ctx, slice_ds, slice_index)
+        super().__init__(slice_ds, slice_index)
+        self._config = ctx.config
         self._temp_slice_dir: FileObj | None = None
         self._temp_slice_ds: xr.Dataset | None = None
 
     def get_dataset(self) -> xr.Dataset:
         slice_index = self._slice_index
-        temp_slice_dir = self.ctx.config.temp_dir / f"slice-{slice_index}.zarr"
+        temp_slice_dir = self._config.temp_dir / f"slice-{slice_index}.zarr"
         self._temp_slice_dir = temp_slice_dir
         temp_slice_store = temp_slice_dir.fs.get_mapper(
             temp_slice_dir.path, create=True
