@@ -291,6 +291,47 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
             ).to_dict(),
         )
 
+    def test_variable_encoding_can_deal_with_chunk_size_none(self):
+        # See https://github.com/bcdev/zappend/issues/77
+        a = xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x"))
+        b = xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x"))
+        self.assertEqual(
+            {
+                "attrs": {},
+                "sizes": {"time": 2, "x": 4, "y": 3},
+                "variables": {
+                    "a": {
+                        "attrs": {},
+                        "dims": ("time", "y", "x"),
+                        "encoding": {"chunks": (1, 3, 4)},
+                        "shape": (2, 3, 4),
+                    },
+                    "b": {
+                        "attrs": {},
+                        "dims": ("time", "y", "x"),
+                        "encoding": {"chunks": (2, 2, 3)},
+                        "shape": (2, 3, 4),
+                    },
+                },
+            },
+            DatasetMetadata.from_dataset(
+                xr.Dataset(
+                    {
+                        "a": a,
+                        "b": b,
+                    }
+                ),
+                make_config(
+                    {
+                        "variables": {
+                            "a": {"encoding": {"chunks": [1, None, None]}},
+                            "b": {"encoding": {"chunks": [None, 2, 3]}},
+                        },
+                    }
+                ),
+            ).to_dict(),
+        )
+
     def test_variable_encoding_normalisation(self):
         def normalize(k, v):
             metadata = DatasetMetadata.from_dataset(
@@ -363,6 +404,7 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                 ),
             )
 
+    # noinspection PyMethodMayBeStatic
     def test_it_raises_on_wrong_size_found_in_ds(self):
         with pytest.raises(
             ValueError,

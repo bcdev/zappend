@@ -83,6 +83,7 @@ def tailor_slice_dataset(ctx: Context, slice_ds: xr.Dataset) -> xr.Dataset:
 
 
 def _strip_dataset(dataset: xr.Dataset, target_metadata: DatasetMetadata) -> xr.Dataset:
+    """Remove unwanted variables from `dataset` and return a copy."""
     drop_var_names = set(map(str, dataset.variables.keys())) - set(
         target_metadata.variables.keys()
     )
@@ -92,36 +93,46 @@ def _strip_dataset(dataset: xr.Dataset, target_metadata: DatasetMetadata) -> xr.
 def _complete_dataset(
     dataset: xr.Dataset, target_metadata: DatasetMetadata
 ) -> xr.Dataset:
+    undefined = object()
+    """Chunk existing variables according to chunks in encoding or 
+    add missing variables to `dataset` (in-place operation) and return it.
+    """
     for var_name, var_metadata in target_metadata.variables.items():
         var = dataset.variables.get(var_name)
-        if var is not None:
-            continue
-        logger.warning(
-            f"Variable {var_name!r} not found in slice dataset;" f" creating it."
-        )
         encoding = var_metadata.encoding.to_dict()
-        chunks = encoding.get("chunks")
-        if chunks is None:
-            chunks = var_metadata.shape
-        if encoding.get("_FillValue") is not None:
-            # Since we have a defined fill value, the decoded in-memory
-            # variable uses NaN where fill value will be stored.
-            # This ia also what xarray does if decode_cf=True.
-            memory_dtype = np.dtype("float64")
-            memory_fill_value = float("NaN")
+        chunks = encoding.get("chunks", undefined)
+        if var is not None:
+            if chunks is None:
+                # May emit warning for large shapes
+                chunks = var_metadata.shape
+            if chunks is not undefined:
+                var = var.chunk(chunks=chunks)
         else:
-            # Fill value is not defined, so we use the data type
-            # defined in the encoding, if any and fill memory with zeros.
-            memory_dtype = encoding.get("dtype", np.dtype("float64"))
-            memory_fill_value = 0
-        var = xr.DataArray(
-            dask.array.full(
-                var_metadata.shape,
-                memory_fill_value,
-                chunks=chunks,
-                dtype=np.dtype(memory_dtype),
-            ),
-            dims=var_metadata.dims,
-        )
+            logger.warning(
+                f"Variable {var_name!r} not found in slice dataset; creating it."
+            )
+            if chunks is None or chunks is undefined:
+                # May emit warning for large shapes
+                chunks = var_metadata.shape
+            if encoding.get("_FillValue") is not None:
+                # Since we have a defined fill value, the decoded in-memory
+                # variable uses NaN where fill value will be stored.
+                # This ia also what xarray does if decode_cf=True.
+                memory_dtype = np.dtype("float64")
+                memory_fill_value = float("NaN")
+            else:
+                # Fill value is not defined, so we use the data type
+                # defined in the encoding, if any and fill memory with zeros.
+                memory_dtype = encoding.get("dtype", np.dtype("float64"))
+                memory_fill_value = 0
+            var = xr.DataArray(
+                dask.array.full(
+                    var_metadata.shape,
+                    memory_fill_value,
+                    chunks=chunks,
+                    dtype=np.dtype(memory_dtype),
+                ),
+                dims=var_metadata.dims,
+            )
         dataset[var_name] = var
     return dataset

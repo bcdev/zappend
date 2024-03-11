@@ -142,10 +142,20 @@ class ApiTest(unittest.TestCase):
         zappend(slices, target_dir=target_dir, force_new=True)
         self.assertEqual(False, lock_file.exists())
 
-    def test_some_slices_with_class_slice_source(self):
+    def test_some_slices_with_slice_source_class(self):
+        class DropTsm(SliceSource):
+            def __init__(self, slice_ds):
+                self.slice_ds = slice_ds
+
+            def get_dataset(self) -> xr.Dataset:
+                return self.slice_ds.drop_vars(["tsm"])
+
+            def dispose(self):
+                pass
+
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset(index=3 * i) for i in range(3)]
-        zappend(slices, target_dir=target_dir, slice_source=MySliceSource)
+        zappend(slices, target_dir=target_dir, slice_source=DropTsm)
         ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
         self.assertEqual({"chl"}, set(ds.data_vars))
@@ -158,13 +168,13 @@ class ApiTest(unittest.TestCase):
             ds.attrs,
         )
 
-    def test_some_slices_with_func_slice_source(self):
-        def process_slice(slice_ds: xr.Dataset) -> SliceSource:
-            return MySliceSource(slice_ds)
+    def test_some_slices_with_slice_source_func(self):
+        def drop_tsm(slice_ds: xr.Dataset) -> xr.Dataset:
+            return slice_ds.drop_vars(["tsm"])
 
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset(index=3 * i) for i in range(3)]
-        zappend(slices, target_dir=target_dir, slice_source=process_slice)
+        zappend(slices, target_dir=target_dir, slice_source=drop_tsm)
         ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
         self.assertEqual({"chl"}, set(ds.data_vars))
@@ -177,9 +187,67 @@ class ApiTest(unittest.TestCase):
             ds.attrs,
         )
 
-    def test_some_slices_with_cropping_slice_source(self):
-        # TODO: implement me after #78
-        pass
+    # See https://github.com/bcdev/zappend/issues/77
+    def test_some_slices_with_cropping_slice_source_no_chunks_spec(self):
+        def crop_ds(slice_ds: xr.Dataset) -> xr.Dataset:
+            w = slice_ds.x.size
+            h = slice_ds.y.size
+            return slice_ds.isel(x=slice(5, w - 5), y=slice(5, h - 5))
+
+        target_dir = "memory://target.zarr"
+        slices = [make_test_dataset(index=3 * i) for i in range(3)]
+        zappend(slices, target_dir=target_dir, slice_source=crop_ds)
+        ds = xr.open_zarr(target_dir)
+        self.assertEqual({"time": 9, "y": 40, "x": 90}, ds.sizes)
+        self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
+        self.assertEqual({"time", "y", "x"}, set(ds.coords))
+        self.assertEqual((90,), ds.x.encoding.get("chunks"))
+        self.assertEqual((40,), ds.y.encoding.get("chunks"))
+        self.assertEqual((3,), ds.time.encoding.get("chunks"))
+        # Chunk sizes are the ones of the original array, because we have not
+        # specified chunks in encoding.
+        self.assertEqual((1, 25, 45), ds.chl.encoding.get("chunks"))
+        self.assertEqual((1, 25, 45), ds.tsm.encoding.get("chunks"))
+
+    # See https://github.com/bcdev/zappend/issues/77
+    def test_some_slices_with_cropping_slice_source_with_chunks_spec(self):
+        def crop_ds(slice_ds: xr.Dataset) -> xr.Dataset:
+            w = slice_ds.x.size
+            h = slice_ds.y.size
+            return slice_ds.isel(x=slice(5, w - 5), y=slice(5, h - 5))
+
+        variables = {
+            "*": {
+                "encoding": {
+                    "chunks": None,
+                }
+            },
+            "chl": {
+                "encoding": {
+                    "chunks": [1, None, None],
+                }
+            },
+            "tsm": {
+                "encoding": {
+                    "chunks": [None, 25, 50],
+                }
+            },
+        }
+
+        target_dir = "memory://target.zarr"
+        slices = [make_test_dataset(index=3 * i) for i in range(3)]
+        zappend(
+            slices, target_dir=target_dir, slice_source=crop_ds, variables=variables
+        )
+        ds = xr.open_zarr(target_dir)
+        self.assertEqual({"time": 9, "y": 40, "x": 90}, ds.sizes)
+        self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
+        self.assertEqual({"time", "y", "x"}, set(ds.coords))
+        self.assertEqual((90,), ds.x.encoding.get("chunks"))
+        self.assertEqual((40,), ds.y.encoding.get("chunks"))
+        self.assertEqual((3,), ds.time.encoding.get("chunks"))
+        self.assertEqual((1, 40, 90), ds.chl.encoding.get("chunks"))
+        self.assertEqual((3, 25, 50), ds.tsm.encoding.get("chunks"))
 
     def test_some_slices_with_inc_append_step(self):
         target_dir = "memory://target.zarr"
@@ -395,14 +463,3 @@ class ApiTest(unittest.TestCase):
         finally:
             if os.path.exists("prof.out"):
                 os.remove("prof.out")
-
-
-class MySliceSource(SliceSource):
-    def __init__(self, slice_ds):
-        self.slice_ds = slice_ds
-
-    def get_dataset(self) -> xr.Dataset:
-        return self.slice_ds.drop_vars(["tsm"])
-
-    def dispose(self):
-        pass
