@@ -93,6 +93,14 @@ class ConfigNormalizeTest(unittest.TestCase):
             normalize_config(file_obj)
 
     def test_normalize_sequence(self):
+        data_var_spec = {
+            "dims": ("time", "y", "x"),
+            "encoding": {
+                "dtype": "float32",
+                "chunks": (1, 20, 30),
+                "fill_value": None,
+            },
+        }
         configs = (
             {
                 "version": 1,
@@ -129,22 +137,8 @@ class ConfigNormalizeTest(unittest.TestCase):
             },
             {
                 "variables": {
-                    "chl": {
-                        "dims": ("time", "y", "x"),
-                        "encoding": {
-                            "dtype": "float32",
-                            "chunks": (1, 20, 30),
-                            "fill_value": None,
-                        },
-                    },
-                    "tsm": {
-                        "dims": ("time", "y", "x"),
-                        "encoding": {
-                            "dtype": "float32",
-                            "chunks": (1, 20, 30),
-                            "fill_value": None,
-                        },
-                    },
+                    "chl": data_var_spec,
+                    "tsm": data_var_spec,
                 }
             },
         )
@@ -170,22 +164,8 @@ class ConfigNormalizeTest(unittest.TestCase):
                         "dims": "time",
                         "encoding": {"dtype": "uint64"},
                     },
-                    "chl": {
-                        "dims": ("time", "y", "x"),
-                        "encoding": {
-                            "dtype": "float32",
-                            "chunks": (1, 20, 30),
-                            "fill_value": None,
-                        },
-                    },
-                    "tsm": {
-                        "dims": ("time", "y", "x"),
-                        "encoding": {
-                            "dtype": "float32",
-                            "chunks": (1, 20, 30),
-                            "fill_value": None,
-                        },
-                    },
+                    "chl": data_var_spec,
+                    "tsm": data_var_spec,
                 },
             },
             normalize_config(configs),
