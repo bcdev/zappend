@@ -323,18 +323,39 @@ multiple variables the wildcard variable name `*` can often be of help.
 
 #### Chunking
 
+Chunking refers to the subdivision of multidimensional data arrays into
+smaller multidimensional blocks. Using the Zarr format, such blocks become
+individual data files after optional [data packing](#data-packing) 
+and [compression](#compression). The chunk sizes of the 
+dimensions of the multidimensional blocks therefore determine the number of 
+blocks used per data array and also their size. Hence, chunk sizes have 
+a very large impact on I/O performance of datasets, especially if they are
+persisted in remote filesystems such as S3. The chunk sizes are specified
+using the `chunks` setting in the encoding of each variable.
+The value of `chunks` can also be `null`, which means no chunking is 
+desired and the variable's data array will be persisted as one block. 
+
 By default, the chunking of the coordinate variable corresponding to the append 
-dimension will be its dimension in the first slice dataset. Often, this will be one or 
-a small number. Since `xarray` loads coordinates eagerly when opening a dataset, this 
-can lead to performance issues if the target dataset is served from object storage such 
-as S3. This is because, a separate HTTP request is required for every single chunk. It 
-is therefore very advisable to set the chunks of that variable to a larger number using 
-the `chunks` setting. For other variables, the chunking within the append dimension may 
-stay small if desired:
+dimension will be its dimension size in the first slice dataset. Often, the size 
+will be `1` or another small number. Since `xarray` loads coordinates eagerly 
+when opening a dataset, this can lead to performance issues if the target 
+dataset is served from object storage such as S3. The reason for this is that a 
+separate HTTP request is required for every single chunk. It is therefore very 
+advisable to set the chunks of that variable to a larger number using the 
+`chunks` setting. For other variables, you could still use a small chunk size 
+in the append dimension.
+
+Here is a typical chunking configuration for the append dimension `"time"`: 
 
 ```json
 {
+    "append_dim": "time",
     "variables": {
+        "*": {
+            "encoding": {
+                "chunks": null
+            }
+        },
         "time": { 
             "dims": ["time"],
             "encoding": {
@@ -345,6 +366,28 @@ stay small if desired:
             "dims": ["time", "y", "x"],
             "encoding": {
                 "chunks": [1, 2048, 2048]
+            }
+        }
+    }
+}
+```
+
+Sometimes, you may explicitly wish to not chunk a given dimension of a variable.
+If you know the size of that dimension in advance, you can then use its size as
+chunk size. But there are situations, where the final dimension size depends
+on some processing parameters. For example, you could define your own 
+[slice source](#slice-sources) that takes a geodetic bounding box `bbox` 
+parameter to spatially crop your variables in the `x` and `y` dimensions. 
+If you want such dimensions to not be chunked, you can set their chunk sizes 
+to `null` (`None` in Python):
+
+```json
+{
+    "variables": {
+        "chl": { 
+            "dims": ["time", "y", "x"],
+            "encoding": {
+                "chunks": [1, null, null]
             }
         }
     }

@@ -84,13 +84,13 @@ Variable metadata.
         Must be one of the following:
         
           * Type _array_.
-            Chunk sizes in the order of the dimensions.
+            Chunk sizes for each dimension of the variable.
             The items of the array must be one of the following:
             
               * Type _integer_.
                 Dimension is chunked using given size.
             
-              * No chunking in this dimension.
+              * Disable chunking in this dimension.
                 Its value is `null`.
             
         
