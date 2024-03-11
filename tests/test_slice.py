@@ -20,7 +20,7 @@ from zappend.slice.persistent import PersistentSliceSource
 from zappend.slice.temporary import TemporarySliceSource
 from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
-from .test_context import CustomSliceSource
+from .config.test_config import CustomSliceSource
 
 
 class OpenSliceSourceTest(unittest.TestCase):
@@ -31,7 +31,7 @@ class OpenSliceSourceTest(unittest.TestCase):
         ctx = Context(
             dict(
                 target_dir="memory://target.zarr",
-                slice_source="tests.test_context.CustomSliceSource",
+                slice_source="tests.config.test_config.CustomSliceSource",
             )
         )
         slice_source = open_slice_source(ctx, 7)
@@ -42,7 +42,7 @@ class OpenSliceSourceTest(unittest.TestCase):
         ctx = Context(
             dict(
                 target_dir="memory://target.zarr",
-                slice_source="tests.test_context.new_custom_slice_source",
+                slice_source="tests.config.test_config.new_custom_slice_source",
             )
         )
         slice_source = open_slice_source(ctx, 13)
@@ -215,13 +215,13 @@ class YieldSlicesTest(unittest.TestCase):
 
     def test_function_with_ctx_arg(self):
         def my_function(ctx: Context, path: str):
-            return ctx.target_dir.parent / (path + ".nc")
+            return ctx.config.target_dir.parent / (path + ".nc")
 
         self._test_function_with_ctx(my_function)
 
     def test_function_with_ctx_kwarg(self):
         def my_function(path: str, ctx: Context = None):
-            return ctx.target_dir.parent / (path + ".nc")
+            return ctx.config.target_dir.parent / (path + ".nc")
 
         self._test_function_with_ctx(my_function)
 

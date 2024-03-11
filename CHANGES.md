@@ -1,8 +1,13 @@
-## Version 0.5.2 (in development)
+## Version 0.6.0 (in development)
 
 * Added configuration setting `force_new`, which forces creation of a new 
   target dataset. An existing target dataset (and its lock) will be
   permanently deleted before appending of slice datasets begins. [#72]
+
+* Internal refactoring: Extracted `Config` class out of `Context` and 
+  made available via new `Context.config: Config` property.
+  The change concerns any usages of the `ctx: Context` argument passed to
+  user slice factories. [#74]
 
 ## Version 0.5.1 (2024-02-23)
 

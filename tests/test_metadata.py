@@ -4,13 +4,19 @@
 
 import math
 import unittest
+from typing import Any
 
 import numcodecs
 import numpy as np
 import pytest
 import xarray as xr
 
+from zappend.config import Config
 from zappend.metadata import DatasetMetadata
+
+
+def make_config(config_dict: dict[str, Any]) -> Config:
+    return Config({"target_dir": "memory://target.zarr", **config_dict})
 
 
 class DatasetMetadataDimsTest(unittest.TestCase):
@@ -18,7 +24,7 @@ class DatasetMetadataDimsTest(unittest.TestCase):
         ds = xr.Dataset({"a": xr.DataArray(np.zeros((2, 3, 4)), dims=("z", "y", "x"))})
         self.assertEqual(
             {"z": 2, "y": 3, "x": 4},
-            DatasetMetadata.from_dataset(ds, {"append_dim": "z"}).sizes,
+            DatasetMetadata.from_dataset(ds, make_config({"append_dim": "z"})).sizes,
         )
 
     def test_dims_with_fixed_dims_given(self):
@@ -26,7 +32,7 @@ class DatasetMetadataDimsTest(unittest.TestCase):
         self.assertEqual(
             {"z": 2, "y": 3, "x": 4},
             DatasetMetadata.from_dataset(
-                ds, {"append_dim": "z", "fixed_dims": {"y": 3, "x": 4}}
+                ds, make_config({"append_dim": "z", "fixed_dims": {"y": 3, "x": 4}})
             ).sizes,
         )
 
@@ -38,7 +44,7 @@ class DatasetMetadataDimsTest(unittest.TestCase):
         with pytest.raises(
             ValueError, match="Append dimension 'z' not found in dataset"
         ):
-            DatasetMetadata.from_dataset(ds, {"append_dim": "z"})
+            DatasetMetadata.from_dataset(ds, make_config({"append_dim": "z"}))
 
     # noinspection PyMethodMayBeStatic
     def test_it_raises_if_append_dim_is_fixed(self):
@@ -49,7 +55,10 @@ class DatasetMetadataDimsTest(unittest.TestCase):
             ValueError, match="Size of append dimension 'time'" " must not be fixed"
         ):
             DatasetMetadata.from_dataset(
-                ds, {"fixed_dims": {"time": 2, "y": 3, "x": 4}, "append_dim": "time"}
+                ds,
+                make_config(
+                    {"fixed_dims": {"time": 2, "y": 3, "x": 4}, "append_dim": "time"}
+                ),
             )
 
     # noinspection PyMethodMayBeStatic
@@ -61,7 +70,7 @@ class DatasetMetadataDimsTest(unittest.TestCase):
             ValueError, match="Fixed dimension 'z' not found in dataset"
         ):
             DatasetMetadata.from_dataset(
-                ds, {"fixed_dims": {"y": 3, "z": 4}, "append_dim": "time"}
+                ds, make_config({"fixed_dims": {"y": 3, "z": 4}, "append_dim": "time"})
             )
 
     # noinspection PyMethodMayBeStatic
@@ -75,7 +84,7 @@ class DatasetMetadataDimsTest(unittest.TestCase):
             " in dataset: expected 5, found 4",
         ):
             DatasetMetadata.from_dataset(
-                ds, {"fixed_dims": {"y": 3, "x": 5}, "append_dim": "time"}
+                ds, make_config({"fixed_dims": {"y": 3, "x": 5}, "append_dim": "time"})
             )
 
 
@@ -107,7 +116,7 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                         "b": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
                     }
                 ),
-                {"variables": {"a": {"dims": ["time", "y", "x"]}}},
+                make_config({"variables": {"a": {"dims": ["time", "y", "x"]}}}),
             ).to_dict(),
         )
 
@@ -152,7 +161,9 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                     },
                 },
             },
-            DatasetMetadata.from_dataset(ds, {"variables": config_vars}).to_dict(),
+            DatasetMetadata.from_dataset(
+                ds, make_config({"variables": config_vars})
+            ).to_dict(),
         )
 
     def test_move_variable_encoding_from_attrs(self):
@@ -186,12 +197,17 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                         "b": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
                     }
                 ),
-                {
-                    "variables": {
-                        "a": {"dims": ["time", "y", "x"]},
-                        "b": {"dims": ["time", "y", "x"], "attrs": {"_FillValue": -1}},
+                make_config(
+                    {
+                        "variables": {
+                            "a": {"dims": ["time", "y", "x"]},
+                            "b": {
+                                "dims": ["time", "y", "x"],
+                                "attrs": {"_FillValue": -1},
+                            },
+                        }
                     }
-                },
+                ),
             ).to_dict(),
         )
 
@@ -228,13 +244,15 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                         "b": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
                     }
                 ),
-                {
-                    "variables": {
-                        "*": {"encoding": {"chunks": [16, 3, 4]}},
-                        "a": {"encoding": {"dtype": "float32"}},
-                        "b": {"encoding": {"dtype": "float64"}},
+                make_config(
+                    {
+                        "variables": {
+                            "*": {"encoding": {"chunks": [16, 3, 4]}},
+                            "a": {"encoding": {"dtype": "float32"}},
+                            "b": {"encoding": {"dtype": "float64"}},
+                        }
                     }
-                },
+                ),
             ).to_dict(),
         )
 
@@ -268,7 +286,8 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                         "a": a,
                         "b": b,
                     }
-                )
+                ),
+                make_config({}),
             ).to_dict(),
         )
 
@@ -280,7 +299,7 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                         "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
                     }
                 ),
-                {"variables": {"a": {"encoding": {k: v}}}},
+                make_config({"variables": {"a": {"encoding": {k: v}}}}),
             )
             return getattr(metadata.variables["a"].encoding, k)
 
@@ -336,10 +355,12 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                         "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
                     }
                 ),
-                {
-                    "included_variables": ["a", "b", "c"],
-                    "variables": {"a": {"dims": ["z", "y", "x"]}},
-                },
+                make_config(
+                    {
+                        "included_variables": ["a", "b", "c"],
+                        "variables": {"a": {"dims": ["z", "y", "x"]}},
+                    }
+                ),
             )
 
     def test_it_raises_on_wrong_size_found_in_ds(self):
@@ -355,7 +376,7 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                         "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
                     }
                 ),
-                {"variables": {"a": {"dims": ["z", "y", "x"]}}},
+                make_config({"variables": {"a": {"dims": ["z", "y", "x"]}}}),
             )
 
     # noinspection PyMethodMayBeStatic
@@ -367,12 +388,14 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                         "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
                     }
                 ),
-                {
-                    "variables": {
-                        "a": {"dims": ["time", "y", "x"]},
-                        "b": {},
+                make_config(
+                    {
+                        "variables": {
+                            "a": {"dims": ["time", "y", "x"]},
+                            "b": {},
+                        }
                     }
-                },
+                ),
             )
 
     # noinspection PyMethodMayBeStatic
@@ -386,12 +409,14 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                         "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
                     }
                 ),
-                {
-                    "variables": {
-                        "a": {"dims": ["time", "y", "x"]},
-                        "b": {"dims": ["time", "Y", "x"]},
+                make_config(
+                    {
+                        "variables": {
+                            "a": {"dims": ["time", "y", "x"]},
+                            "b": {"dims": ["time", "Y", "x"]},
+                        }
                     }
-                },
+                ),
             )
 
     # noinspection PyMethodMayBeStatic
@@ -406,12 +431,14 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
                         "a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x")),
                     }
                 ),
-                {
-                    "variables": {
-                        "a": {"dims": ["time", "y", "x"]},
-                        "b": {"dims": ["time", "y", "x"]},
-                    },
-                },
+                make_config(
+                    {
+                        "variables": {
+                            "a": {"dims": ["time", "y", "x"]},
+                            "b": {"dims": ["time", "y", "x"]},
+                        },
+                    }
+                ),
             )
 
 
@@ -425,7 +452,7 @@ class DatasetMetadataSliceCompatibilityTest(unittest.TestCase):
                     "b": xr.DataArray(np.zeros((12, 3, 4)), dims=("time", "y", "x")),
                 }
             ),
-            {},
+            make_config({}),
         )
         slice_md = DatasetMetadata.from_dataset(
             xr.Dataset(
@@ -434,7 +461,7 @@ class DatasetMetadataSliceCompatibilityTest(unittest.TestCase):
                     "b": xr.DataArray(np.zeros((1, 3, 4)), dims=("time", "y", "x")),
                 }
             ),
-            {},
+            make_config({}),
         )
 
         # Should not raise
@@ -449,7 +476,7 @@ class DatasetMetadataSliceCompatibilityTest(unittest.TestCase):
                     "b": xr.DataArray(np.zeros((12, 3, 4)), dims=("time", "y", "x")),
                 }
             ),
-            {},
+            make_config({}),
         )
         slice_md = DatasetMetadata.from_dataset(
             xr.Dataset(
@@ -458,7 +485,7 @@ class DatasetMetadataSliceCompatibilityTest(unittest.TestCase):
                     "b": xr.DataArray(np.zeros((1, 3)), dims=("time", "y")),
                 }
             ),
-            {},
+            make_config({}),
         )
 
         with pytest.raises(ValueError, match="Missing dimension 'x' in slice dataset"):
@@ -473,7 +500,7 @@ class DatasetMetadataSliceCompatibilityTest(unittest.TestCase):
                     "b": xr.DataArray(np.zeros((12, 3, 4)), dims=("time", "y", "x")),
                 }
             ),
-            {},
+            make_config({}),
         )
         slice_md = DatasetMetadata.from_dataset(
             xr.Dataset(
@@ -482,7 +509,7 @@ class DatasetMetadataSliceCompatibilityTest(unittest.TestCase):
                     "b": xr.DataArray(np.zeros((12, 4, 4)), dims=("time", "y", "x")),
                 }
             ),
-            {},
+            make_config({}),
         )
 
         with pytest.raises(
@@ -501,7 +528,7 @@ class DatasetMetadataSliceCompatibilityTest(unittest.TestCase):
                     "b": xr.DataArray(np.zeros((12, 3, 4)), dims=("time", "y", "x")),
                 }
             ),
-            {},
+            make_config({}),
         )
         slice_md = DatasetMetadata.from_dataset(
             xr.Dataset(
@@ -510,7 +537,7 @@ class DatasetMetadataSliceCompatibilityTest(unittest.TestCase):
                     "b": xr.DataArray(np.zeros((1, 3, 4)), dims=("time", "y", "x")),
                 }
             ),
-            {},
+            make_config({}),
         )
 
         with pytest.raises(
