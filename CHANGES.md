@@ -10,6 +10,9 @@
   local file path or URI of type `str` or `FileObj`. 
   Dropped concept of _slice factories_ entirely. [#78]
 
+* Chunk sizes can now be `null` for a given dimension. In this case the actual 
+  chunk size used is the size of the array's shape in that dimension. [#77]
+
 * Internal refactoring: Extracted `Config` class out of `Context` and 
   made available via new `Context.config: Config` property.
   The change concerns any usages of the `ctx: Context` argument passed to

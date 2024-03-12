@@ -184,4 +184,4 @@ class Config:
     @property
     def profiling(self) -> dict[str, Any] | str | bool | None:
         """Profiling configuration."""
-        return self._config.get("profiling") or {}
+        return self._config.get("profiling")

@@ -22,6 +22,8 @@ UNDEFINED = Undefined()
 
 Codec = numcodecs.abc.Codec
 
+NoneType = type(None)
+
 
 class VariableEncoding:
     """The Zarr encoding of a dataset's variable.
@@ -346,6 +348,21 @@ def _get_effective_variables(
             chunk_sizes = encoding.pop("chunksizes")
             if "chunks" not in encoding:
                 encoding["chunks"] = chunk_sizes
+
+        # Handle case where a chunk size in None to indicate
+        # dimension is not chunked.
+        # See https://github.com/bcdev/zappend/issues/77
+        if (
+            "chunks" in encoding
+            and encoding["chunks"] is not None
+            and None in encoding["chunks"]
+        ):
+            chunks = encoding["chunks"]
+            encoding["chunks"] = tuple(
+                (dataset.sizes[dim_name] if chunk_size is None else chunk_size)
+                for dim_name, chunk_size in zip(dims, chunks)
+            )
+
         variables[var_name] = VariableMetadata(
             dims=dims, shape=shape, encoding=VariableEncoding(**encoding), attrs=attrs
         )
@@ -364,7 +381,7 @@ def _normalize_chunks(value: Any) -> tuple[int, ...] | None:
     if not value:
         return None
     assert isinstance(value, (tuple, list))
-    return tuple((v if isinstance(v, int) else v[0]) for v in value)
+    return tuple((v if isinstance(v, (int, NoneType)) else v[0]) for v in value)
 
 
 def _normalize_number(value: Any) -> int | float | None:
