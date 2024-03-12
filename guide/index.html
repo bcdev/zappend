@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.13">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.7e359304.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -464,49 +464,31 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Slice Datasets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#paths-and-uris" class="md-nav__link">
+    <span class="md-ellipsis">
+      Paths and URIs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dataset-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dataset Objects
+    </span>
+  </a>
+  
 </li>
         
           <li class="md-nav__item">
   <a href="#slice-sources" class="md-nav__link">
     <span class="md-ellipsis">
       Slice Sources
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Slice Sources">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#types-str-and-fileobj" class="md-nav__link">
-    <span class="md-ellipsis">
-      Types str and FileObj
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#type-dataset" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Dataset
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#type-slicesource" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type SliceSource
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#type-slicefactory" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type SliceFactory
     </span>
   </a>
   
@@ -806,49 +788,31 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Slice Datasets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#paths-and-uris" class="md-nav__link">
+    <span class="md-ellipsis">
+      Paths and URIs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dataset-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dataset Objects
+    </span>
+  </a>
+  
 </li>
         
           <li class="md-nav__item">
   <a href="#slice-sources" class="md-nav__link">
     <span class="md-ellipsis">
       Slice Sources
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Slice Sources">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#types-str-and-fileobj" class="md-nav__link">
-    <span class="md-ellipsis">
-      Types str and FileObj
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#type-dataset" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Dataset
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#type-slicesource" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type SliceSource
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#type-slicefactory" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type SliceFactory
     </span>
   </a>
   
@@ -1162,16 +1126,35 @@ You can also inspect the Zarr directly by opening the <code>&lt;target_dir&gt;/&
 or <code>&lt;target_dir&gt;/.zmetadata</code> metadata JSON files.    </p>
 </div>
 <h4 id="chunking">Chunking</h4>
+<p>Chunking refers to the subdivision of multidimensional data arrays into
+smaller multidimensional blocks. Using the Zarr format, such blocks become
+individual data files after optional <a href="#data-packing">data packing</a> 
+and <a href="#compression">compression</a>. The chunk sizes of the 
+dimensions of the multidimensional blocks therefore determine the number of 
+blocks used per data array and also their size. Hence, chunk sizes have 
+a very large impact on I/O performance of datasets, especially if they are
+persisted in remote filesystems such as S3. The chunk sizes are specified
+using the <code>chunks</code> setting in the encoding of each variable.
+The value of <code>chunks</code> can also be <code>null</code>, which means no chunking is 
+desired and the variable's data array will be persisted as one block. </p>
 <p>By default, the chunking of the coordinate variable corresponding to the append 
-dimension will be its dimension in the first slice dataset. Often, this will be one or 
-a small number. Since <code>xarray</code> loads coordinates eagerly when opening a dataset, this 
-can lead to performance issues if the target dataset is served from object storage such 
-as S3. This is because, a separate HTTP request is required for every single chunk. It 
-is therefore very advisable to set the chunks of that variable to a larger number using 
-the <code>chunks</code> setting. For other variables, the chunking within the append dimension may 
-stay small if desired:</p>
+dimension will be its dimension size in the first slice dataset. Often, the size 
+will be <code>1</code> or another small number. Since <code>xarray</code> loads coordinates eagerly 
+when opening a dataset, this can lead to performance issues if the target 
+dataset is served from object storage such as S3. The reason for this is that a 
+separate HTTP request is required for every single chunk. It is therefore very 
+advisable to set the chunks of that variable to a larger number using the 
+<code>chunks</code> setting. For other variables, you could still use a small chunk size 
+in the append dimension.</p>
+<p>Here is a typical chunking configuration for the append dimension <code>"time"</code>: </p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;append_dim&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;time&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;*&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;encoding&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;chunks&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
 <span class="w">        </span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
 <span class="w">            </span><span class="nt">&quot;dims&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span>
 <span class="w">            </span><span class="nt">&quot;encoding&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -1182,6 +1165,25 @@ stay small if desired:</p>
 <span class="w">            </span><span class="nt">&quot;dims&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;x&quot;</span><span class="p">],</span>
 <span class="w">            </span><span class="nt">&quot;encoding&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">                </span><span class="nt">&quot;chunks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2048</span><span class="p">,</span><span class="w"> </span><span class="mi">2048</span><span class="p">]</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Sometimes, you may explicitly wish to not chunk a given dimension of a variable.
+If you know the size of that dimension in advance, you can then use its size as
+chunk size. But there are situations, where the final dimension size depends
+on some processing parameters. For example, you could define your own 
+<a href="#slice-sources">slice source</a> that takes a geodetic bounding box <code>bbox</code> 
+parameter to spatially crop your variables in the <code>x</code> and <code>y</code> dimensions. 
+If you want such dimensions to not be chunked, you can set their chunk sizes 
+to <code>null</code> (<code>None</code> in Python):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;chl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">&quot;dims&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;x&quot;</span><span class="p">],</span>
+<span class="w">            </span><span class="nt">&quot;encoding&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;chunks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">]</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
@@ -1324,10 +1326,55 @@ passed using the optional <code>target_storage_options</code> setting. </p>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
+<p>Sometimes you may want to start a new target dataset from scratch when calling 
+<code>zappend</code>. A typical case is testing if a given configuration yields the desired
+results. The configuration flag <code>force_new</code> can be used to delete existing
+target datasets (and an existing lock) upfront. </p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;target_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s3://wqservices/cubes/chl-2023.zarr&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;force_new&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>However, keep in mind that the deletion is not a transaction that can be rolled 
+back. Therefore, a log message with warning level will be emitted if the
+<code>force_new</code> flag is set.</p>
+<div class="admonition danger">
+<p class="admonition-title">Setting <code>force_new</code></p>
+<p>The configuration flag <code>force_new</code> will force generating a new
+target dataset. If it already exists, it will be <strong>permanently deleted</strong>! 
+If the deletion fails, there will be no rollback.</p>
+</div>
 <h3 id="slice-datasets">Slice Datasets</h3>
-<p>If the slice paths passed to the <code>zappend</code> tool are given as URIs,
-additional storage options may be provided for the filesystem given by the 
-URI's protocol. They may be specified using the <code>slice_storage_options</code> setting.</p>
+<p>A <em>slice dataset</em> is the dataset that is appended for every slice item passed 
+to <code>zappend</code>. Slice datasets can be provided in various ways.</p>
+<ul>
+<li>
+<p>When using the <a href="../cli/">zappend CLI command</a>, slice items are passed as 
+  command arguments where they point to slice datasets by local file paths or URIs.</p>
+</li>
+<li>
+<p>When using the <a href="../api/">zappend Python function</a>, slice items are passed 
+  using the <code>slices</code> argument, which is a Python iterable. You can pass a list or tuple
+  of slice items or provide a Python generator that provides the slice items.</p>
+</li>
+</ul>
+<p>Each slice item can be a local file path or URI of type <code>str</code> or <code>FileObj</code>, 
+a dataset of type <code>xarray.Dataset</code>, or a <code>SliceSource</code> object explained in more detail 
+below.</p>
+<h4 id="paths-and-uris">Paths and URIs</h4>
+<p>A slice item of type <code>str</code> is interpreted as local file path or URI, in the case 
+the path has a protocol prefix, such as <code>s3://</code> as described above.</p>
+<p>In the majority of <code>zappend</code> use cases the slice datasets to be appended to a target 
+dataset are passed as local file paths or URIs. A slice URI starts with a protocol 
+prefix, such as <code>s3://</code>, or <code>memory://</code>. Additional storage options may be required
+for the filesystem given by the URI's protocol. They may be specified using the
+<code>slice_storage_options</code> setting.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;slice_storage_options&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;anon&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>Sometimes, the slice dataset to be processed are not yet available, e.g., 
 because another process is currently generating them. For such cases, the 
 <code>slice_polling</code> setting can be used. It provides the poll interval and the timeout 
@@ -1347,23 +1394,84 @@ the given timeout:</p>
 <span class="w">    </span><span class="nt">&quot;slice_polling&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span>
 <span class="p">}</span>
 </code></pre></div>
-<h3 id="slice-sources">Slice Sources</h3>
-<p>A <em>slice source</em> is an object that provides a slice dataset of type <code>xarray.Dataset</code> 
-for given parameters of any type.</p>
-<p>The optional <code>slice_source</code> configuration setting is used to specify a custom 
-slice source. If not specified, <code>zappend</code> selects the slice source based on the type 
-of a given slice object. These types are described in following subsections.</p>
-<p>If given, the value of the <code>slice_source</code> setting is a class derived from
-<code>zappend.api.SliceSource</code>, or a function that creates an instance of 
-<code>zappend.api.SliceSource</code>, or the fully qualified name of the aforementioned. 
-In the case <code>slice_source</code> is given, the <em>slices</em> argument passed to the CLI 
-command and Python function become parameters to the specified class constructor 
-or factory function.
-The individual slice items in the <code>SLICES</code> arguments of the <code>zappend</code> CLI 
-command are of type <code>str</code>, typically interpreted as file paths or URIs.
-The individual slice items passed in the <code>slices</code> argument of the
-<code>zappend.api.zappend()</code> function can be of any type, but the <code>tuple</code>, <code>list</code>, 
-and <code>dict</code> types have a special meaning:</p>
+<p>An alternative to providing the slice dataset as path or URI is using the 
+<code>zappend.api.FileObj</code> class, which combines a URI with dedicated filesystem 
+storage options.</p>
+<h4 id="dataset-objects">Dataset Objects</h4>
+<p>You can also use dataset objects of type 
+<a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html"><code>xarray.Dataset</code></a> 
+as slice item. Such objects may originate from opening datasets from some storage, e.g., 
+<code>xarray.open_dataset(slice_store, ...)</code> or by composing, aggregating, resampling 
+slice datasets from other datasets and data variables.</p>
+<p>Chunked data arrays of an <code>xarray.Dataset</code> are usually instances of 
+<a href="https://docs.dask.org/en/stable/array.html">Dask arrays</a>, to allow for out-of-core 
+computation of large datasets. As a dask array may represent complex and/or 
+expensive processing graphs, high CPU loads and memory consumption are common issues
+for computed slice datasets, especially if the specified target dataset chunking is 
+different from the slice dataset chunking. This may cause Dask graphs to be 
+computed multiple times if the source chunking overlaps multiple target chunks, 
+potentially causing large resource overheads while recomputing and/or reloading the same
+source chunks multiple times. In such cases it can help to "terminate"<br />
+computations for each slice by persisting the computed dataset first and then to 
+reopen it. This can be specified using the <code>persist_mem_slice</code> setting: </p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;persist_mem_slice&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If the flag is set, in-memory slices will be persisted to a temporary Zarr before 
+appending them to the target dataset. It may prevent expensive re-computation of chunks 
+at the cost of additional i/o. It therefore defaults to <code>false</code>.</p>
+<h4 id="slice-sources">Slice Sources</h4>
+<p>If you need some custom cleanup after a slice has been processed and appended to the 
+target dataset, you can use instances of <code>zappend.api.SliceSource</code> as slice items.
+A <code>SliceSource</code> class requires you to implement two methods:</p>
+<ul>
+<li><code>get_dataset()</code> to return the slice dataset of type <code>xarray.Dataset</code>, and </li>
+<li><code>dispose()</code> to perform any resource cleanup tasks. </li>
+</ul>
+<p>Here is the template code for your own slice source implementation:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">SliceSource</span>
+
+<span class="k">class</span> <span class="nc">MySliceSource</span><span class="p">(</span><span class="n">SliceSource</span><span class="p">):</span>
+    <span class="c1"># Pass any positional and keyword arguments that you need </span>
+    <span class="c1"># to the constructor. `path` is just an example.</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">get_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+        <span class="c1"># Write code here that obtains the dataset.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="c1"># You can put any processing here.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span>
+
+    <span class="k">def</span> <span class="nf">dispose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Write code here that performs cleanup.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="kc">None</span>    
+</code></pre></div>
+<p>Instead of providing instances of <code>SliceSource</code> as slice items, it is often
+easier to pass your <code>SliceSource</code> class and let <code>zappend</code> pass the slice item as 
+arguments(s) to your <code>SliceSource</code>'s constructor. This can be achieved using the 
+the <code>slice_source</code> configuration setting. If you need to access configuration 
+settings, it is even required to use the <code>slice_source</code> setting. </p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;slice_source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mymodule.MySliceSource&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The <code>slice_source</code> setting can actually be <strong>any Python function</strong> that returns a 
+valid slice item as described above such as a file path or URI, or 
+an <code>xarray.Dataset</code>.</p>
+<p>If a slice source is configured, each slice item passed to <code>zappend</code> is passed as 
+argument to your slice source.</p>
+<ul>
+<li>Slices passed to the <code>zappend</code> CLI command become slice source arguments 
+  of type <code>str</code>.</li>
+<li>
+<p>Slice items passed to the <code>zappend</code> function via the <code>slices</code> argument can be of 
+  any type, but the <code>tuple</code>, <code>list</code>, and <code>dict</code> types have a special meaning:</p>
 <ul>
 <li><code>tuple</code>: a pair of the form <code>(args, kwargs)</code>, where <code>args</code> is a list
   or tuple of positional arguments and <code>kwargs</code> is a dictionary of keyword
@@ -1372,69 +1480,18 @@ and <code>dict</code> types have a special meaning:</p>
 <li><code>dict</code>: keyword arguments only;</li>
 <li>Any other type is interpreted as single positional argument.</li>
 </ul>
-<p>In addition, your class constructor or factory function specified by <code>slice_source</code> 
-may specify a positional or keyword argument named <code>ctx</code>, which will receive the 
-current processing context of type <code>zappend.api.Context</code>. </p>
-<p>If the <code>slice_source</code> setting is <em>not</em> specified, the slice items passed as <code>slices</code>
-argument to the <a href="../api/"><code>zappend</code></a> Python function can be one of the types described
-in the following subsections.</p>
-<h4 id="types-str-and-fileobj">Types <code>str</code> and <code>FileObj</code></h4>
-<p>A slice object of type <code>str</code> is interpreted as local file path or URI, in the case 
-the path has a protocol prefix, such as <code>s3://</code>.</p>
-<p>An alternative to providing the slice dataset as path or URI is using the 
-<code>zappend.api.FileObj</code> class, which combines a URI with dedicated filesystem 
-storage options.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">FileObj</span>
-
-<span class="n">slice_obj</span> <span class="o">=</span> <span class="n">FileObj</span><span class="p">(</span><span class="n">slice_uri</span><span class="p">,</span> <span class="n">storage_options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> 
-</code></pre></div>
-<h4 id="type-dataset">Type <code>Dataset</code></h4>
-<p>In-memory slice objects can be passed as <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html"><code>xarray.Dataset</code></a> 
-objects. Such objects may originate from opening datasets from some storage </p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-
-<span class="n">slice_obj</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">slice_store</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span> 
-</code></pre></div>
-<p>or by composing, aggregating, resampling slice datasets from other datasets and 
-data variables. To allow for out-of-core computation of large datasets <a href="https://docs.dask.org/en/stable/array.html">Dask arrays</a>
-are used by both <code>xarray</code> and <code>zarr</code>. As a dask array may represent complex and/or 
-expensive processing graphs, high CPU loads and memory consumption are common issues
-for computed slice datasets, especially if the specified target dataset chunking is 
-different from the slice dataset chunking. This may cause Dask graphs to be 
-computed multiple times if the source chunking overlaps multiple target chunks, 
-potentially causing large resource overheads while recomputing and/or reloading the same
-source chunks multiple times.</p>
-<p>In such cases it can help to "terminate" such computations for each slice by 
-persisting the computed dataset first and then to reopen it. This can be specified 
-using the <code>persist_mem_slice</code> setting: </p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;persist_mem_slice&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>If the flag is set, in-memory slices will be persisted to a temporary Zarr before 
-appending them to the target dataset. It may prevent expensive re-computation of chunks 
-at the cost of additional i/o. It therefore defaults to <code>false</code>.</p>
-<h4 id="type-slicesource">Type <code>SliceSource</code></h4>
-<p>Often you want to perform some custom cleanup after a slice has been processed and
-appended to the target dataset. In this case you can write your own 
-<code>zappend.api.SliceSource</code> by implementing its <code>get_dataset()</code> and <code>dispose()</code>
-methods. </p>
-<p>Slice source instances are supposed to be created by <em>slice factories</em>, see 
-subsection below.</p>
-<h4 id="type-slicefactory">Type <code>SliceFactory</code></h4>
-<p>A slice factory is a 1-argument function that receives a processing context of type
-<code>zappend.api.Context</code> and yields a slice dataset object of one of the types
-described above. Since a slice factory cannot have additional arguments, it is 
-normally defined as a <a href="https://en.wikipedia.org/wiki/Closure_(computer_programming)">closure</a> 
-to capture slice-specific information.</p>
-<p>In the following example, the actual slice dataset is computed from averaging another 
-dataset. A <code>SliceSource</code> is used to close the datasets after the slice has been 
-processed. Slice factories are created from the custom slice source and the slice paths
-using the utility function <a class="autorefs autorefs-internal" href="../api/#zappend.api.to_slice_factories">to_slice_factories()</a>:</p>
+</li>
+</ul>
+<p>In addition, your slice source function or class constructor specified by 
+<code>slice_source</code> may define a 1st positional argument or keyword argument 
+named <code>ctx</code>, which will receive the current processing context of type 
+<code>zappend.api.Context</code>. This can be useful if you need to read configuration 
+settings.</p>
+<p>Here is a more advanced example of a slice source that opens datasets from a given 
+file path and averages the values along the time dimension:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 <span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">SliceSource</span>
-<span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">to_slice_factories</span>
 <span class="kn">from</span> <span class="nn">zappend.api</span> <span class="kn">import</span> <span class="n">zappend</span>
 
 <span class="k">def</span> <span class="nf">get_mean_time</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
@@ -1447,35 +1504,26 @@ using the utility function <a class="autorefs autorefs-internal" href="../api/#z
 
 <span class="k">def</span> <span class="nf">get_mean_slice</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span> 
     <span class="n">mean_slice_ds</span> <span class="o">=</span> <span class="n">slice_ds</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+    <span class="c1"># Re-introduce time dimension of size one</span>
     <span class="n">mean_slice_ds</span> <span class="o">=</span> <span class="n">mean_slice_ds</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">mean_slice_ds</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_mean_time</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">mean_slice_ds</span> 
 
 <span class="k">class</span> <span class="nc">MySliceSource</span><span class="p">(</span><span class="n">SliceSource</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">slice_path</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slice_path</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">slice_path</span> <span class="o">=</span> <span class="n">slice_path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">get_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_path</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span> <span class="o">=</span> <span class="n">get_mean_slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span>
+        <span class="k">return</span> <span class="n">get_mean_slice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">dispose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mean_ds</span> <span class="o">=</span> <span class="kc">None</span>
 
-<span class="n">zappend</span><span class="p">(</span><span class="n">to_slice_factories</span><span class="p">(</span><span class="n">MySliceSource</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">]),</span>
-        <span class="n">target_dir</span><span class="o">=</span><span class="s2">&quot;target.zarr&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p>Note, the above example can be simplified by using the <code>slice_source</code> setting directly:</p>
-<div class="highlight"><pre><span></span><code><span class="n">zappend</span><span class="p">([</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">],</span>
+<span class="n">zappend</span><span class="p">([</span><span class="s2">&quot;slice-1.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-2.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;slice-3.nc&quot;</span><span class="p">],</span>
         <span class="n">target_dir</span><span class="o">=</span><span class="s2">&quot;target.zarr&quot;</span><span class="p">,</span>
         <span class="n">slice_source</span><span class="o">=</span><span class="n">MySliceSource</span><span class="p">)</span>
 </code></pre></div>
@@ -1629,10 +1677,10 @@ the <code>INFO</code> level (same as <code>"logging": true</code>):</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.c8d2eff1.min.js"></script>
       
     
   </body>

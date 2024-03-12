@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.13">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.7e359304.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -513,6 +513,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#force_new" class="md-nav__link">
+    <span class="md-ellipsis">
+      force_new
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#disable_rollback" class="md-nav__link">
     <span class="md-ellipsis">
       disable_rollback
@@ -823,6 +832,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#force_new" class="md-nav__link">
+    <span class="md-ellipsis">
+      force_new
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#disable_rollback" class="md-nav__link">
     <span class="md-ellipsis">
       disable_rollback
@@ -953,11 +971,21 @@ Variable metadata.</p>
 <ul>
 <li>
 <p>Type <em>array</em>.
-    Chunk sizes in the order of the dimensions.
-    The items of the array are of type <em>integer</em>.</p>
+    Chunk sizes for each dimension of the variable.
+    The items of the array must be one of the following:</p>
+<ul>
+<li>
+<p>Type <em>integer</em>.
+    Dimension is chunked using given size.</p>
 </li>
 <li>
-<p>Disable chunking.
+<p>Disable chunking in this dimension.
+    Its value is <code>null</code>.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Disable chunking in all dimensions.
     Its value is <code>null</code>.</p>
 </li>
 </ul>
@@ -1117,6 +1145,10 @@ The URI or local path of the directory that will be used to temporarily store ro
 <h2 id="temp_storage_options"><code>temp_storage_options</code></h2>
 <p>Type <em>object</em>.
 Options for the filesystem given by the protocol of <code>temp_dir</code>.</p>
+<h2 id="force_new"><code>force_new</code></h2>
+<p>Type <em>boolean</em>.
+Force creation of a new target dataset.  An existing target dataset (and its lock) will be permanently deleted before appending of slice datasets begins. WARNING: the deletion cannot be rolled back.
+Defaults to <code>false</code>.</p>
 <h2 id="disable_rollback"><code>disable_rollback</code></h2>
 <p>Type <em>boolean</em>.
 Disable rolling back dataset changes on failure. Effectively disables transactional dataset modifications, so use this setting with care.
@@ -1383,10 +1415,10 @@ Defaults to <code>false</code>.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.c8d2eff1.min.js"></script>
       
     
   </body>
