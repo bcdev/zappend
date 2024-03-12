@@ -676,7 +676,7 @@ for computed slice datasets, especially if the specified target dataset chunking
 different from the slice dataset chunking. This may cause Dask graphs to be 
 computed multiple times if the source chunking overlaps multiple target chunks, 
 potentially causing large resource overheads while recomputing and/or reloading the same
-source chunks multiple times. In such cases it can help to "terminate" such 
+source chunks multiple times. In such cases it can help to "terminate"  
 computations for each slice by persisting the computed dataset first and then to 
 reopen it. This can be specified using the `persist_mem_slice` setting: 
 
@@ -693,7 +693,7 @@ at the cost of additional i/o. It therefore defaults to `false`.
 #### Slice Sources
 
 If you need some custom cleanup after a slice has been processed and appended to the 
-target dataset, you can use an instance of `zappend.api.SliceSource` as slice item.
+target dataset, you can use instances of `zappend.api.SliceSource` as slice items.
 A `SliceSource` class requires you to implement two methods:
 
 * `get_dataset()` to return the slice dataset of type `xarray.Dataset`, and 
@@ -725,10 +725,11 @@ class MySliceSource(SliceSource):
             self.ds = None    
 ```
 
-Instead of providing instances of `SliceSource` directly as a slice item, it is often
+Instead of providing instances of `SliceSource` as slice items, it is often
 easier to pass your `SliceSource` class and let `zappend` pass the slice item as 
 arguments(s) to your `SliceSource`'s constructor. This can be achieved using the 
-the `slice_source` configuration setting.
+the `slice_source` configuration setting. If you need to access configuration 
+settings, it is even required to use the `slice_source` setting. 
 
 ```json
 {
@@ -737,7 +738,8 @@ the `slice_source` configuration setting.
 ```
 
 The `slice_source` setting can actually be **any Python function** that returns a 
-valid slice item as described above.
+valid slice item as described above such as a file path or URI, or 
+an `xarray.Dataset`.
 
 If a slice source is configured, each slice item passed to `zappend` is passed as 
 argument to your slice source.
@@ -754,13 +756,14 @@ argument to your slice source.
     - `dict`: keyword arguments only;
     - Any other type is interpreted as single positional argument.
 
-In addition, your slice source function or class constructor specified by `slice_source` 
-may define a 1st positional argument or keyword argument named `ctx`, 
-which will receive the current processing context of type `zappend.api.Context`. 
-This can be useful if you need to read configuration settings.
+In addition, your slice source function or class constructor specified by 
+`slice_source` may define a 1st positional argument or keyword argument 
+named `ctx`, which will receive the current processing context of type 
+`zappend.api.Context`. This can be useful if you need to read configuration 
+settings.
 
 Here is a more advanced example of a slice source that opens datasets from a given 
-file path and averages the values first along the time dimension:
+file path and averages the values along the time dimension:
 
 ```python
 import numpy as np

@@ -74,5 +74,24 @@ zappend((f"s3:/mybucket/data/{name}"
         config=config)
 ```
 
-Slice datasets can be passed in a number of ways; please refer to the section 
-[_Slice Sources_](guide.md#slice-sources) in the [User Guide](guide.md).
+Slice items can also be arguments passed to your custom _slice source_, 
+a function or class that provides the actual slice to be appended:
+
+```python
+import xarray as xr
+from zappend.api import zappend
+
+
+def get_dataset(path: str):
+    ds = xr.open_dataset(path)
+    return ds.drop_vars(["ndvi_min", "ndvi_max"])
+
+zappend(["slice-1.nc", "slice-2.nc", "slice-3.nc"], 
+        slice_source=get_dataset,
+        target_dir="target.zarr")
+```
+
+For the details, please refer to the section [_Slice Sources_](guide.md#slice-sources) in the 
+[User Guide](guide.md).
+
+
