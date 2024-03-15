@@ -24,6 +24,6 @@ class MemorySliceSource(SliceSource):
         logger.info(f"Processing in-memory slice dataset #{self._slice_index}")
         return self._slice_ds
 
-    def dispose(self):
+    def close(self):
         self._slice_ds = None
         logger.info(f"Slice dataset #{self._slice_index} processed")

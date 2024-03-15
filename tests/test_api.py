@@ -150,12 +150,34 @@ class ApiTest(unittest.TestCase):
             def get_dataset(self) -> xr.Dataset:
                 return self.slice_ds.drop_vars(["tsm"])
 
-            def dispose(self):
+            def close(self):
                 pass
 
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset(index=3 * i) for i in range(3)]
         zappend(slices, target_dir=target_dir, slice_source=DropTsm)
+        ds = xr.open_zarr(target_dir)
+        self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
+        self.assertEqual({"chl"}, set(ds.data_vars))
+        self.assertEqual({"time", "y", "x"}, set(ds.coords))
+        self.assertEqual(
+            {
+                "Conventions": "CF-1.8",
+                "title": "Test 1-3",
+            },
+            ds.attrs,
+        )
+
+    def test_some_slices_with_slice_source_cm(self):
+        import contextlib
+
+        @contextlib.contextmanager
+        def drop_tsm(slice_ds: xr.Dataset) -> xr.Dataset:
+            yield slice_ds.drop_vars(["tsm"])
+
+        target_dir = "memory://target.zarr"
+        slices = [make_test_dataset(index=3 * i) for i in range(3)]
+        zappend(slices, target_dir=target_dir, slice_source=drop_tsm)
         ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
         self.assertEqual({"chl"}, set(ds.data_vars))

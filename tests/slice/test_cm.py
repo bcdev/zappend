@@ -2,6 +2,7 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
+import contextlib
 import shutil
 import unittest
 import warnings
@@ -13,6 +14,7 @@ from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.slice.cm import SliceSourceContextManager
 from zappend.slice.cm import open_slice_dataset
+from zappend.slice.source import SliceSource
 from zappend.slice.sources.memory import MemorySliceSource
 from zappend.slice.sources.persistent import PersistentSliceSource
 from zappend.slice.sources.temporary import TemporarySliceSource
@@ -23,12 +25,11 @@ from tests.helpers import make_test_dataset
 # noinspection PyUnusedLocal
 
 
-# noinspection PyShadowingBuiltins
+# noinspection PyShadowingBuiltins,PyRedeclaration
 class OpenSliceDatasetTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
 
-    # noinspection PyMethodMayBeStatic
     def test_slice_item_is_slice_source(self):
         dataset = make_test_dataset()
         ctx = Context(dict(target_dir="memory://target.zarr"))
@@ -127,7 +128,6 @@ class OpenSliceDatasetTest(unittest.TestCase):
         with slice_cm as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
-    # noinspection PyMethodMayBeStatic
     def test_slice_item_is_uri_with_polling_fail(self):
         slice_dir = FileObj("memory://slice.zarr")
         ctx = Context(
@@ -140,3 +140,114 @@ class OpenSliceDatasetTest(unittest.TestCase):
         with pytest.raises(FileNotFoundError, match=slice_dir.uri):
             with slice_cm:
                 pass
+
+    def test_slice_item_is_context_manager(self):
+        @contextlib.contextmanager
+        def get_dataset(name):
+            uri = f"memory://{name}.zarr"
+            ds = make_test_dataset(uri=uri)
+            try:
+                yield ds
+            finally:
+                ds.close()
+                FileObj(uri).delete(recursive=True)
+
+        ctx = Context(
+            dict(
+                target_dir="memory://target.zarr",
+                slice_source=get_dataset,
+            )
+        )
+        slice_cm = open_slice_dataset(ctx, "bibo")
+        self.assertIsInstance(slice_cm, contextlib.AbstractContextManager)
+        with slice_cm as slice_ds:
+            self.assertIsInstance(slice_ds, xr.Dataset)
+
+    def test_slice_item_is_slice_source(self):
+        class MySliceSource(SliceSource):
+            def __init__(self, name):
+                self.uri = f"memory://{name}.zarr"
+                self.ds = None
+
+            def get_dataset(self):
+                self.ds = make_test_dataset(uri=self.uri)
+                return self.ds
+
+            def close(self):
+                if self.ds is not None:
+                    self.ds.close()
+                FileObj(uri=self.uri).delete(recursive=True)
+
+        ctx = Context(
+            dict(
+                target_dir="memory://target.zarr",
+                slice_source=MySliceSource,
+            )
+        )
+        slice_cm = open_slice_dataset(ctx, "bibo")
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
+        self.assertIsInstance(slice_cm.slice_source, SliceSource)
+        with slice_cm as slice_ds:
+            self.assertIsInstance(slice_ds, xr.Dataset)
+
+    def test_slice_item_is_deprecated_slice_source(self):
+        class MySliceSource(SliceSource):
+            def __init__(self, name):
+                self.uri = f"memory://{name}.zarr"
+                self.ds = None
+
+            def get_dataset(self):
+                self.ds = make_test_dataset(uri=self.uri)
+                return self.ds
+
+            def dispose(self):
+                if self.ds is not None:
+                    self.ds.close()
+                FileObj(uri=self.uri).delete(recursive=True)
+
+        ctx = Context(
+            dict(
+                target_dir="memory://target.zarr",
+                slice_source=MySliceSource,
+            )
+        )
+        slice_cm = open_slice_dataset(ctx, "bibo")
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
+        self.assertIsInstance(slice_cm.slice_source, SliceSource)
+        with pytest.warns(expected_warning=DeprecationWarning):
+            with slice_cm as slice_ds:
+                self.assertIsInstance(slice_ds, xr.Dataset)
+
+
+class IsContextManagerTest(unittest.TestCase):
+    """Assert that context managers are identified by isinstance()"""
+
+    def test_context_manager_class(self):
+        @contextlib.contextmanager
+        def my_slice_source(data):
+            ds = xr.Dataset(data)
+            try:
+                yield ds
+            finally:
+                ds.close()
+
+        item = my_slice_source([1, 2, 3])
+        self.assertTrue(isinstance(item, contextlib.AbstractContextManager))
+        self.assertFalse(isinstance(my_slice_source, contextlib.AbstractContextManager))
+
+    def test_context_manager_protocol(self):
+        class MySliceSource:
+            def __enter__(self):
+                return xr.Dataset()
+
+            def __exit__(self, *exc):
+                pass
+
+        item = MySliceSource()
+        self.assertTrue(isinstance(item, contextlib.AbstractContextManager))
+        self.assertFalse(isinstance(MySliceSource, contextlib.AbstractContextManager))
+
+    def test_dataset(self):
+        item = xr.Dataset()
+        self.assertTrue(isinstance(item, contextlib.AbstractContextManager))
+        self.assertFalse(isinstance(xr.Dataset, contextlib.AbstractContextManager))
