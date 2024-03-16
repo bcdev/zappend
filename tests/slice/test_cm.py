@@ -35,6 +35,7 @@ class OpenSliceDatasetTest(unittest.TestCase):
         ctx = Context(dict(target_dir="memory://target.zarr"))
         slice_item = MemorySliceSource(dataset, 0)
         slice_cm = open_slice_dataset(ctx, slice_item)
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
         self.assertIs(slice_item, slice_cm.slice_source)
 
     def test_slice_item_is_dataset(self):
