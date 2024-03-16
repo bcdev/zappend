@@ -694,10 +694,14 @@ at the cost of additional i/o. It therefore defaults to `false`.
 
 If you need some custom cleanup after a slice has been processed and appended to the 
 target dataset, you can use instances of `zappend.api.SliceSource` as slice items.
-A `SliceSource` class requires you to implement two methods:
+The `SliceSource` methods with special meaning are:
 
-* `get_dataset()` to return the slice dataset of type `xarray.Dataset`, and 
-* `dispose()` to perform any resource cleanup tasks. 
+* `get_dataset()`: a zero-argument method that returns the slice dataset of type 
+  `xarray.Dataset`. You must implement this abstract method. 
+* `close()`: perform any resource cleanup tasks 
+  (in zappend < v0.7, the `close` methods was called `dispose`).
+* `__init__()`: optional constructor that receives any arguments passed to the 
+  slice source.
 
 Here is the template code for your own slice source implementation:
 
@@ -718,7 +722,7 @@ class MySliceSource(SliceSource):
         # You can put any processing here.
         return self.ds
 
-    def dispose(self):
+    def close(self):
         # Write code here that performs cleanup.
         if self.ds is not None:
             self.ds.close()
@@ -795,7 +799,7 @@ class MySliceSource(SliceSource):
         self.ds = xr.open_dataset(self.slice_path)
         return get_mean_slice(self.ds)
 
-    def dispose(self):
+    def close(self):
         if self.ds is not None:
             self.ds.close()
             self.ds = None
@@ -803,6 +807,39 @@ class MySliceSource(SliceSource):
 zappend(["slice-1.nc", "slice-2.nc", "slice-3.nc"],
         target_dir="target.zarr",
         slice_source=MySliceSource)
+```
+
+Since zappend 0.7, a slice source can also be written as a Python
+[context manager](https://docs.python.org/3/library/contextlib.html),
+which allows you implementing the `get_dataset()` and `close()` 
+methods in one single function, instead of a class. Here is the above example 
+written as context manager.
+
+```python
+from contextlib import contextmanager
+import numpy as np
+import xarray as xr
+from zappend.api import zappend
+
+# Same as above here
+
+@contextmanager
+def get_slice_dataset(slice_path):
+    # allocate resources here
+    ds = xr.open_dataset(slice_path)
+    mean_ds = get_mean_slice(ds)
+    try:
+        # yield (!) the slice dataset
+        # so it can be appended
+        yield mean_ds
+    finally:
+        # after slice dataset has been appended
+        # release resources here
+        ds.close()
+
+zappend(["slice-1.nc", "slice-2.nc", "slice-3.nc"],
+        target_dir="target.zarr",
+        slice_source=get_slice_dataset)
 ```
 
 ## Profiling

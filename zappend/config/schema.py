@@ -630,11 +630,14 @@ CONFIG_SCHEMA_V1 = {
         },
         slice_source={
             "description": (
-                "The fully qualified name of a class or function that provides"
-                " a slice source for each slice item. If a class is given, it must be "
-                " derived from `zappend.api.SliceSource`."
-                " If a function is given, it must return an instance of "
-                " `zappend.api.SliceSource`."
+                "The fully qualified name of a class or function that receives a"
+                " slice item as argument(s) and provides the slice dataset."
+                " If a class is given,"
+                " it must be derived from `zappend.api.SliceSource`."
+                " If the function is a context manager,"
+                " it must yield an `xarray.Dataset`."
+                " If a plain function is given,"
+                " it must return any valid slice item type."
                 " Refer to the user guide for more information."
             ),
             "type": "string",
