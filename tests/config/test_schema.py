@@ -31,6 +31,7 @@ class ConfigSchemaTest(unittest.TestCase):
                 "slice_engine",
                 "slice_polling",
                 "slice_source",
+                "slice_source_kwargs",
                 "slice_storage_options",
                 "target_storage_options",
                 "target_dir",

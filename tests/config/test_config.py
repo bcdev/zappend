@@ -162,6 +162,24 @@ class ConfigTest(unittest.TestCase):
                 }
             )
 
+    def test_slice_source_kwargs(self):
+        config = Config(
+            {
+                "target_dir": "memory://target.zarr",
+            }
+        )
+        self.assertEqual(None, config.slice_source_kwargs)
+
+        config = Config(
+            {
+                "target_dir": "memory://target.zarr",
+                "slice_source_kwargs": {"a": 1, "b": True, "c": "nearest"},
+            }
+        )
+        self.assertEqual(
+            {"a": 1, "b": True, "c": "nearest"}, config.slice_source_kwargs
+        )
+
 
 def new_custom_slice_source(ctx: Context, index: int):
     return CustomSliceSource(ctx, index)

@@ -643,6 +643,14 @@ CONFIG_SCHEMA_V1 = {
             "type": "string",
             "minLength": 1,
         },
+        slice_source_kwargs={
+            "description": (
+                "Extra keyword-arguments passed to a configured `slice_source`"
+                " together with each slice item."
+            ),
+            "type": "object",
+            "additionalProperties": True,
+        },
         slice_engine={
             "description": (
                 "The name of the engine to be used for opening"

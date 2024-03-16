@@ -129,6 +129,13 @@ class Config:
         return self._slice_source
 
     @property
+    def slice_source_kwargs(self) -> dict[str, Any] | None:
+        """Extra keyword-arguments passed to a configured `slice_source`
+        together with each slice item.
+        """
+        return self._config.get("slice_source_kwargs")
+
+    @property
     def slice_storage_options(self) -> dict[str, Any] | None:
         """The configured slice storage options to be used
         if a slice item is a URI.
