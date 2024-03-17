@@ -19,8 +19,8 @@ class SliceSource(ABC):
     A slice source is a closable source for a slice dataset.
 
     A slice source is intended to be implemented by users. An implementation
-    must provide the methods [get_dataset()][zappend.slice.abc.SliceSource.get_dataset]
-    and [close()][zappend.slice.abc.SliceSource.dispose].
+    must provide the methods [get_dataset()][zappend.api.SliceSource.get_dataset]
+    and [close()][zappend.api.SliceSource.close].
 
     If your slice source class requires the processing context,
     your class constructor may define a `ctx: Context` as 1st positional
@@ -63,7 +63,9 @@ class SliceSource(ABC):
             self.dispose()
 
     def dispose(self):
-        """Deprecated since version 0.6.0, override [close()][close] instead."""
+        """Deprecated since version 0.6.0, override
+        [close()][zappend.api.SliceSource.close] instead.
+        """
 
 
 SliceItem = str | FileObj | xr.Dataset | ContextManager[xr.Dataset] | SliceSource
