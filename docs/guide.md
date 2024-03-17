@@ -699,7 +699,7 @@ The `SliceSource` methods with special meaning are:
 * `get_dataset()`: a zero-argument method that returns the slice dataset of type 
   `xarray.Dataset`. You must implement this abstract method. 
 * `close()`: perform any resource cleanup tasks 
-  (in zappend < v0.7, the `close` methods was called `dispose`).
+  (in zappend < v0.7, the `close` method was called `dispose`).
 * `__init__()`: optional constructor that receives any arguments passed to the 
   slice source.
 
