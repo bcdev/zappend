@@ -135,7 +135,7 @@ class Config:
 
     @property
     def slice_source_kwargs(self) -> dict[str, Any] | None:
-        """Extra keyword-arguments passed to a configured `slice_source`
+        """Extra keyword-arguments passed to a specified `slice_source`
         together with each slice item.
         """
         return self._config.get("slice_source_kwargs")
