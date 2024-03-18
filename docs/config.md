@@ -1,6 +1,6 @@
 # Configuration Reference
 
-In the following all possible configuration settings are described.
+Given here are all configuration settings of `zappend`.
 
 ## Target Outline
 
@@ -257,6 +257,10 @@ Defaults to `false`.
 Type _boolean_.
 Allow for dynamically computed values in dataset attributes `attrs` using the syntax `{{ expression }}`.  Executing arbitrary Python expressions is a security risk, therefore this must be explicitly enabled. Refer to the user guide for more information.
 Defaults to `false`.
+### `extra`
+
+Type _object_.
+Arbitrary configuration that is not validated by default. Intended use is by a `slice_source` that expects an argument named `ctx` and therefore can access the configuration.
 ### `profiling`
 
 Profiling configuration. Allows for runtime profiling of the processing.
