@@ -19,7 +19,7 @@ def schema_to_markdown(config_schema: dict[str, Any]) -> str:
 
     lines.append("# Configuration Reference")
     lines.append("")
-    lines.append("In the following all possible configuration settings are described.")
+    lines.append("Given here are all configuration settings of `zappend`.")
     lines.append("")
     for category_name, setting_names in categories.items():
         lines.append(f"## {category_name}")

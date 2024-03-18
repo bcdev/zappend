@@ -10,11 +10,7 @@
     [contextlib.closing()](https://docs.python.org/3/library/contextlib.html#contextlib.closing)
     is applicable. Deprecated `SliceSource.dispose()`.
 
-* Improve the configuration reference Introduced configuration schema categories
-
-* Introduced configuration setting `extra`, which is an arbitrary configuration that 
-  is not validated by default. Intended use is by a `slice_source` that expects an 
-  argument named `ctx` and therefore can access the configuration.
+* Improved readability of the configuration reference by using setting categories.
 
 ## Version 0.6.0 (from 2024-03-12)
 
