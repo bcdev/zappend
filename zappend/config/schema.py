@@ -749,6 +749,16 @@ CONFIG_SCHEMA_V1 = {
             "type": "boolean",
             "default": False,
         },
+        extra={
+            "category": "Misc.",
+            "description": (
+                "Arbitrary configuration that is not validated by default."
+                " Intended use is by a `slice_source` that expects an argument"
+                " named `ctx` and therefore can access the configuration."
+            ),
+            "type": "object",
+            "additionalProperties": True,
+        },
         profiling=PROFILING_SCHEMA,
         logging=LOGGING_SCHEMA,
     ),
