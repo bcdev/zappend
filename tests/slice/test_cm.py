@@ -241,8 +241,8 @@ class OpenSliceDatasetTest(unittest.TestCase):
         self.assertIsInstance(slice_source, MySliceSource)
         with slice_cm as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
-            self.assertEquals(slice_source.args, ("bibo",))
-            self.assertEquals(
+            self.assertEqual(slice_source.args, ("bibo",))
+            self.assertEqual(
                 slice_source.kwargs, {"a": 2, "b": True, "c": "nearest", "d": 3.14}
             )
 
