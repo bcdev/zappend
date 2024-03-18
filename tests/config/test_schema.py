@@ -11,7 +11,8 @@ class ConfigSchemaTest(unittest.TestCase):
     def test_get_config_schema(self):
         schema = get_config_schema()
         self.assertIn("properties", schema)
-        self.assertIsInstance(schema["properties"], dict)
+        properties = schema["properties"]
+        self.assertIsInstance(properties, dict)
         self.assertEqual(
             {
                 "append_dim",
@@ -41,8 +42,12 @@ class ConfigSchemaTest(unittest.TestCase):
                 "version",
                 "zarr_version",
             },
-            set(schema["properties"].keys()),
+            set(properties.keys()),
         )
+        for k, v in properties.items():
+            self.assertIsInstance(v, dict)
+            self.assertIn("category", v, msg=k)
+            self.assertIn("description", v, msg=k)
 
     def test_get_config_schema_json(self):
         # Smoke test is sufficient here
