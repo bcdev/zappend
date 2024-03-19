@@ -1,4 +1,4 @@
-## Version 0.7.0 (in development)
+## Version 0.7.0 (from 2024-03-19)
 
 * Made writing custom slice sources easier and more flexible: (#82)
 
