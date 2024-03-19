@@ -6,29 +6,9 @@ import json
 from typing import Any
 
 
-def schema_to_markdown(config_schema: dict[str, Any]) -> str:
+def schema_to_markdown(schema: dict[str, Any]) -> str:
     lines = []
-
-    settings = config_schema["properties"]
-    categories = {}
-    for setting_name, setting_schema in settings.items():
-        category_name = setting_schema["category"]
-        if category_name not in categories:
-            categories[category_name] = []
-        categories[category_name].append(setting_name)
-
-    lines.append("# Configuration Reference")
-    lines.append("")
-    lines.append("Given here are all configuration settings of `zappend`.")
-    lines.append("")
-    for category_name, setting_names in categories.items():
-        lines.append(f"## {category_name}")
-        lines.append("")
-        for setting_name in setting_names:
-            lines.append(f"### `{setting_name}`")
-            lines.append("")
-            _schema_to_md(settings[setting_name], [setting_name], lines)
-
+    _schema_to_md(schema, [], lines)
     return "\n".join(lines)
 
 
@@ -39,9 +19,10 @@ def _schema_to_md(
     sequence_name: str | None = None,
 ):
     undefined = object()
+    is_root = len(path) == 0
 
     _type = schema.get("type")
-    if _type:
+    if _type and not is_root:
         if isinstance(_type, str):
             _type = [_type]
         value = " | ".join([f"_{name}_" for name in _type])
@@ -49,6 +30,12 @@ def _schema_to_md(
             lines.append(f"The {sequence_name} are of type {value}.")
         else:
             lines.append(f"Type {value}.")
+
+    title = schema.get("title")
+    if title:
+        prefix = "# " if is_root else ""
+        lines.append(prefix + title)
+        lines.append("")
 
     description = schema.get("description")
     if description:
@@ -96,12 +83,18 @@ def _schema_to_md(
     properties = schema.get("properties")
     if properties:
         for name, property_schema in properties.items():
-            lines.append("")
-            lines.append(f"  * `{name}`:")
-            sub_lines = []
-            _schema_to_md(property_schema, path + [name], sub_lines)
-            for sub_line in sub_lines:
-                lines.append("    " + sub_line)
+            if is_root:
+                lines.append("")
+                lines.append(f"## `{name}`")
+                lines.append("")
+                _schema_to_md(property_schema, path + [name], lines)
+            else:
+                lines.append("")
+                lines.append(f"  * `{name}`:")
+                sub_lines = []
+                _schema_to_md(property_schema, path + [name], sub_lines)
+                for sub_line in sub_lines:
+                    lines.append("    " + sub_line)
 
     additional_properties = schema.get("additionalProperties")
     if isinstance(additional_properties, dict):

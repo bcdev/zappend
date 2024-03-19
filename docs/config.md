@@ -1,15 +1,31 @@
 # Configuration Reference
 
-Given here are all configuration settings of `zappend`.
 
-## Target Outline
+## `version`
 
-### `append_dim`
+Configuration schema version. Allows the schema to evolve while still preserving backwards compatibility.
+Its value is `1`.
+Defaults to `1`.
+
+## `zarr_version`
+
+The Zarr version to be used.
+Its value is `2`.
+Defaults to `2`.
+
+## `fixed_dims`
+
+Type _object_.
+Specifies the fixed dimensions of the target dataset. Keys are dimension names, values are dimension sizes.
+The object's values are of type _integer_.
+
+## `append_dim`
 
 Type _string_.
 The name of the variadic append dimension.
 Defaults to `"time"`.
-### `append_step`
+
+## `append_step`
 
 If set, enforces a step size in the append dimension between two slices or just enforces a direction.
 Must be one of the following:
@@ -30,22 +46,20 @@ Must be one of the following:
     A positive or negative numerical delta value.
 
 Defaults to `null`.
-### `fixed_dims`
 
-Type _object_.
-Specifies the fixed dimensions of the target dataset. Keys are dimension names, values are dimension sizes.
-The object's values are of type _integer_.
-### `included_variables`
+## `included_variables`
 
 Type _array_.
 Specifies the names of variables to be included in the target dataset. Defaults to all variables found in the first contributing dataset.
 The items of the array are of type _string_.
-### `excluded_variables`
+
+## `excluded_variables`
 
 Type _array_.
 Specifies the names of individual variables to be excluded  from all contributing datasets.
 The items of the array are of type _string_.
-### `variables`
+
+## `variables`
 
 Type _object_.
 Defines dimensions, encoding, and attributes for variables in the target dataset. Object property names refer to variable names. The special name `*` refers to all variables, which is useful for defining common values.
@@ -135,11 +149,13 @@ Variable metadata.
   * `attrs`:
     Type _object_.
     Arbitrary variable metadata attributes.
-### `attrs`
+
+## `attrs`
 
 Type _object_.
 Arbitrary dataset attributes. If `permit_eval` is set to `true`, string values may include Python expressions enclosed in `{{` and `}}` to dynamically compute attribute values; in the expression, the current dataset  is named `ds`. Refer to the user guide for more information.
-### `attrs_update_mode`
+
+## `attrs_update_mode`
 
 The mode used update target attributes from slice attributes. Independently of this setting, extra attributes configured by the `attrs` setting will finally be used to update the resulting target attributes.
 Must be one of the following:
@@ -157,37 +173,44 @@ Must be one of the following:
     Its value is `"ignore"`.
 
 Defaults to `"keep"`.
-### `zarr_version`
 
-The Zarr version to be used.
-Its value is `2`.
-Defaults to `2`.
-## Data I/O - Target
+## `permit_eval`
 
-### `target_dir`
+Type _boolean_.
+Allow for dynamically computed values in dataset attributes `attrs` using the syntax `{{ expression }}`.  Executing arbitrary Python expressions is a security risk, therefore this must be explicitly enabled. Refer to the user guide for more information.
+Defaults to `false`.
+
+## `target_dir`
 
 Type _string_.
 The URI or local path of the target Zarr dataset. Must specify a directory whose parent directory must exist.
-### `target_storage_options`
+
+## `target_storage_options`
 
 Type _object_.
 Options for the filesystem given by the URI of `target_dir`.
-### `force_new`
 
-Type _boolean_.
-Force creation of a new target dataset.  An existing target dataset (and its lock) will be permanently deleted before appending of slice datasets begins. WARNING: the deletion cannot be rolled back.
-Defaults to `false`.
-## Data I/O - Slices
+## `slice_source`
 
-### `slice_storage_options`
+Type _string_.
+The fully qualified name of a class or function that receives a slice item as argument(s) and provides the slice dataset. If a class is given, it must be derived from `zappend.api.SliceSource`. If the function is a context manager, it must yield an `xarray.Dataset`. If a plain function is given, it must return any valid slice item type. Refer to the user guide for more information.
+
+## `slice_source_kwargs`
 
 Type _object_.
-Options for the filesystem given by the protocol of the URIs of contributing datasets.
-### `slice_engine`
+Extra keyword-arguments passed to a configured `slice_source` together with each slice item.
+
+## `slice_engine`
 
 Type _string_.
 The name of the engine to be used for opening contributing datasets. Refer to the `engine` argument of the function `xarray.open_dataset()`.
-### `slice_polling`
+
+## `slice_storage_options`
+
+Type _object_.
+Options for the filesystem given by the protocol of the URIs of contributing datasets.
+
+## `slice_polling`
 
 Defines how to poll for contributing datasets.
 Must be one of the following:
@@ -212,56 +235,36 @@ Must be one of the following:
         Polling timeout in seconds.
         Defaults to `60`.
 
-### `slice_source`
 
-Type _string_.
-The fully qualified name of a class or function that receives a slice item as argument(s) and provides the slice dataset. If a class is given, it must be derived from `zappend.api.SliceSource`. If the function is a context manager, it must yield an `xarray.Dataset`. If a plain function is given, it must return any valid slice item type. Refer to the user guide for more information.
-### `slice_source_kwargs`
-
-Type _object_.
-Extra keyword-arguments passed to a configured `slice_source` together with each slice item.
-### `persist_mem_slices`
+## `persist_mem_slices`
 
 Type _boolean_.
 Persist in-memory slices and reopen from a temporary Zarr before appending them to the target dataset. This can prevent expensive re-computation of dask chunks at the cost of additional i/o.
 Defaults to `false`.
-## Data I/O - Transactions
 
-### `temp_dir`
+## `temp_dir`
 
 Type _string_.
 The URI or local path of the directory that will be used to temporarily store rollback information.
-### `temp_storage_options`
+
+## `temp_storage_options`
 
 Type _object_.
 Options for the filesystem given by the protocol of `temp_dir`.
-### `disable_rollback`
+
+## `force_new`
+
+Type _boolean_.
+Force creation of a new target dataset.  An existing target dataset (and its lock) will be permanently deleted before appending of slice datasets begins. WARNING: the deletion cannot be rolled back.
+Defaults to `false`.
+
+## `disable_rollback`
 
 Type _boolean_.
 Disable rolling back dataset changes on failure. Effectively disables transactional dataset modifications, so use this setting with care.
 Defaults to `false`.
-## Misc.
 
-### `version`
-
-Configuration schema version. Allows the schema to evolve while still preserving backwards compatibility.
-Its value is `1`.
-Defaults to `1`.
-### `dry_run`
-
-Type _boolean_.
-If `true`, log only what would have been done, but don't apply any changes.
-Defaults to `false`.
-### `permit_eval`
-
-Type _boolean_.
-Allow for dynamically computed values in dataset attributes `attrs` using the syntax `{{ expression }}`.  Executing arbitrary Python expressions is a security risk, therefore this must be explicitly enabled. Refer to the user guide for more information.
-Defaults to `false`.
-### `extra`
-
-Type _object_.
-Arbitrary configuration that is not validated by default. Intended use is by a `slice_source` that expects an argument named `ctx` and therefore can access the configuration.
-### `profiling`
+## `profiling`
 
 Profiling configuration. Allows for runtime profiling of the processing.
 Must be one of the following:
@@ -309,7 +312,8 @@ Must be one of the following:
             Pattern-match the standard name that is printed.
         
 
-### `logging`
+
+## `logging`
 
 Logging configuration.
 Must be one of the following:
@@ -402,4 +406,15 @@ Must be one of the following:
             A list of ids of the handlers for this logger.
             The items of the array are of type _string_.
 
+
+## `dry_run`
+
+Type _boolean_.
+If `true`, log only what would have been done, but don't apply any changes.
+Defaults to `false`.
+
+## `extra`
+
+Type _object_.
+Extra settings. Intended use is by a `slice_source` that expects an argument named `ctx` to access the extra settings and other configuration.
 
