@@ -25,7 +25,7 @@ from tests.helpers import make_test_dataset
 # noinspection PyUnusedLocal
 
 
-# noinspection PyShadowingBuiltins,PyRedeclaration
+# noinspection PyShadowingBuiltins,PyRedeclaration,PyMethodMayBeStatic
 class OpenSliceDatasetTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
@@ -164,7 +164,7 @@ class OpenSliceDatasetTest(unittest.TestCase):
         with slice_cm as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
-    def test_slice_item_is_slice_source(self):
+    def test_slice_item_is_slice_source_arg(self):
         class MySliceSource(SliceSource):
             def __init__(self, name):
                 self.uri = f"memory://{name}.zarr"
@@ -191,7 +191,7 @@ class OpenSliceDatasetTest(unittest.TestCase):
         with slice_cm as slice_ds:
             self.assertIsInstance(slice_ds, xr.Dataset)
 
-    def test_slice_item_is_deprecated_slice_source(self):
+    def test_slice_item_is_deprecated_slice_source_arg(self):
         class MySliceSource(SliceSource):
             def __init__(self, name):
                 self.uri = f"memory://{name}.zarr"
@@ -218,6 +218,33 @@ class OpenSliceDatasetTest(unittest.TestCase):
         with pytest.warns(expected_warning=DeprecationWarning):
             with slice_cm as slice_ds:
                 self.assertIsInstance(slice_ds, xr.Dataset)
+
+    def test_slice_item_is_slice_source_arg_with_extra_kwargs(self):
+        class MySliceSource(SliceSource):
+            def __init__(self, *args, **kwargs):
+                self.args = args
+                self.kwargs = kwargs
+
+            def get_dataset(self):
+                return xr.Dataset()
+
+        ctx = Context(
+            dict(
+                target_dir="memory://target.zarr",
+                slice_source=MySliceSource,
+                slice_source_kwargs={"a": 1, "b": True, "c": "nearest"},
+            )
+        )
+        slice_cm = open_slice_dataset(ctx, (["bibo"], {"a": 2, "d": 3.14}))
+        self.assertIsInstance(slice_cm, SliceSourceContextManager)
+        slice_source = slice_cm.slice_source
+        self.assertIsInstance(slice_source, MySliceSource)
+        with slice_cm as slice_ds:
+            self.assertIsInstance(slice_ds, xr.Dataset)
+            self.assertEqual(slice_source.args, ("bibo",))
+            self.assertEqual(
+                slice_source.kwargs, {"a": 2, "b": True, "c": "nearest", "d": 3.14}
+            )
 
 
 class IsContextManagerTest(unittest.TestCase):

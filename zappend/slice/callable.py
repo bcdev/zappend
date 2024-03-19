@@ -30,6 +30,10 @@ def invoke_slice_callable(
         A slice item of type `SliceItem`.
     """
     slice_args, slice_kwargs = to_slice_args(slice_item)
+    if ctx.config.slice_source_kwargs:
+        extra_kwargs = dict(ctx.config.slice_source_kwargs)
+        extra_kwargs.update(slice_kwargs)
+        slice_kwargs = extra_kwargs
 
     signature = inspect.signature(slice_callable)
     ctx_parameter = signature.parameters.get("ctx")
