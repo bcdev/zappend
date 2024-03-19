@@ -752,9 +752,9 @@ CONFIG_SCHEMA_V1 = {
         extra={
             "category": "Misc.",
             "description": (
-                "Arbitrary configuration that is not validated by default."
+                "Extra settings."
                 " Intended use is by a `slice_source` that expects an argument"
-                " named `ctx` and therefore can access the configuration."
+                " named `ctx` to access the extra settings and other configuration."
             ),
             "type": "object",
             "additionalProperties": True,

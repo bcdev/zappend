@@ -72,12 +72,11 @@ SliceItem = str | FileObj | xr.Dataset | ContextManager[xr.Dataset] | SliceSourc
 """The possible types that can represent a slice dataset."""
 
 SliceCallable = Type[SliceSource] | Callable[[...], SliceItem]
-"""This type is either a class derived from `SliceSource` 
-or a function that returns a `SliceItem`. Both can be invoked
-with any number of positional or keyword arguments. The processing 
-context, if used, is passed either as 1st positional argument or 
-as keyword argument and must be named `ctx` and must have 
-type `Context`.
+"""This type is either a class derived from `SliceSource` or a function that 
+returns a `SliceItem`. Both can be invoked with any number of positional or 
+keyword arguments. The processing context, if used, must be named `ctx` and 
+must be either the 1st positional argument or a keyword argument. Its type 
+is `Context`.
 """
 
 
