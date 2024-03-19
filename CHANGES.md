@@ -11,20 +11,12 @@
     is applicable. Deprecated `SliceSource.dispose()`.
     
   - Introduced new optional configuration setting `slice_source_kwargs` that
-    contains keyword-arguments, which are passed to a configured `slice_source` together with 
-    each slice item.
-
-
-  - Introduced optional configuration setting `slice_source_kwargs` that
-    contains keyword-arguments passed to a configured `slice_source` together with 
-    each slice item.
+    contains keyword-arguments, which are passed to a configured `slice_source` 
+    together with each slice item.
 
   - Introduced optional configuration setting `extra` that holds additional 
     configuration not validated by default. Intended use is by a `slice_source` that 
     expects an argument named `ctx` and therefore can access the configuration.
-
-* Improve the configuration reference Introduced configuration schema categories
-
 
 ## Version 0.6.0 (from 2024-03-12)
 
