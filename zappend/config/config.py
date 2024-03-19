@@ -189,6 +189,14 @@ class Config:
         return bool(self._config.get("dry_run"))
 
     @property
+    def extra(self) -> dict[str, Any]:
+        """Extra settings.
+        Intended use is by a `slice_source` that expects an argument
+        named `ctx` to access the extra settings and other configuration.
+        """
+        return self._config.get("extra") or {}
+
+    @property
     def logging(self) -> dict[str, Any] | str | bool | None:
         """Logging configuration."""
         return self._config.get("logging")

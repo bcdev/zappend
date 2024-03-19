@@ -15,7 +15,6 @@ from .markdown import schema_to_markdown
 
 
 SLICE_POLLING_SCHEMA = {
-    "category": "Data I/O - Slices",
     "description": "Defines how to poll for contributing datasets.",
     "oneOf": [
         {
@@ -168,7 +167,6 @@ VARIABLE_ENCODING_SCHEMA = {
 }
 
 VARIABLES_SCHEMA = {
-    "category": "Target Outline",
     "description": (
         "Defines dimensions, encoding, and attributes"
         " for variables in the target dataset."
@@ -210,7 +208,6 @@ LOG_HDL_CLS_URL = "https://docs.python.org/3/library/logging.handlers.html"
 LOG_LEVELS = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"]
 
 PROFILING_SCHEMA = {
-    "category": "Misc.",
     "description": (
         "Profiling configuration. Allows for runtime profiling of the" " processing."
     ),
@@ -458,7 +455,6 @@ DETAILED_LOGGING_SCHEMA = {
 }
 
 LOGGING_SCHEMA = {
-    "category": "Misc.",
     "description": "Logging configuration.",
     "oneOf": [
         {
@@ -480,17 +476,39 @@ LOGGING_SCHEMA = {
 }
 
 CONFIG_SCHEMA_V1 = {
+    "title": "Configuration Reference",
     "type": "object",
     "properties": dict(
+        version={
+            "description": (
+                "Configuration schema version."
+                " Allows the schema to evolve while still"
+                " preserving backwards compatibility."
+            ),
+            "const": 1,
+            "default": 1,
+        },
+        zarr_version={
+            "description": "The Zarr version to be used.",
+            "const": DEFAULT_ZARR_VERSION,
+            "default": DEFAULT_ZARR_VERSION,
+        },
+        fixed_dims={
+            "description": (
+                "Specifies the fixed dimensions of the"
+                " target dataset. Keys are dimension names, values"
+                " are dimension sizes."
+            ),
+            "type": "object",
+            "additionalProperties": {"type": "integer", "minimum": 1},
+        },
         append_dim={
-            "category": "Target Outline",
             "description": "The name of the variadic append dimension.",
             "type": "string",
             "minLength": 1,
             "default": DEFAULT_APPEND_DIM,
         },
         append_step={
-            "category": "Target Outline",
             "description": (
                 "If set, enforces a step size in the append dimension between two"
                 " slices or just enforces a direction."
@@ -518,18 +536,7 @@ CONFIG_SCHEMA_V1 = {
             ],
             "default": DEFAULT_APPEND_STEP,
         },
-        fixed_dims={
-            "category": "Target Outline",
-            "description": (
-                "Specifies the fixed dimensions of the"
-                " target dataset. Keys are dimension names, values"
-                " are dimension sizes."
-            ),
-            "type": "object",
-            "additionalProperties": {"type": "integer", "minimum": 1},
-        },
         included_variables={
-            "category": "Target Outline",
             "description": (
                 "Specifies the names of variables to be included in"
                 " the target dataset. Defaults to all variables"
@@ -539,7 +546,6 @@ CONFIG_SCHEMA_V1 = {
             "items": {"type": "string", "minLength": 1},
         },
         excluded_variables={
-            "category": "Target Outline",
             "description": (
                 "Specifies the names of individual variables"
                 " to be excluded  from all contributing datasets."
@@ -549,7 +555,6 @@ CONFIG_SCHEMA_V1 = {
         },
         variables=VARIABLES_SCHEMA,
         attrs={
-            "category": "Target Outline",
             "description": (
                 "Arbitrary dataset attributes."
                 " If `permit_eval` is set to `true`,"
@@ -563,7 +568,6 @@ CONFIG_SCHEMA_V1 = {
             "additionalProperties": True,
         },
         attrs_update_mode={
-            "category": "Target Outline",
             "description": (
                 "The mode used update target attributes from slice"
                 " attributes. Independently of this setting, extra attributes"
@@ -598,14 +602,18 @@ CONFIG_SCHEMA_V1 = {
             ],
             "default": DEFAULT_ATTRS_UPDATE_MODE,
         },
-        zarr_version={
-            "category": "Target Outline",
-            "description": "The Zarr version to be used.",
-            "const": DEFAULT_ZARR_VERSION,
-            "default": DEFAULT_ZARR_VERSION,
+        permit_eval={
+            "description": (
+                "Allow for dynamically computed values in dataset attributes"
+                " `attrs` using the syntax `{{ expression }}`. "
+                " Executing arbitrary Python expressions is a security"
+                " risk, therefore this must be explicitly enabled."
+                " Refer to the user guide for more information."
+            ),
+            "type": "boolean",
+            "default": False,
         },
         target_dir={
-            "category": "Data I/O - Target",
             "description": (
                 "The URI or local path of the target Zarr dataset."
                 " Must specify a directory whose parent directory must exist."
@@ -614,48 +622,13 @@ CONFIG_SCHEMA_V1 = {
             "minLength": 1,
         },
         target_storage_options={
-            "category": "Data I/O - Target",
             "description": (
                 "Options for the filesystem given by" " the URI of `target_dir`."
             ),
             "type": "object",
             "additionalProperties": True,
         },
-        force_new={
-            "category": "Data I/O - Target",
-            "description": (
-                "Force creation of a new target dataset. "
-                " An existing target dataset (and its lock) will be"
-                " permanently deleted before appending of slice datasets"
-                " begins. WARNING: the deletion cannot be rolled back."
-            ),
-            "type": "boolean",
-            "default": False,
-        },
-        slice_storage_options={
-            "category": "Data I/O - Slices",
-            "description": (
-                "Options for the filesystem given by"
-                " the protocol of the URIs of"
-                " contributing datasets."
-            ),
-            "type": "object",
-            "additionalProperties": True,
-        },
-        slice_engine={
-            "category": "Data I/O - Slices",
-            "description": (
-                "The name of the engine to be used for opening"
-                " contributing datasets."
-                " Refer to the `engine` argument of the function"
-                " `xarray.open_dataset()`."
-            ),
-            "type": "string",
-            "minLength": 1,
-        },
-        slice_polling=SLICE_POLLING_SCHEMA,
         slice_source={
-            "category": "Data I/O - Slices",
             "description": (
                 "The fully qualified name of a class or function that receives a"
                 " slice item as argument(s) and provides the slice dataset."
@@ -671,7 +644,6 @@ CONFIG_SCHEMA_V1 = {
             "minLength": 1,
         },
         slice_source_kwargs={
-            "category": "Data I/O - Slices",
             "description": (
                 "Extra keyword-arguments passed to a configured `slice_source`"
                 " together with each slice item."
@@ -679,8 +651,27 @@ CONFIG_SCHEMA_V1 = {
             "type": "object",
             "additionalProperties": True,
         },
+        slice_engine={
+            "description": (
+                "The name of the engine to be used for opening"
+                " contributing datasets."
+                " Refer to the `engine` argument of the function"
+                " `xarray.open_dataset()`."
+            ),
+            "type": "string",
+            "minLength": 1,
+        },
+        slice_storage_options={
+            "description": (
+                "Options for the filesystem given by"
+                " the protocol of the URIs of"
+                " contributing datasets."
+            ),
+            "type": "object",
+            "additionalProperties": True,
+        },
+        slice_polling=SLICE_POLLING_SCHEMA,
         persist_mem_slices={
-            "category": "Data I/O - Slices",
             "description": (
                 "Persist in-memory slices and reopen from a temporary Zarr before"
                 " appending them to the target dataset."
@@ -691,7 +682,6 @@ CONFIG_SCHEMA_V1 = {
             "default": False,
         },
         temp_dir={
-            "category": "Data I/O - Transactions",
             "description": (
                 "The URI or local path of the directory that"
                 " will be used to temporarily store rollback"
@@ -701,15 +691,23 @@ CONFIG_SCHEMA_V1 = {
             "minLength": 1,
         },
         temp_storage_options={
-            "category": "Data I/O - Transactions",
             "description": (
                 "Options for the filesystem given by" " the protocol of `temp_dir`."
             ),
             "type": "object",
             "additionalProperties": True,
         },
+        force_new={
+            "description": (
+                "Force creation of a new target dataset. "
+                " An existing target dataset (and its lock) will be"
+                " permanently deleted before appending of slice datasets"
+                " begins. WARNING: the deletion cannot be rolled back."
+            ),
+            "type": "boolean",
+            "default": False,
+        },
         disable_rollback={
-            "category": "Data I/O - Transactions",
             "description": (
                 "Disable rolling back dataset changes on failure."
                 " Effectively disables transactional dataset"
@@ -718,18 +716,9 @@ CONFIG_SCHEMA_V1 = {
             "type": "boolean",
             "default": False,
         },
-        version={
-            "category": "Misc.",
-            "description": (
-                "Configuration schema version."
-                " Allows the schema to evolve while still"
-                " preserving backwards compatibility."
-            ),
-            "const": 1,
-            "default": 1,
-        },
+        profiling=PROFILING_SCHEMA,
+        logging=LOGGING_SCHEMA,
         dry_run={
-            "category": "Misc.",
             "description": (
                 "If `true`, log only what would have been done,"
                 " but don't apply any changes."
@@ -737,20 +726,15 @@ CONFIG_SCHEMA_V1 = {
             "type": "boolean",
             "default": False,
         },
-        permit_eval={
-            "category": "Misc.",
+        extra={
             "description": (
-                "Allow for dynamically computed values in dataset attributes"
-                " `attrs` using the syntax `{{ expression }}`. "
-                " Executing arbitrary Python expressions is a security"
-                " risk, therefore this must be explicitly enabled."
-                " Refer to the user guide for more information."
+                "Extra settings."
+                " Intended use is by a `slice_source` that expects an argument"
+                " named `ctx` to access the extra settings and other configuration."
             ),
-            "type": "boolean",
-            "default": False,
+            "type": "object",
+            "additionalProperties": True,
         },
-        profiling=PROFILING_SCHEMA,
-        logging=LOGGING_SCHEMA,
     ),
     "additionalProperties": False,
 }
