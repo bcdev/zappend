@@ -713,7 +713,8 @@ def get_dataset(path: str) -> xr.Dataset:
 ```
 
 If you need cleanup code that is executed after the slice dataset has been appended, 
-you can turn your slice source function into a [context manager](https://docs.python.org/3/library/contextlib.html)
+you can turn your slice source function into a
+[context manager](https://docs.python.org/3/library/contextlib.html)
 (new in zappend v0.7):
 
 ```python
