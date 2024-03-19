@@ -802,12 +802,11 @@ argument(s) to your slice source.
 
 You can also pass extra keyword arguments to your slice source using the 
 `slice_source_kwargs` setting. Keyword arguments passed as slice items take 
-precedence, that is, they overwrite arguments passed by `slice_source_kawrgs`.
+precedence, that is, they overwrite arguments passed by `slice_source_kwargs`.
 
-Slice arguments are passed to your slice source for every slice. If your slice source
-has many parameters that stay the same for all slices you may prefer providing 
-parameters as settings in the configuration. This can be achieved using the `extra` 
-setting:
+If your slice source has many parameters that stay the same for all slices you may 
+prefer providing parameters as configuration settings, rather than function or class
+arguments. This can be achieved using the `extra` setting:
 
 ```json
 {
@@ -820,9 +819,10 @@ setting:
 ```
 
 To access the settings in `extra` your slice source function or class constructor 
-must define a special argument named `ctx`. It must be a 1st positional argument or 
+must define a special argument named `ctx`. It must be a 1ˢᵗ positional argument or 
 a keyword argument. The argument `ctx` is the current processing context of type 
-`zappend.api.Context` that also contains the configuration.
+`zappend.api.Context` that also contains the configuration. The settings in `extra`
+can be accessed using the dictionary returned from `ctx.config.extra`.
 
 Here is a more advanced example of a slice source that opens datasets from a given 
 file path and averages the values along the time dimension:
