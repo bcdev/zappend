@@ -726,6 +726,15 @@ CONFIG_SCHEMA_V1 = {
             "type": "boolean",
             "default": False,
         },
+        extra={
+            "description": (
+                "Extra settings."
+                " Intended use is by a `slice_source` that expects an argument"
+                " named `ctx` to access the extra settings and other configuration."
+            ),
+            "type": "object",
+            "additionalProperties": True,
+        },
     ),
     "additionalProperties": False,
 }

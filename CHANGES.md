@@ -1,6 +1,6 @@
 ## Version 0.7.0 (in development)
 
-* Made writing custom slice sources easier: (#82)
+* Made writing custom slice sources easier and more flexible: (#82)
 
   - Slice items can now be a `contextlib.AbstractContextManager` 
     so custom slice functions can now be used with
@@ -11,9 +11,12 @@
     is applicable. Deprecated `SliceSource.dispose()`.
     
   - Introduced new optional configuration setting `slice_source_kwargs` that
-    contains keyword-arguments, which are passed to a configured `slice_source` together with 
-    each slice item.
+    contains keyword-arguments, which are passed to a configured `slice_source` 
+    together with each slice item.
 
+  - Introduced optional configuration setting `extra` that holds additional 
+    configuration not validated by default. Intended use is by a `slice_source` that 
+    expects an argument named `ctx` and therefore can access the configuration.
 
 ## Version 0.6.0 (from 2024-03-12)
 

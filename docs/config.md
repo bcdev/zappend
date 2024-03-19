@@ -195,6 +195,11 @@ Options for the filesystem given by the URI of `target_dir`.
 Type _string_.
 The fully qualified name of a class or function that receives a slice item as argument(s) and provides the slice dataset. If a class is given, it must be derived from `zappend.api.SliceSource`. If the function is a context manager, it must yield an `xarray.Dataset`. If a plain function is given, it must return any valid slice item type. Refer to the user guide for more information.
 
+## `slice_source_kwargs`
+
+Type _object_.
+Extra keyword-arguments passed to a configured `slice_source` together with each slice item.
+
 ## `slice_engine`
 
 Type _string_.
@@ -407,4 +412,9 @@ Must be one of the following:
 Type _boolean_.
 If `true`, log only what would have been done, but don't apply any changes.
 Defaults to `false`.
+
+## `extra`
+
+Type _object_.
+Extra settings. Intended use is by a `slice_source` that expects an argument named `ctx` to access the extra settings and other configuration.
 
