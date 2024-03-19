@@ -9,6 +9,11 @@
   - Introduced `SliceSource.close()` so
     [contextlib.closing()](https://docs.python.org/3/library/contextlib.html#contextlib.closing)
     is applicable. Deprecated `SliceSource.dispose()`.
+    
+  - Introduced new optional configuration setting `slice_source_kwargs` that
+    contains keyword-arguments passed to a configured `slice_source` together with 
+    each slice item.
+
 
   - Introduced optional configuration setting `slice_source_kwargs` that
     contains keyword-arguments passed to a configured `slice_source` together with 
