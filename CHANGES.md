@@ -11,7 +11,7 @@
     is applicable. Deprecated `SliceSource.dispose()`.
     
   - Introduced new optional configuration setting `slice_source_kwargs` that
-    contains keyword-arguments passed to a configured `slice_source` together with 
+    contains keyword-arguments, which are passed to a configured `slice_source` together with 
     each slice item.
 
 

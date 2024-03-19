@@ -801,9 +801,8 @@ argument(s) to your slice source.
     - Any other type is interpreted as single positional argument.
 
 You can also pass extra keyword arguments to your slice source using the 
-`slice_source_kwargs` setting. Its properties are passed as keyword arguments to 
-every slice source invocation. Keyword arguments passed as slice items with same name
-as in `slice_source_kwargs` take precedence.
+`slice_source_kwargs` setting. Keyword arguments passed as slice items take 
+precedence, that is, they overwrite arguments passed by `slice_source_kawrgs`.
 
 Slice arguments are passed to your slice source for every slice. If your slice source
 has many parameters that stay the same for all slices you may prefer providing 
