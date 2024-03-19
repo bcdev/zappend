@@ -1,3 +1,15 @@
+## Version 0.7.0 (in development)
+
+* Made writing custom slice sources easier: (#82)
+
+  - Slice items can now be a `contextlib.AbstractContextManager` 
+    so custom slice functions can now be used with
+    [@contextlib.contextmanager](https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager).
+  
+  - Introduced `SliceSource.close()` so
+    [contextlib.closing()](https://docs.python.org/3/library/contextlib.html#contextlib.closing)
+    is applicable. Deprecated `SliceSource.dispose()`.
+
 ## Version 0.6.0 (from 2024-03-12)
 
 ### Enhancements

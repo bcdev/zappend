@@ -42,7 +42,7 @@ class TemporarySliceSource(MemorySliceSource):
         self._temp_slice_ds = xr.open_zarr(temp_slice_store)
         return self._temp_slice_ds
 
-    def dispose(self):
+    def close(self):
         if self._temp_slice_ds is not None:
             self._temp_slice_ds.close()
             self._temp_slice_ds = None
@@ -57,4 +57,4 @@ class TemporarySliceSource(MemorySliceSource):
                 )
                 temp_slice_dir.delete(recursive=True)
 
-        super().dispose()
+        super().close()

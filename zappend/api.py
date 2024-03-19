@@ -45,14 +45,22 @@ def zappend(
     This ensures integrity of the  target data cube `target_dir` given
     in `config` or `kwargs`.
 
+    Each slice item in `slices` provides a slice dataset to be appended.
+    The interpretation of a given slice item depends on whether a slice source
+    is configured or not (setting `slice_source`).
+
+    If no slice source is configured, a slice item must be an object of type
+    `str`, `FileObj`, `xarray.Dataset`, or `SliceSource`.
+    If `str` or `FileObj` are used, they are interpreted as local dataset path or
+    dataset URI. If a URI is used, protocol-specific parameters apply, given by the
+    configuration parameter `slice_storage_options`.
+
+    If a slice source is configured, a slice item represents the argument(s) passed
+    to that slice source. Multiple positional arguments can be passed as `list`,
+    multiple keyword arguments as `dict`, and both as a `tuple` of `list` and `dict`.
+
     Args:
-        slices: An iterable that yields slice items. A slice item is
-            either a `str`, `FileObj`, `xarray.Dataset`, `SliceSource`,
-            or represents arguments passed to a configured `slice_source`.
-            If `str` or `FileObj` are used, they are interpreted as
-            local dataset path or dataset URI.
-            If a URI is used, protocol-specific parameters apply, given by
-            configuration parameter `slice_storage_options`.
+        slices: An iterable that yields slice items.
         config: Processor configuration.
             May be a file path or URI, a `dict`, `None`, or a sequence of
             the aforementioned. If a sequence is used, subsequent

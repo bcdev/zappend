@@ -2,24 +2,19 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-import shutil
 import unittest
-import warnings
 
 import pytest
 import xarray as xr
 
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
-from zappend.slice.cm import SliceSourceContextManager
-from zappend.slice.cm import open_slice_dataset
-from zappend.slice.source import to_slice_source, SliceSource
+from zappend.slice.source import SliceSource
+from zappend.slice.source import to_slice_source
 from zappend.slice.sources.memory import MemorySliceSource
 from zappend.slice.sources.persistent import PersistentSliceSource
 from zappend.slice.sources.temporary import TemporarySliceSource
 from tests.helpers import clear_memory_fs
-from tests.helpers import make_test_dataset
-from tests.config.test_config import CustomSliceSource
 
 
 # noinspection PyUnusedLocal
@@ -86,13 +81,32 @@ class ToSliceSourceTest(unittest.TestCase):
             return xr.Dataset(attrs=dict(arg1=arg1, arg2=arg2, ctx=ctx))
 
         ctx = make_ctx(slice_source=my_slice_source)
-        arg = xr.Dataset()
         slice_source = to_slice_source(ctx, ([13], {"arg2": True}), 0)
         self.assertIsInstance(slice_source, MemorySliceSource)
         ds = slice_source.get_dataset()
         self.assertEqual(13, ds.attrs.get("arg1"))
         self.assertEqual(True, ds.attrs.get("arg2"))
         self.assertIs(ctx, ds.attrs.get("ctx"))
+
+    def test_slice_item_is_slice_source_context_manager(self):
+        import contextlib
+
+        @contextlib.contextmanager
+        def my_slice_source(ctx, arg1, arg2=None):
+            _ds = xr.Dataset(attrs=dict(arg1=arg1, arg2=arg2, ctx=ctx))
+            try:
+                yield _ds
+            finally:
+                _ds.close()
+
+        ctx = make_ctx(slice_source=my_slice_source)
+        slice_source = to_slice_source(ctx, ([14], {"arg2": "OK"}), 0)
+        self.assertIsInstance(slice_source, contextlib.AbstractContextManager)
+        with slice_source as ds:
+            self.assertIsInstance(ds, xr.Dataset)
+            self.assertEqual(14, ds.attrs.get("arg1"))
+            self.assertEqual("OK", ds.attrs.get("arg2"))
+            self.assertIs(ctx, ds.attrs.get("ctx"))
 
     # noinspection PyMethodMayBeStatic
     def test_raises_if_slice_item_is_int(self):
@@ -101,7 +115,9 @@ class ToSliceSourceTest(unittest.TestCase):
             TypeError,
             match=(
                 "slice_item must have type str, xarray.Dataset,"
-                " zappend.api.FileObj, zappend.api.SliceSource, but was type int"
+                " contextlib.AbstractContextManager,"
+                " zappend.api.FileObj, zappend.api.SliceSource,"
+                " but was type int"
             ),
         ):
             to_slice_source(ctx, 42, 0)
@@ -116,7 +132,9 @@ class ToSliceSourceTest(unittest.TestCase):
             TypeError,
             match=(
                 "slice_item must have type str, xarray.Dataset,"
-                " zappend.api.FileObj, zappend.api.SliceSource, but was type function"
+                " contextlib.AbstractContextManager,"
+                " zappend.api.FileObj, zappend.api.SliceSource,"
+                " but was type function"
             ),
         ):
             to_slice_source(ctx, hallo, 0)

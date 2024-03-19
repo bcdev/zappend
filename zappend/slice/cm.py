@@ -3,7 +3,7 @@
 # https://opensource.org/licenses/MIT.
 
 import contextlib
-from typing import Any
+from typing import Any, ContextManager
 
 import xarray as xr
 
@@ -14,6 +14,8 @@ from .source import to_slice_source
 
 class SliceSourceContextManager(contextlib.AbstractContextManager):
     """A context manager that wraps a slice source.
+
+    Internal class, no API.
 
     Args:
         slice_source: The slice source.
@@ -30,7 +32,7 @@ class SliceSourceContextManager(contextlib.AbstractContextManager):
         return self._slice_source.get_dataset()
 
     def __exit__(self, *exception_args):
-        self._slice_source.dispose()
+        self._slice_source.close()
         self._slice_source = None
 
 
@@ -38,7 +40,7 @@ def open_slice_dataset(
     ctx: Context,
     slice_item: Any,
     slice_index: int = 0,
-) -> SliceSourceContextManager:
+) -> ContextManager[xr.Dataset]:
     """Open the slice source for given slice item `slice_item`.
 
     The intended and only use of the returned slice source is as context
@@ -77,4 +79,7 @@ def open_slice_dataset(
         A new slice source instance
     """
     slice_source = to_slice_source(ctx, slice_item, slice_index)
-    return SliceSourceContextManager(slice_source)
+    if isinstance(slice_source, contextlib.AbstractContextManager):
+        return slice_source
+    else:
+        return SliceSourceContextManager(slice_source)

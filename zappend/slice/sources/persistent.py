@@ -32,12 +32,11 @@ class PersistentSliceSource(SliceSource):
         self._slice_ds = self._wait_for_slice_dataset()
         return self._slice_ds
 
-    def dispose(self):
+    def close(self):
         if self._slice_ds is not None:
             self._slice_ds.close()
             self._slice_ds = None
         logger.info(f"Slice dataset {self._slice_file.uri} closed")
-        super().dispose()
 
     def _wait_for_slice_dataset(self) -> xr.Dataset:
         interval, timeout = self._config.slice_polling
