@@ -1,3 +1,7 @@
+## Version 0.7.0 (in development)
+
+* Fixed link to _slice sources_ in documentation main page.
+
 ## Version 0.7.0 (from 2024-03-19)
 
 * Made writing custom slice sources easier and more flexible: (#82)

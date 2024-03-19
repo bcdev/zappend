@@ -40,7 +40,7 @@ The `zappend` tool provides the following features:
   [`zappend()`](api.md) function, slice datasets can be passed as local file 
   paths, URIs, as datasets of type 
   [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html), or as custom
-  [slice sources](guide#slice-sources).
+  [slice sources](guide.md#slice-sources).
 
 ## How It Works
 
