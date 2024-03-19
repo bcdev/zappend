@@ -407,6 +407,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#zappend.api.SliceSource.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      close
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#zappend.api.SliceSource.dispose" class="md-nav__link">
     <span class="md-ellipsis">
       dispose
@@ -554,6 +563,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#zappend.api.Config.extra" class="md-nav__link">
+    <span class="md-ellipsis">
+      extra
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#zappend.api.Config.force_new" class="md-nav__link">
     <span class="md-ellipsis">
       force_new
@@ -629,6 +647,15 @@
   <a href="#zappend.api.Config.slice_source" class="md-nav__link">
     <span class="md-ellipsis">
       slice_source
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.api.Config.slice_source_kwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_source_kwargs
     </span>
   </a>
   
@@ -983,6 +1010,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#zappend.api.SliceSource.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      close
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#zappend.api.SliceSource.dispose" class="md-nav__link">
     <span class="md-ellipsis">
       dispose
@@ -1130,6 +1166,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#zappend.api.Config.extra" class="md-nav__link">
+    <span class="md-ellipsis">
+      extra
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#zappend.api.Config.force_new" class="md-nav__link">
     <span class="md-ellipsis">
       force_new
@@ -1205,6 +1250,15 @@
   <a href="#zappend.api.Config.slice_source" class="md-nav__link">
     <span class="md-ellipsis">
       slice_source
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zappend.api.Config.slice_source_kwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      slice_source_kwargs
     </span>
   </a>
   
@@ -1511,6 +1565,17 @@ Each append step is atomic, that is, the append operation is a transaction
 that can be rolled back, in case the append operation fails.
 This ensures integrity of the  target data cube <code>target_dir</code> given
 in <code>config</code> or <code>kwargs</code>.</p>
+<p>Each slice item in <code>slices</code> provides a slice dataset to be appended.
+The interpretation of a given slice item depends on whether a slice source
+is configured or not (setting <code>slice_source</code>).</p>
+<p>If no slice source is configured, a slice item must be an object of type
+<code>str</code>, <code>FileObj</code>, <code>xarray.Dataset</code>, or <code>SliceSource</code>.
+If <code>str</code> or <code>FileObj</code> are used, they are interpreted as local dataset path or
+dataset URI. If a URI is used, protocol-specific parameters apply, given by the
+configuration parameter <code>slice_storage_options</code>.</p>
+<p>If a slice source is configured, a slice item represents the argument(s) passed
+to that slice source. Multiple positional arguments can be passed as <code>list</code>,
+multiple keyword arguments as <code>dict</code>, and both as a <code>tuple</code> of <code>list</code> and <code>dict</code>.</p>
 
 
 
@@ -1532,13 +1597,7 @@ in <code>config</code> or <code>kwargs</code>.</p>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>An iterable that yields slice items. A slice item is
-either a <code>str</code>, <code>FileObj</code>, <code>xarray.Dataset</code>, <code>SliceSource</code>,
-or represents arguments passed to a configured <code>slice_source</code>.
-If <code>str</code> or <code>FileObj</code> are used, they are interpreted as
-local dataset path or dataset URI.
-If a URI is used, protocol-specific parameters apply, given by
-configuration parameter <code>slice_storage_options</code>.</p>
+              <p>An iterable that yields slice items.</p>
             </div>
           </td>
           <td>
@@ -1596,10 +1655,10 @@ Can be used to pass or override configuration values in <em>config</em>.</p>
 
   
       <p>Slice source interface definition.</p>
-<p>A slice source is a disposable source for a slice dataset.</p>
+<p>A slice source is a closable source for a slice dataset.</p>
 <p>A slice source is intended to be implemented by users. An implementation
-must provide the methods [get_dataset()][zappend.slice.abc.SliceSource.get_dataset]
-and [dispose()][zappend.slice.abc.SliceSource.dispose].</p>
+must provide the methods <a class="autorefs autorefs-internal" href="#zappend.api.SliceSource.get_dataset">get_dataset()</a>
+and <a class="autorefs autorefs-internal" href="#zappend.api.SliceSource.close">close()</a>.</p>
 <p>If your slice source class requires the processing context,
 your class constructor may define a <code>ctx: Context</code> as 1st positional
 argument or as keyword argument.</p>
@@ -1622,22 +1681,38 @@ argument or as keyword argument.</p>
 
 
 
-<h3 id="zappend.api.SliceSource.dispose" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">dispose</span><span class="p">()</span></code>
-  
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
-  </span>
+<h3 id="zappend.api.SliceSource.close" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">close</span><span class="p">()</span></code>
 
 </h3>
 
 
   <div class="doc doc-contents ">
   
-      <p>Dispose this slice source.
+      <p>Close this slice source.
 This should include cleaning up of any temporary resources.</p>
 <p>This method is not intended to be called directly
 and is called exactly once for each instance of this class.</p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="zappend.api.SliceSource.dispose" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">dispose</span><span class="p">()</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Deprecated since version 0.6.0, override
+<a class="autorefs autorefs-internal" href="#zappend.api.SliceSource.close">close()</a> instead.</p>
 
   </div>
 
@@ -2168,6 +2243,29 @@ One of <code>"keep"</code>, <code>"replace"</code>, <code>"update"</code>.</p>
 
 
 
+<h3 id="zappend.api.Config.extra" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">extra</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Extra settings.
+Intended use is by a <code>slice_source</code> that expects an argument
+named <code>ctx</code> to access the extra settings and other configuration.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h3 id="zappend.api.Config.force_new" class="doc doc-heading">
           <code class="highlight language-python"><span class="n">force_new</span><span class="p">:</span> <span class="nb">bool</span></code>
   
@@ -2355,9 +2453,36 @@ in seconds, otherwise, return (None, None).</p>
 
   <div class="doc doc-contents ">
   
-      <p>The configured slice source type. If given, it must be
-a callable that returns a value of type <code>SliceItem</code> or a class that is
-derived from <code>SliceSource</code> abstract base class.</p>
+      <p>A class or function that receives a
+slice item as argument(s) and provides the slice dataset.</p>
+<ul>
+<li>If a class is given, it must be derived from <code>zappend.api.SliceSource</code>.</li>
+<li>If the function is a context manager, it must yield an <code>xarray.Dataset</code>.</li>
+<li>If a plain function is given, it must return any valid slice item type.</li>
+</ul>
+<p>Refer to the user guide for more information.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="zappend.api.Config.slice_source_kwargs" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">slice_source_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Extra keyword-arguments passed to a specified <code>slice_source</code>
+together with each slice item.</p>
   </div>
 
 </div>
@@ -3138,7 +3263,7 @@ For internal use only.</p>
 
 
 <h3 id="zappend.api.SliceItem" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">zappend</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">SliceItem</span> <span class="o">=</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">FileObj</span> <span class="o">|</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="n">SliceSource</span></code>
+          <code class="highlight language-python"><span class="n">zappend</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">SliceItem</span> <span class="o">=</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">FileObj</span> <span class="o">|</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="n">ContextManager</span><span class="p">[</span><span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">]</span> <span class="o">|</span> <span class="n">SliceSource</span></code>
   
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
@@ -3170,12 +3295,11 @@ For internal use only.</p>
 
   <div class="doc doc-contents first">
   
-      <p>This type that is either a class derived from <code>SliceSource</code> 
-or a function that returns a <code>SliceItem</code>. Both can be invoked
-with any number of positional or keyword arguments. The processing 
-context, if used, is passed either as 1st positional argument or 
-as keyword argument and must be named <code>ctx</code> and must have 
-type <code>Context</code>.</p>
+      <p>This type is either a class derived from <code>SliceSource</code> or a function that 
+returns a <code>SliceItem</code>. Both can be invoked with any number of positional or 
+keyword arguments. The processing context, if used, must be named <code>ctx</code> and 
+must be either the 1st positional argument or a keyword argument. Its type 
+is <code>Context</code>.</p>
   </div>
 
 </div>

@@ -529,8 +529,8 @@ regarding filesystems, data source types, data cube outline and encoding. </p>
   <a href="cli/"><code>zappend</code></a> command or from Python. When used from Python using the 
   <a href="api/"><code>zappend()</code></a> function, slice datasets can be passed as local file 
   paths, URIs, as datasets of type 
-  <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a>, or as custom 
-  <a href="https://bcdev.github.io/zappend/api/#class-slicesource">zappend.api.SliceSource</a> objects.</li>
+  <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a>, or as custom
+  <a href="guide#slice-sources">slice sources</a>.</li>
 </ul>
 <h2 id="how-it-works">How It Works</h2>
 <p>At its core, <code>zappend</code> calls the <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.to_zarr.html#xarray-dataset-to-zarr">to_zarr()</a> method of <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a> 
