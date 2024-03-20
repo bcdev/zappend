@@ -9,6 +9,10 @@ version from PyPI:
 pip install zappend
 ```
 
+You can also install `zappend[dev]` to also install development dependencies,
+`zappend[doc]` to also install documentation-building dependencies, or
+`zappend[dev,doc]` for both.
+
 To install the latest version for development, clone the
 [repository](https://github.com/bcdev/zappend), and with the repository’s root
 directory as the current working directory execute:
