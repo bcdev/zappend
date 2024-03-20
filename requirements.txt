@@ -1,9 +1,0 @@
-click
-dask
-fsspec
-jsonschema
-numcodecs
-numpy
-pyyaml
-xarray
-zarr
