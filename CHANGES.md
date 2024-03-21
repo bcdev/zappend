@@ -3,7 +3,7 @@
 * Fixed link to _slice sources_ in documentation main page.
 
 * Moved all project configuration to `pyproject.toml` and removed
-  `setup.cfg` and requirements files.
+  `setup.cfg` and requirements files. (#88)
 
 ## Version 0.7.0 (from 2024-03-19)
 
