@@ -3,3 +3,69 @@ requires = [
   "setuptools >= 40.9.0",
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "zappend"
+dynamic = ["version"]
+authors = [
+  {name = "Norman Fomferra", email = "norman.fomferra@brockmann-consult.de"}
+]
+description = """\
+  Tool for robustly creating and updating Zarr datacubes from smaller slices\
+  """
+keywords = [
+  "analysis ready data", "data science", "datacube", "xarray", "zarr"
+]
+readme = {file = "README.md", content-type = "text/markdown"}
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+  "click",
+  "dask",
+  "fsspec",
+  "jsonschema",
+  "numcodecs",
+  "numpy",
+  "pyyaml",
+  "xarray",
+  "zarr"
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "zappend.__version__"}
+
+[tool.setuptools.packages.find]
+exclude = [
+  "test*",
+  "doc*",
+  "site*",
+  "htmlcov*"
+]
+
+[project.scripts]
+zappend = "zappend.cli:zappend"
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-cov",
+  "black",
+  "flake8",
+  "flake8-bugbear",
+  "h5netcdf",
+  "s3fs",
+  "scipy",
+  "pyproj"
+]
+doc = [
+  "mkdocs",
+  "mkdocs-material",
+  "mkdocstrings",
+  "mkdocstrings-python"
+]
+
+[project.urls]
+Documentation = "https://bcdev.github.io/zappend/"
+Issues = "https://github.com/bcdev/zappend/issues"
+Changelog = "https://github.com/bcdev/zappend/blob/main/CHANGES.md"
+Repository = "https://github.com/bcdev/zappend"
