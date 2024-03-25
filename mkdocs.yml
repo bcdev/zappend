@@ -6,6 +6,7 @@ nav:
   - Overview: index.md
   - Getting Started: start.md
   - User Guide: guide.md
+  - How do I ...: howdoi.md
   - Configuration: config.md
   - CLI Reference: cli.md
   - API Reference: api.md
