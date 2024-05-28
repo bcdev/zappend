@@ -66,7 +66,7 @@ class CliTest(unittest.TestCase):
                 "memory://slice-3.zarr",
             ],
         )
-        self.assertEqual("", result.output)
+        self.assertEqual("3 slice datasets processed.\n", result.output)
         self.assertEqual(0, result.exit_code)
         self.assertTrue(FileObj("memory://target.zarr").exists())
 
@@ -88,7 +88,7 @@ class CliTest(unittest.TestCase):
                 "memory://slice-3.zarr",
             ],
         )
-        self.assertEqual("", result.output)
+        self.assertEqual("3 slice datasets processed.\n", result.output)
         self.assertEqual(0, result.exit_code)
         self.assertFalse(FileObj("memory://target.zarr").exists())
 

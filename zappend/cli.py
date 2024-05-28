@@ -93,13 +93,14 @@ def zappend(
 
     # noinspection PyBroadException
     try:
-        zappend(
+        count = zappend(
             slices,
             config=config,
             target_dir=target,
             force_new=force_new,
             dry_run=dry_run,
         )
+        click.echo(f"{count} slice dataset{'s' if count != 1 else ''} processed.")
     except BaseException as e:
         if traceback:
             import traceback as tb

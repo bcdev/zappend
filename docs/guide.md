@@ -74,7 +74,7 @@ zappend(os.listdir("inputs"),
         dry_run=True)
 ```
 
-This remainder of this guide explains the how to use the various `zappend` 
+The remainder of this guide explains the how to use the various `zappend` 
 [configuration](config.md) settings.
 
 !!! note
