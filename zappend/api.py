@@ -69,8 +69,9 @@ def zappend(
             Can be used to pass or override configuration values in *config*.
 
     Returns:
-        The number of slices processed. The value can be useful if
+        The number of slices processed. The value can be useful if \
         the number of items in `slices` is unknown.
+
     """
     processor = Processor(config, **kwargs)
     return processor.process_slices(slices)
