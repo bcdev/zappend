@@ -64,18 +64,6 @@ use most of the time.
 Use the [profiling](guide.md#profiling) configuration to inspect in more 
 detail which parts of the processing are the bottlenecks.
 
-## ... speed-up/parallelize datacube creation
-
-TODO
-
-## ... mitigate network data transfer becoming a bottleneck
-
-TODO
-
-## ... avoid cumulative memory usage
-
-TODO
-
 ## ... write a log file
 
 Use the following [logging](guide.md#logging) configuration:
