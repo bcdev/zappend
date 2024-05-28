@@ -177,7 +177,8 @@ class ApiTest(unittest.TestCase):
 
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset(index=3 * i) for i in range(3)]
-        zappend(slices, target_dir=target_dir, slice_source=drop_tsm)
+        count = zappend(slices, target_dir=target_dir, slice_source=drop_tsm)
+        self.assertEqual(3, count)
         ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
         self.assertEqual({"chl"}, set(ds.data_vars))
@@ -196,7 +197,8 @@ class ApiTest(unittest.TestCase):
 
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset(index=3 * i) for i in range(3)]
-        zappend(slices, target_dir=target_dir, slice_source=drop_tsm)
+        count = zappend(slices, target_dir=target_dir, slice_source=drop_tsm)
+        self.assertEqual(3, count)
         ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 50, "x": 100}, ds.sizes)
         self.assertEqual({"chl"}, set(ds.data_vars))
@@ -218,7 +220,8 @@ class ApiTest(unittest.TestCase):
 
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset(index=3 * i) for i in range(3)]
-        zappend(slices, target_dir=target_dir, slice_source=crop_ds)
+        count = zappend(slices, target_dir=target_dir, slice_source=crop_ds)
+        self.assertEqual(3, count)
         ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 40, "x": 90}, ds.sizes)
         self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
@@ -258,9 +261,10 @@ class ApiTest(unittest.TestCase):
 
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset(index=3 * i) for i in range(3)]
-        zappend(
+        count = zappend(
             slices, target_dir=target_dir, slice_source=crop_ds, variables=variables
         )
+        self.assertEqual(3, count)
         ds = xr.open_zarr(target_dir)
         self.assertEqual({"time": 9, "y": 40, "x": 90}, ds.sizes)
         self.assertEqual({"chl", "tsm"}, set(ds.data_vars))
@@ -274,7 +278,8 @@ class ApiTest(unittest.TestCase):
     def test_some_slices_with_inc_append_step(self):
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset(index=i, shape=(1, 50, 100)) for i in range(3)]
-        zappend(slices, target_dir=target_dir, append_step="1D")
+        count = zappend(slices, target_dir=target_dir, append_step="1D")
+        self.assertEqual(3, count)
         ds = xr.open_zarr(target_dir)
         np.testing.assert_array_equal(
             ds.time.values,
@@ -293,7 +298,8 @@ class ApiTest(unittest.TestCase):
         slices = [
             make_test_dataset(index=i, shape=(1, 50, 100)) for i in reversed(range(3))
         ]
-        zappend(slices, target_dir=target_dir, append_step="-1D")
+        count = zappend(slices, target_dir=target_dir, append_step="-1D")
+        self.assertEqual(3, count)
         ds = xr.open_zarr(target_dir)
         np.testing.assert_array_equal(
             ds.time.values,
@@ -416,7 +422,7 @@ class ApiTest(unittest.TestCase):
     def test_dynamic_attrs_with_one_slice(self):
         target_dir = "memory://target.zarr"
         slices = [make_test_dataset()]
-        zappend(
+        count = zappend(
             slices,
             target_dir=target_dir,
             permit_eval=True,
@@ -426,6 +432,7 @@ class ApiTest(unittest.TestCase):
                 "time_coverage_end": "{{ ds.time[-1] }}",
             },
         )
+        self.assertEqual(1, count)
         ds = xr.open_zarr(target_dir)
         self.assertEqual(
             {

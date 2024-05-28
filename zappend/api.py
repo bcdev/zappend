@@ -34,7 +34,7 @@ def zappend(
     slices: Iterable[Any],
     config: ConfigLike = None,
     **kwargs: Any,
-):
+) -> int:
     """Robustly create or update a Zarr dataset from dataset slices.
 
     The `zappend` function concatenates the dataset slices from given
@@ -67,6 +67,8 @@ def zappend(
             configurations are incremental to the previous ones.
         kwargs: Additional configuration parameters.
             Can be used to pass or override configuration values in *config*.
+    Returns:
+        The number of slices processed.
     """
     processor = Processor(config, **kwargs)
-    processor.process_slices(slices)
+    return processor.process_slices(slices)

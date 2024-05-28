@@ -58,16 +58,21 @@ class Processor:
         self._config = _config
         self._profiler = Profiler(_config.profiling)
 
-    def process_slices(self, slices: Iterable[SliceItem]):
+    def process_slices(self, slices: Iterable[SliceItem]) -> int:
         """Process the given `slices`.
         Passes each slice in `slices` to the `process_slice()` method.
 
         Args:
             slices: Iterable of slice items.
+        Returns:
+            The number of slices processed.
         """
+        slice_index = 0
         with self._profiler:
-            for slice_index, slice_item in enumerate(slices):
+            for slice_item in slices:
                 self.process_slice(slice_item, slice_index=slice_index)
+                slice_index += 1
+        return slice_index
 
     def process_slice(self, slice_item: SliceItem, slice_index: int = 0):
         """Process a single slice item *slice_item*.
