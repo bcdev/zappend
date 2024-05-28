@@ -62,13 +62,15 @@ def zappend(
     Args:
         slices: An iterable that yields slice items.
         config: Processor configuration.
-            May be a file path or URI, a `dict`, `None`, or a sequence of
+            Can be a file path or URI, a `dict`, `None`, or a sequence of
             the aforementioned. If a sequence is used, subsequent
             configurations are incremental to the previous ones.
         kwargs: Additional configuration parameters.
             Can be used to pass or override configuration values in *config*.
+
     Returns:
-        The number of slices processed.
+        The number of slices processed. The value can be useful if
+        the number of items in `slices` is unknown.
     """
     processor = Processor(config, **kwargs)
     return processor.process_slices(slices)
