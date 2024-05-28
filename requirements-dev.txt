@@ -1,9 +1,0 @@
-pytest
-pytest-cov
-black
-flake8
-flake8-bugbear
-h5netcdf
-s3fs
-scipy
-pyproj

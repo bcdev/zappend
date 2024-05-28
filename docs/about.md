@@ -27,12 +27,11 @@ corresponding issue.
 
 ## Development
 
-Setup development environment:
+To set up development environment, with repository root as current
+working directory:
 
 ```bash
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-pip install -r requirements-docs.txt
+pip install .[dev,doc]
 ```
 
 ### Testing and Coverage
@@ -56,8 +55,10 @@ black zappend
 
 `zappend` documentation is built using the [mkdocs](https://www.mkdocs.org/) tool.
 
+With repository root as current working directory:
+
 ```bash
-pip install -r requirements-doc.txt
+pip install .[doc]
 
 mkdocs build
 mkdocs serve
