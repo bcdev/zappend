@@ -10,6 +10,8 @@
 
 * Fixed link to _slice sources_ in documentation main page.
 
+* Fixed broken CI. (#97)
+
 
 ## Version 0.7.0 (from 2024-03-19)
 
