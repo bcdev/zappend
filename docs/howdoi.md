@@ -55,7 +55,7 @@ above.
 ## ... dynamically update global metadata attributes
 
 Refer to section about [target attributes](guide.md#attributes)
-in the user guide how to use dynamic attributes. 
+in the user guide. 
 
 ## ... find out what is limiting the performance
 
@@ -107,7 +107,7 @@ Use the following [logging](guide.md#logging) configuration:
 ### Error `Target parent directory does not exist`
 
 For security reasons, `zappend` does not create target directories 
-automatically. You should make sure the parent directory exist before 
+automatically. You should make sure the parent directory exists before 
 calling `zappend`.
 
 ### Error `Target is locked`
