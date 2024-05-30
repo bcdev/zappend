@@ -43,7 +43,7 @@ class ConfigValidateTest(unittest.TestCase):
         with pytest.raises(
             ValueError,
             match="Invalid configuration:"
-            " 10 is not of type 'string'"
-            " for variables.chl.dims.0",
+            " [1-3]0 is not of type 'string'"
+            " for variables.chl.dims.[0-2]",
         ):
             validate_config(config)

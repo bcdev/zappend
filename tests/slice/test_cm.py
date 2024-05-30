@@ -7,6 +7,11 @@ import shutil
 import unittest
 import warnings
 
+try:
+    # noinspection PyUnresolvedReferences
+    import h5netcdf
+except ModuleNotFoundError:
+    h5netcdf = None
 import pytest
 import xarray as xr
 
@@ -20,9 +25,6 @@ from zappend.slice.sources.persistent import PersistentSliceSource
 from zappend.slice.sources.temporary import TemporarySliceSource
 from tests.helpers import clear_memory_fs
 from tests.helpers import make_test_dataset
-
-
-# noinspection PyUnusedLocal
 
 
 # noinspection PyShadowingBuiltins,PyRedeclaration,PyMethodMayBeStatic
@@ -95,6 +97,7 @@ class OpenSliceDatasetTest(unittest.TestCase):
             # root cause. But it may be related to just the memory FS.
             warnings.warn(f"received known exception from to_netcdf(): {e}")
 
+    @unittest.skipIf(h5netcdf is None, reason="h5netcdf not installed")
     def test_slice_item_is_uri_of_local_fs_nc(self):
         engine = "h5netcdf"
         format = "NETCDF4"
