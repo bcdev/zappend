@@ -1,4 +1,4 @@
-## Version 0.7.1 (in development)
+## Version 0.7.1 (from 2024-05-30)
 
 * The function `zappend.api.zappend()` now returns the number of slices 
   processed. (#93)
