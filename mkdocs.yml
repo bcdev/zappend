@@ -1,57 +1,58 @@
 site_name: zappend
+repo_url: https://github.com/bcdev/zappend
+repo_name: bcdev/zappend
 
 copyright: Copyright &copy; 2024 Brockmann Consult
 
 nav:
-  - Overview: index.md
-  - Getting Started: start.md
-  - User Guide: guide.md
-  - How do I ...: howdoi.md
-  - Configuration: config.md
-  - CLI Reference: cli.md
-  - API Reference: api.md
-  - About: about.md
+    - Overview: index.md
+    - Getting Started: start.md
+    - User Guide: guide.md
+    - How do I ...: howdoi.md
+    - Configuration: config.md
+    - CLI Reference: cli.md
+    - API Reference: api.md
+    - About: about.md
 
 theme:
-  name: material
-  logo: assets/logo.png
-  favicon: assets/logo-small.png
-  palette:
-    # Palette toggle for light mode
-    - scheme: default
-      primary: blue grey
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    # Palette toggle for dark mode
-    - scheme: slate
-      primary: blue grey
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
+    name: material
+    logo: assets/logo.png
+    favicon: assets/logo-small.png
+    palette:
+        # Palette toggle for light mode
+        - scheme: default
+          primary: blue grey
+          toggle:
+              icon: material/brightness-7
+              name: Switch to dark mode
+        # Palette toggle for dark mode
+        - scheme: slate
+          primary: blue grey
+          toggle:
+              icon: material/brightness-4
+              name: Switch to light mode
 
 markdown_extensions:
-  - admonition
-  - pymdownx.details
-  - pymdownx.superfences
+    - admonition
+    - pymdownx.details
+    - pymdownx.superfences
 
 extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/bcdev/zappend
-    - icon: fontawesome/brands/python
-      link: https://pypi.org/project/zappend/
+    social:
+        - icon: fontawesome/brands/github
+          link: https://github.com/bcdev/zappend
+        - icon: fontawesome/brands/python
+          link: https://pypi.org/project/zappend/
 
 plugins:
-  - search
-  - autorefs
-  - mkdocstrings:
-      handlers:
-        python:
-          options:
-            show_root_toc_entry: false
-            show_root_heading: false
-            show_source: false
-            heading_level: 3
-            annotations_path: brief
-
+    - search
+    - autorefs
+    - mkdocstrings:
+          handlers:
+              python:
+                  options:
+                      show_root_toc_entry: false
+                      show_root_heading: false
+                      show_source: false
+                      heading_level: 3
+                      annotations_path: brief
