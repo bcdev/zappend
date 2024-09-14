@@ -29,7 +29,11 @@ checklist are addressed in your PR.
   Use `pytest --cov=zappend --cov-report=html` to verify.
 * If your change affects the current project documentation,
   please adjust it and include the change in the PR.
-  Run `mkdocs serve` to verify.
+  Run `mkdocs serve` to verify. 
+* The configuration reference `docs/config.md` is generated.
+  Therefore, if you modify the `zappend` configuration, 
+  regenerate docs by `zappend --help-config md > docs/config.md`
+  and verify the output.
 
 ## Code style
 
