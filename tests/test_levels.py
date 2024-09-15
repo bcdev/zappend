@@ -1,9 +1,11 @@
 # Copyright © 2024 Norman Fomferra and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
+
 import json
 import unittest
 
+import xarray as xr
 
 from zappend.fsutil import FileObj
 from zappend.levels import write_levels
@@ -68,6 +70,14 @@ class WriteLevelsTest(unittest.TestCase):
             levels_info,
         )
 
-        # ds = xr.open_zarr(target_dir.uri + "/0.zarr")
-        # self.assertEqual({"time": 1, "y": 10, "x": 20}, ds.sizes)
-        # self.assertEqual({"x", "y", "time", "chl", "tsm"}, set(ds.variables))
+        ds0 = xr.open_zarr(target_dir.uri + f"/0.zarr")
+        self.assertEqual({"time": 3, "y": 1024, "x": 2048}, ds0.sizes)
+
+        ds1 = xr.open_zarr(target_dir.uri + f"/1.zarr")
+        self.assertEqual({"time": 3, "y": 512, "x": 1024}, ds1.sizes)
+
+        ds2 = xr.open_zarr(target_dir.uri + f"/2.zarr")
+        self.assertEqual({"time": 3, "y": 256, "x": 512}, ds2.sizes)
+
+        ds3 = xr.open_zarr(target_dir.uri + f"/3.zarr")
+        self.assertEqual({"time": 3, "y": 128, "x": 256}, ds3.sizes)
