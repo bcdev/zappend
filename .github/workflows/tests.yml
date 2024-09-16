@@ -36,7 +36,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest --cov=zappend
+        pytest --cov=zappend --cov-exclude=zappend.levels
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       env:
