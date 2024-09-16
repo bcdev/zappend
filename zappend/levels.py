@@ -153,6 +153,7 @@ def write_levels(
         variables=zappend_config.pop("variables", None),
     )
 
+    target_fs.mkdirs(target_root, exist_ok=True)
     with target_fs.open(f"{target_root}/.zlevels", "wt") as fp:
         levels_data: dict[str, Any] = dict(
             version="1.0",
@@ -175,7 +176,8 @@ def write_levels(
 
     subsample_dataset_kwargs = dict(xy_dim_names=xy_dim_names, agg_methods=agg_methods)
 
-    for slice_index in range(append_coord.size):
+    num_slices = append_coord.size
+    for slice_index in range(num_slices):
         slice_ds_indexer = {append_dim: slice(slice_index, slice_index + 1)}
         slice_ds = source_ds.isel(slice_ds_indexer)
 
@@ -212,8 +214,18 @@ def write_levels(
                     variables=variables,
                     **zappend_config,
                 )
+                steps_total = num_slices * num_levels
+                percent_total = (
+                    100 * ((slice_index * num_levels) + level_index + 1) / steps_total
+                )
+                logger.info(
+                    f"Slice {level_slice_path} written,"
+                    f" {slice_index + 1}/{num_slices} slices,"
+                    f" {level_index + 1}/{num_levels} levels,"
+                    f" {percent_total:.2f}% total"
+                )
 
-        logger.info(f"done writing {target_path}")
+        logger.info(f"Done appending {num_slices} slices to {target_path}")
 
 
 def get_variables_config(
@@ -236,6 +248,10 @@ def get_variables_config(
     for var_name, var in dataset.variables.items():
         var_name = str(var_name)
         var_config = dict(var_configs.get(var_name, {}))
+
+        if "dims" not in var_config and var.dims:
+            var_config["dims"] = [str(dim) for dim in var.dims]
+
         var_encoding = dict(var_config.get("encoding", {}))
         var_chunks = var_encoding.get("chunks")
         if "chunks" not in var_encoding and var.dims:
@@ -245,5 +261,6 @@ def get_variables_config(
                 var_chunks = [chunk_sizes.get(dim) for dim in var.dims]
         var_encoding["chunks"] = var_chunks
         var_config["encoding"] = var_encoding
+
         var_configs[var_name] = var_config
     return var_configs

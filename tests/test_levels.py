@@ -14,8 +14,9 @@ from .helpers import clear_memory_fs
 from .helpers import make_test_dataset
 
 try:
+    # noinspection PyUnresolvedReferences
     import xcube
-except:
+except ImportError:
     xcube = None
 
 
@@ -25,11 +26,17 @@ class GetVariablesConfigTest(unittest.TestCase):
         variables = get_variables_config(dataset, dict(x=512, y=256, time=1))
         self.assertEqual(
             {
-                "x": {"encoding": {"chunks": None}},
-                "y": {"encoding": {"chunks": None}},
-                "time": {"encoding": {"chunks": None}},
-                "chl": {"encoding": {"chunks": [1, 256, 512]}},
-                "tsm": {"encoding": {"chunks": [1, 256, 512]}},
+                "x": {"dims": ["x"], "encoding": {"chunks": None}},
+                "y": {"dims": ["y"], "encoding": {"chunks": None}},
+                "time": {"dims": ["time"], "encoding": {"chunks": None}},
+                "chl": {
+                    "dims": ["time", "y", "x"],
+                    "encoding": {"chunks": [1, 256, 512]},
+                },
+                "tsm": {
+                    "dims": ["time", "y", "x"],
+                    "encoding": {"chunks": [1, 256, 512]},
+                },
             },
             variables,
         )
@@ -47,11 +54,17 @@ class GetVariablesConfigTest(unittest.TestCase):
         )
         self.assertEqual(
             {
-                "x": {"encoding": {"chunks": None}},
-                "y": {"encoding": {"chunks": None}},
-                "time": {"encoding": {"chunks": [3]}},
-                "chl": {"encoding": {"chunks": [3, 100, 100]}},
-                "tsm": {"encoding": {"chunks": [1, 256, 512], "dtype": "uint16"}},
+                "x": {"dims": ["x"], "encoding": {"chunks": None}},
+                "y": {"dims": ["y"], "encoding": {"chunks": None}},
+                "time": {"dims": ["time"], "encoding": {"chunks": [3]}},
+                "chl": {
+                    "dims": ["time", "y", "x"],
+                    "encoding": {"chunks": [3, 100, 100]},
+                },
+                "tsm": {
+                    "dims": ["time", "y", "x"],
+                    "encoding": {"chunks": [1, 256, 512], "dtype": "uint16"},
+                },
             },
             variables,
         )
