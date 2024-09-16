@@ -20,7 +20,7 @@ except:
 
 
 class GetVariablesConfigTest(unittest.TestCase):
-    def test_it(self):
+    def test_no_variables_given(self):
         dataset = make_test_dataset()
         variables = get_variables_config(dataset, dict(x=512, y=256, time=1))
         self.assertEqual(
@@ -34,13 +34,35 @@ class GetVariablesConfigTest(unittest.TestCase):
             variables,
         )
 
+    def test_variables_given(self):
+        dataset = make_test_dataset()
+        variables = get_variables_config(
+            dataset,
+            dict(x=512, y=256, time=1),
+            variables={
+                "time": {"encoding": {"chunks": [3]}},
+                "chl": {"encoding": {"chunks": [3, 100, 100]}},
+                "tsm": {"encoding": {"dtype": "uint16"}},
+            },
+        )
+        self.assertEqual(
+            {
+                "x": {"encoding": {"chunks": None}},
+                "y": {"encoding": {"chunks": None}},
+                "time": {"encoding": {"chunks": [3]}},
+                "chl": {"encoding": {"chunks": [3, 100, 100]}},
+                "tsm": {"encoding": {"chunks": [1, 256, 512], "dtype": "uint16"}},
+            },
+            variables,
+        )
+
 
 @unittest.skipIf(xcube is None, reason="xcube is not installed")
 class WriteLevelsTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
 
-    def test_it(self):
+    def test_default_x_y_with_crs(self):
         source_path = "memory://source.zarr"
         make_test_dataset(
             uri=source_path,
@@ -70,14 +92,140 @@ class WriteLevelsTest(unittest.TestCase):
             levels_info,
         )
 
-        ds0 = xr.open_zarr(target_dir.uri + f"/0.zarr")
-        self.assertEqual({"time": 3, "y": 1024, "x": 2048}, ds0.sizes)
+        self.assert_level(target_dir.uri + "/0.zarr", 0, has_crs=True)
+        self.assert_level(target_dir.uri + "/1.zarr", 1, has_crs=True)
+        self.assert_level(target_dir.uri + "/2.zarr", 2, has_crs=True)
+        self.assert_level(target_dir.uri + "/3.zarr", 3, has_crs=True)
 
-        ds1 = xr.open_zarr(target_dir.uri + f"/1.zarr")
-        self.assertEqual({"time": 3, "y": 512, "x": 1024}, ds1.sizes)
+    def test_default_lon_lat_no_crs(self):
+        source_path = "memory://source.zarr"
+        make_test_dataset(
+            uri=source_path,
+            dims=("time", "lat", "lon"),
+            shape=(3, 1024, 2048),
+            chunks=(1, 128, 256),
+        )
 
-        ds2 = xr.open_zarr(target_dir.uri + f"/2.zarr")
-        self.assertEqual({"time": 3, "y": 256, "x": 512}, ds2.sizes)
+        target_dir = FileObj("memory://target.levels")
+        self.assertFalse(target_dir.exists())
 
-        ds3 = xr.open_zarr(target_dir.uri + f"/3.zarr")
-        self.assertEqual({"time": 3, "y": 128, "x": 256}, ds3.sizes)
+        write_levels(source_path=source_path, target_path=target_dir.uri)
+
+        self.assertTrue(target_dir.exists())
+
+        levels_file = target_dir.for_path(".zlevels")
+        self.assertTrue(levels_file.exists())
+        levels_info = json.loads(levels_file.read())
+        self.assertEqual(
+            {
+                "version": "1.0",
+                "num_levels": 4,
+                "agg_methods": {"chl": "mean", "tsm": "mean"},
+                "use_saved_levels": False,
+            },
+            levels_info,
+        )
+
+        xy_dims = "lon", "lat"
+        self.assert_level(target_dir.uri + "/0.zarr", 0, xy_dims=xy_dims)
+        self.assert_level(target_dir.uri + "/1.zarr", 1, xy_dims=xy_dims)
+        self.assert_level(target_dir.uri + "/2.zarr", 2, xy_dims=xy_dims)
+        self.assert_level(target_dir.uri + "/3.zarr", 3, xy_dims=xy_dims)
+
+    def test_link_level_zero(self):
+        source_dir = FileObj("memory://source.zarr")
+        make_test_dataset(
+            uri=source_dir.uri,
+            dims=("time", "y", "x"),
+            shape=(3, 1024, 2048),
+            chunks=(1, 128, 256),
+            crs="EPSG:4326",
+        )
+
+        target_dir = FileObj("memory://target.levels")
+        self.assertFalse(target_dir.exists())
+
+        write_levels(
+            source_path=source_dir.uri,
+            target_path=target_dir.uri,
+            link_level_zero=True,
+        )
+
+        self.assertTrue(target_dir.exists())
+
+        levels_file = target_dir.for_path(".zlevels")
+        self.assertTrue(levels_file.exists())
+        levels_info = json.loads(levels_file.read())
+        self.assertEqual(
+            {
+                "version": "1.0",
+                "num_levels": 4,
+                "agg_methods": {"chl": "mean", "tsm": "mean"},
+                "use_saved_levels": False,
+            },
+            levels_info,
+        )
+
+        level_zero_file = target_dir.for_path("0.link")
+        self.assertTrue(level_zero_file.exists())
+        self.assertEqual(b"../source.zarr", level_zero_file.read())
+        self.assert_level(target_dir.uri + "/1.zarr", 1, has_crs=True)
+        self.assert_level(target_dir.uri + "/2.zarr", 2, has_crs=True)
+        self.assert_level(target_dir.uri + "/3.zarr", 3, has_crs=True)
+
+    def test_link_level_zero_use_saved_levels(self):
+        source_dir = FileObj("memory://source.zarr")
+        make_test_dataset(
+            uri=source_dir.uri,
+            dims=("time", "lat", "lon"),
+            shape=(3, 1024, 2048),
+            chunks=(1, 128, 256),
+        )
+
+        target_dir = FileObj("memory://target.levels")
+        self.assertFalse(target_dir.exists())
+
+        write_levels(
+            source_path=source_dir.uri,
+            target_path=target_dir.uri,
+            link_level_zero=True,
+            use_saved_levels=True,
+        )
+
+        self.assertTrue(target_dir.exists())
+
+        levels_file = target_dir.for_path(".zlevels")
+        self.assertTrue(levels_file.exists())
+        levels_info = json.loads(levels_file.read())
+        self.assertEqual(
+            {
+                "version": "1.0",
+                "num_levels": 4,
+                "agg_methods": {"chl": "mean", "tsm": "mean"},
+                "use_saved_levels": True,
+            },
+            levels_info,
+        )
+
+        xy_dims = "lon", "lat"
+        level_zero_file = target_dir.for_path("0.link")
+        self.assertTrue(level_zero_file.exists())
+        self.assertEqual(b"../source.zarr", level_zero_file.read())
+        self.assert_level(target_dir.uri + "/1.zarr", 1, xy_dims=xy_dims)
+        self.assert_level(target_dir.uri + "/2.zarr", 2, xy_dims=xy_dims)
+        self.assert_level(target_dir.uri + "/3.zarr", 3, xy_dims=xy_dims)
+
+    def assert_level(self, uri: str, level: int, xy_dims=("x", "y"), has_crs=False):
+        x_dim, y_dim = xy_dims
+        dataset = xr.open_zarr(uri)
+        z = 2**level
+        f = 2 ** (3 - level)
+        self.assertEqual({"time": 3, y_dim: 1024 // z, x_dim: 2048 // z}, dataset.sizes)
+        self.assertEqual(
+            {"time": 3 * (1,), y_dim: f * (128,), x_dim: f * (256,)}, dataset.chunksizes
+        )
+        self.assertEqual({x_dim, y_dim, "time"}, set(dataset.coords))
+        if has_crs:
+            self.assertEqual({"chl", "tsm", "crs"}, set(dataset.data_vars))
+        else:
+            self.assertEqual({"chl", "tsm"}, set(dataset.data_vars))
