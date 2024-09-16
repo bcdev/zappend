@@ -45,3 +45,9 @@ All described objects can be imported from the `zappend.api` module.
 ::: zappend.api.ConfigLike
     options:
         show_root_heading: true
+
+## Function `write_levels()` for `xcube` 
+
+::: zappend.levels.write_levels
+    options:
+        show_root_heading: true

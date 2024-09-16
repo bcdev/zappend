@@ -20,26 +20,71 @@ def write_levels(
     source_storage_options: dict[str, Any] | None = None,
     target_path: str | None = None,
     num_levels: int | None = None,
-    agg_methods: dict[str, Any] | None = None,
+    tile_size: tuple[int, int] | None = None,
+    agg_methods: str | dict[str, Any] | None = None,
     use_saved_levels: bool = False,
     link_level_zero: bool = False,
     xy_dim_names: tuple[str, str] | None = None,
-    tile_size: tuple[int, int] | None = None,
     **zappend_config,
 ):
-    """Writes a dataset at `source_path` to a xcube multi-level
-    dataset at `target_path`.
+    """Writes a dataset at `source_path` to `target_path` using the
+    [multi-level dataset format](https://xcube.readthedocs.io/en/latest/mldatasets.html)
+    as specified by
+    [xcube](https://github.com/xcube-dev/xcube).
 
     The source dataset is opened and subdivided into dataset slices
-    along the append dimension given by `append_dim`, which defaults to `"time"`.
-    The slice size in the append dimension is one and also the target dataset's
-    chunk size in the append dimension will be one.
+    along the append dimension given by `append_dim`, which defaults
+    to `"time"`. The slice size in the append dimension is one.
+    Each slice is downsampled to the number of levels and each slice level
+    dataset is created/appended the target dataset's individual level
+    datasets.
+
+    The target dataset's chunk size in the spatial x- and y-dimensions will
+    be the same as the specified (or derived) tile size.
+    The append dimension will be one. The chunking will be reflected as the
+    `variables` configuration parameter passed to each `zappend()` call.
+    If configuration parameter `variables` is also given as part of
+    `zappend_config`, it will be merged with the chunk definitions.
+
+    Important: This function requires the `xcube` package to be installed.
 
     Args:
         source_path: The source dataset path.
         source_storage_options: Storage options for the source
             dataset's filesystem.
-        target_path:
+        target_path: The source multi-level dataset path.
+            Filename extension should be `.levels`, by convention.
+            If not given, `target_dir` should be passed as part of the
+            `zappend_config`. (The name `target_path` is used here for
+            consistency with `source_path`.)
+        num_levels: Optional number of levels.
+            If not given, a reasonable number of levels is computed
+            from `tile_size`.
+        tile_size: Optional tile size in the x- and y-dimension in pixels.
+            If not given, the tile size is computed from the source
+            dataset's chunk sizes in the x- and y-dimensions.
+        xy_dim_names:
+            Optional dimension names that identify the x- and y-dimensions.
+            If not given, derived from the source dataset's grid mapping,
+            if any.
+        agg_methods: An aggregation method for all data variables or a
+            mapping that provides the aggregation method for a variable
+            name. Possible aggregation methods are
+            `"first"`, `"min"`, `"max"`, `"mean"`, `"median"`.
+        use_saved_levels: Whether a given, already written resolution level
+            serves as input to aggregation for the next level. If `False`,
+            the default, each resolution level other than zero is computed
+            from the source dataset. If `True`, the function may perform
+            significantly faster, but be aware that the aggregation
+            methods `"first"` and `"median"` will produce inaccurate results.
+        link_level_zero: Whether to _not_ write the level zero of the target
+            multi-level dataset and link it instead. In this case, a link
+            file `{target_path}/0.link` will be written.
+            If `False`, the default, a level dataset `{target_path}/0.zarr`
+            will be written instead.
+        zappend_config:
+            Configuration passed to the `zappend()` call for each
+            slice in the append dimension.
     """
     from xcube.core.tilingscheme import get_num_levels
     from xcube.core.gridmapping import GridMapping
