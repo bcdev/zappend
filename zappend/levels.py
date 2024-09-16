@@ -27,7 +27,20 @@ def write_levels(
     tile_size: tuple[int, int] | None = None,
     **zappend_config,
 ):
-    """TODO - document me"""
+    """Writes a dataset at `source_path` to a xcube multi-level
+    dataset at `target_path`.
+
+    The source dataset is opened and subdivided into dataset slices
+    along the append dimension given by `append_dim`, which defaults to `"time"`.
+    The slice size in the append dimension is one and also the target dataset's
+    chunk size in the append dimension will be one.
+
+    Args:
+        source_path: The source dataset path.
+        source_storage_options: Storage options for the source
+            dataset's filesystem.
+        target_path:
+    """
     from xcube.core.tilingscheme import get_num_levels
     from xcube.core.gridmapping import GridMapping
     from xcube.core.subsampling import get_dataset_agg_methods
