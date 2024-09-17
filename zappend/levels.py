@@ -60,7 +60,7 @@ def write_levels(
         source_path: The source dataset path.
         source_storage_options: Storage options for the source
             dataset's filesystem.
-        target_path: The source multi-level dataset path.
+        target_path: The target multi-level dataset path.
             Filename extension should be `.levels`, by convention.
             If not given, `target_dir` should be passed as part of the
             `zappend_config`. (The name `target_path` is used here for
