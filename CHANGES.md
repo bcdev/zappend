@@ -1,3 +1,19 @@
+## Version 0.8.0 (in development)
+
+* Added experimental function `zappend.levels.write_levels()` that generates
+  datasets using the
+  [multi-level dataset format](https://xcube.readthedocs.io/en/latest/mldatasets.html)
+  as specified by
+  [xcube](https://github.com/xcube-dev/xcube).
+  It resembles the `store.write_data(cube, "<name>.levels", ...)` method
+  provided by the xcube filesystem data stores ("file", "s3", "memory", etc.).
+  The zappend version may be used for potentially very large datasets in terms 
+  of dimension sizes or for datasets with very large number of chunks.
+  It is considerably slower than the xcube version (which basically uses
+  `xarray.to_zarr()` for each resolution level), but should run robustly with 
+  stable memory consumption. 
+  The function requires `xcube` package to be installed. (#19)
+
 ## Version 0.7.1 (from 2024-05-30)
 
 * The function `zappend.api.zappend()` now returns the number of slices 

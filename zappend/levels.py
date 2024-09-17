@@ -32,7 +32,15 @@ def write_levels(
     as specified by
     [xcube](https://github.com/xcube-dev/xcube).
 
-    The source dataset is opened and subdivided into dataset slices
+    It resembles the `store.write_data(cube, "<name>.levels", ...)` method
+    provided by the xcube filesystem data stores ("file", "s3", "memory", etc.).
+    The zappend version may be used for potentially very large datasets in terms
+    of dimension sizes or for datasets with very large number of chunks.
+    It is considerably slower than the xcube version (which basically uses
+    `xarray.to_zarr()` for each resolution level), but should run robustly with
+    stable memory consumption.
+
+    The function opens the source dataset and subdivides it into dataset slices
     along the append dimension given by `append_dim`, which defaults
     to `"time"`. The slice size in the append dimension is one.
     Each slice is downsampled to the number of levels and each slice level
