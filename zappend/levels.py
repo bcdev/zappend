@@ -4,6 +4,7 @@
 
 import json
 import logging
+import warnings
 from typing import Any, Hashable
 
 import xarray as xr
@@ -91,19 +92,29 @@ def write_levels(
             If `False`, the default, a level dataset `{target_path}/0.zarr`
             will be written instead.
         zappend_config:
-            Configuration passed to the `zappend()` call for each
-            slice in the append dimension.
+            Configuration passed to zappend as `zappend(slice, **zappend_config)`
+            for each slice in the append dimension. The zappend `config`
+            parameter is not supported.
     """
-    from xcube.core.tilingscheme import get_num_levels
     from xcube.core.gridmapping import GridMapping
     from xcube.core.subsampling import get_dataset_agg_methods
     from xcube.core.subsampling import subsample_dataset
+    from xcube.core.tilingscheme import get_num_levels
     from xcube.util.fspath import get_fs_path_class
 
+    dry_run = zappend_config.pop("dry_run", False)
+
+    if dry_run and use_saved_levels:
+        warnings.warn(f"'use_saved_levels' argument is not applicable if dry_run=True")
+        use_saved_levels = False
+    config = zappend_config.pop("config", None)
+    if config is not None:
+        raise TypeError("write_levels() got an unexpected keyword argument 'config'")
+
     target_dir = zappend_config.pop("target_dir", None)
-    if not target_dir and not target_path:
-        raise ValueError("either 'target_dir' or 'target_path' can be given, not both")
-    if target_dir and target_path and target_dir != target_path:
+    if not target_path and not target_dir:
+        raise ValueError("missing 'target_path' argument")
+    if target_dir and target_path:
         raise ValueError("either 'target_dir' or 'target_path' can be given, not both")
     target_path = target_path or target_dir
     target_storage_options = zappend_config.pop(
@@ -161,17 +172,24 @@ def write_levels(
         variables=zappend_config.pop("variables", None),
     )
 
-    target_fs.mkdirs(target_root, exist_ok=True)
-    with target_fs.open(f"{target_root}/.zlevels", "wt") as fp:
-        levels_data: dict[str, Any] = dict(
-            version="1.0",
-            num_levels=num_levels,
-            agg_methods=agg_methods,
-            use_saved_levels=use_saved_levels,
-        )
-        json.dump(levels_data, fp, indent=2)
+    if target_fs.exists(target_root):
+        if target_fs.exists(target_root):
+            logger.warning(f"Permanently deleting {target_dir}")
+            if not dry_run:
+                target_fs.rm(target_root, recursive=True)
 
-    if link_level_zero:
+    if not dry_run:
+        target_fs.mkdirs(target_root, exist_ok=True)
+        with target_fs.open(f"{target_root}/.zlevels", "wt") as fp:
+            levels_data: dict[str, Any] = dict(
+                version="1.0",
+                num_levels=num_levels,
+                agg_methods=agg_methods,
+                use_saved_levels=use_saved_levels,
+            )
+            json.dump(levels_data, fp, indent=2)
+
+    if link_level_zero and not dry_run:
         path_class = get_fs_path_class(target_fs)
         rel_source_path = (
             "../"
@@ -218,6 +236,7 @@ def write_levels(
                     target_dir=level_slice_path,
                     target_storage_options=target_storage_options,
                     append_dim=append_dim,
+                    dry_run=dry_run,
                     force_new=force_new if slice_index == 0 else False,
                     variables=variables,
                     **zappend_config,
@@ -227,13 +246,13 @@ def write_levels(
                     100 * ((slice_index * num_levels) + level_index + 1) / steps_total
                 )
                 logger.info(
-                    f"Slice {level_slice_path} written,"
+                    f"Level slice written to {level_slice_path},"
                     f" {slice_index + 1}/{num_slices} slices,"
                     f" {level_index + 1}/{num_levels} levels,"
                     f" {percent_total:.2f}% total"
                 )
-
-        logger.info(f"Done appending {num_slices} slices to {target_path}")
+        logger.info(f"Done appending {num_levels} level slices to {target_path}")
+    logger.info(f"Done appending {num_slices} slices to {target_path}")
 
 
 def get_variables_config(

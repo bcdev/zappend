@@ -5,6 +5,7 @@
 import json
 import unittest
 
+import pytest
 import xarray as xr
 
 from zappend.fsutil import FileObj
@@ -74,6 +75,59 @@ class GetVariablesConfigTest(unittest.TestCase):
 class WriteLevelsTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
+
+    # noinspection PyMethodMayBeStatic
+    def test_args_validation(self):
+        source_path = "memory://source.zarr"
+        target_path = "memory://target.levels"
+
+        make_test_dataset(
+            uri=source_path,
+            dims=("time", "lat", "lon"),
+            shape=(3, 1024, 2048),
+            chunks=(1, 128, 256),
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="missing 'target_path' argument",
+        ):
+            write_levels(source_path=source_path)
+
+        with pytest.raises(
+            ValueError,
+            match="either 'target_dir' or 'target_path' can be given, not both",
+        ):
+            write_levels(
+                source_path=source_path,
+                target_path=target_path,
+                target_dir=target_path,
+            )
+
+        with pytest.raises(
+            TypeError,
+            match="write_levels\\(\\) got an unexpected keyword argument 'config'",
+        ):
+            write_levels(
+                source_path=source_path,
+                target_path=target_path,
+                config={"dry_run": True},
+            )
+
+        with pytest.raises(
+            FileNotFoundError,
+            match="Target parent directory does not exist: /target.levels",
+        ):
+            with pytest.warns(
+                UserWarning,
+                match="'use_saved_levels' argument is not applicable if dry_run=True",
+            ):
+                write_levels(
+                    source_path=source_path,
+                    target_path=target_path,
+                    dry_run=True,
+                    use_saved_levels=True,
+                )
 
     def test_default_x_y_with_crs(self):
         source_path = "memory://source.zarr"
