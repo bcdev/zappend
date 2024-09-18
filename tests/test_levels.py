@@ -129,6 +129,26 @@ class WriteLevelsTest(unittest.TestCase):
                     use_saved_levels=True,
                 )
 
+    def test_force_new(self):
+        source_path = "memory://source.zarr"
+        make_test_dataset(
+            uri=source_path,
+            dims=("time", "lat", "lon"),
+            shape=(3, 1024, 2048),
+            chunks=(1, 128, 256),
+        )
+
+        target_dir = FileObj("memory://target.levels")
+        self.assertFalse(target_dir.exists())
+        target_dir.mkdir()
+        (target_dir / "0.zarr").mkdir()
+        (target_dir / "0.zarr" / ".zgroup").write("{}")
+        self.assertTrue(target_dir.exists())
+
+        write_levels(source_path=source_path, target_path=target_dir.uri, force_new=True)
+
+        self.assertTrue(target_dir.exists())
+
     def test_default_x_y_with_crs(self):
         source_path = "memory://source.zarr"
         make_test_dataset(

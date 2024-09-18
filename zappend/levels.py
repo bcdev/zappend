@@ -172,14 +172,19 @@ def write_levels(
         variables=zappend_config.pop("variables", None),
     )
 
-    if target_fs.exists(target_root):
-        if target_fs.exists(target_root):
-            logger.warning(f"Permanently deleting {target_dir}")
+    target_exists = target_fs.exists(target_root)
+    if target_exists:
+        logger.info(f"Target directory {target_path} exists")
+        if force_new:
+            logger.warning(f"Permanently deleting {target_path} (no rollback)")
             if not dry_run:
                 target_fs.rm(target_root, recursive=True)
+    else:
+        logger.info(f"Creating target directory {target_path}")
+        if not dry_run:
+            target_fs.mkdirs(target_root, exist_ok=True)
 
     if not dry_run:
-        target_fs.mkdirs(target_root, exist_ok=True)
         with target_fs.open(f"{target_root}/.zlevels", "wt") as fp:
             levels_data: dict[str, Any] = dict(
                 version="1.0",
@@ -189,7 +194,7 @@ def write_levels(
             )
             json.dump(levels_data, fp, indent=2)
 
-    if link_level_zero and not dry_run:
+    if (not dry_run) and link_level_zero:
         path_class = get_fs_path_class(target_fs)
         rel_source_path = (
             "../"
