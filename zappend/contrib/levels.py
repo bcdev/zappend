@@ -17,8 +17,11 @@ from zappend.api import zappend
 
 
 def write_levels(
-    source_path: str,
+    *,
+    source_ds: xr.Dataset | None = None,
+    source_path: str | None = None,
     source_storage_options: dict[str, Any] | None = None,
+    source_append_offset: int | None = None,
     target_path: str | None = None,
     num_levels: int | None = None,
     tile_size: tuple[int, int] | None = None,
@@ -28,12 +31,13 @@ def write_levels(
     xy_dim_names: tuple[str, str] | None = None,
     **zappend_config,
 ):
-    """Writes a dataset at `source_path` to `target_path` using the
+    """Writes a dataset given by `source_ds` or `source_path` to `target_path`
+    using the
     [multi-level dataset format](https://xcube.readthedocs.io/en/latest/mldatasets.html)
     as specified by
     [xcube](https://github.com/xcube-dev/xcube).
 
-    It resembles the `store.write_data(cube, "<name>.levels", ...)` method
+    It resembles the `store.write_data(dataset, "<name>.levels", ...)` method
     provided by the xcube filesystem data stores ("file", "s3", "memory", etc.).
     The zappend version may be used for potentially very large datasets in terms
     of dimension sizes or for datasets with very large number of chunks.
@@ -58,9 +62,17 @@ def write_levels(
     Important: This function requires the `xcube` package to be installed.
 
     Args:
+        source_ds: The source dataset.
+            Must be given in case `source_path` is not given.
         source_path: The source dataset path.
+            If `source_ds` is provided and `link_level_zero` is true,
+            then `source_path` must also be provided in order
+            to determine the path of the level zero source.
         source_storage_options: Storage options for the source
             dataset's filesystem.
+        source_append_offset: Optional offset in the append dimension.
+            Only slices with indexes greater or equal the offset are
+            appended.
         target_path: The target multi-level dataset path.
             Filename extension should be `.levels`, by convention.
             If not given, `target_dir` should be passed as part of the
@@ -102,14 +114,15 @@ def write_levels(
     from xcube.core.tilingscheme import get_num_levels
     from xcube.util.fspath import get_fs_path_class
 
+    config = zappend_config.pop("config", None)
+    if config is not None:
+        raise TypeError("write_levels() got an unexpected keyword argument 'config'")
+
     dry_run = zappend_config.pop("dry_run", False)
 
     if dry_run and use_saved_levels:
         warnings.warn(f"'use_saved_levels' argument is not applicable if dry_run=True")
         use_saved_levels = False
-    config = zappend_config.pop("config", None)
-    if config is not None:
-        raise TypeError("write_levels() got an unexpected keyword argument 'config'")
 
     target_dir = zappend_config.pop("target_dir", None)
     if not target_path and not target_dir:
@@ -124,16 +137,49 @@ def write_levels(
         target_path, **target_storage_options
     )
 
-    source_fs, source_root = fsspec.core.url_to_fs(
-        source_path,
-        **(
-            source_storage_options
-            if source_storage_options is not None
-            else target_storage_options
-        ),
-    )
-    source_store = source_fs.get_mapper(root=source_root)
-    source_ds = xr.open_zarr(source_store)
+    force_new = zappend_config.pop("force_new", None)
+
+    if source_path is not None:
+        source_fs, source_root = fsspec.core.url_to_fs(
+            source_path,
+            **(
+                source_storage_options
+                if source_storage_options is not None
+                else target_storage_options
+            ),
+        )
+        if source_ds is None:
+            source_store = source_fs.get_mapper(root=source_root)
+            source_ds = xr.open_zarr(source_store)
+    else:
+        source_root = None
+        if not isinstance(source_ds, xr.Dataset):
+            raise TypeError(
+                f"'source_ds' argument must be of type 'xarray.Dataset',"
+                f" but was {type(source_ds).__name__!r}"
+            )
+        if link_level_zero:
+            raise ValueError(
+                f"'source_path' argument must be provided"
+                f" if 'link_level_zero' is used"
+            )
+
+    append_dim = zappend_config.pop("append_dim", "time")
+    append_coord = source_ds.coords[append_dim]
+
+    if source_append_offset is None:
+        source_append_offset = 0
+    elif not isinstance(source_append_offset, int):
+        raise TypeError(
+            f"'source_append_offset' argument must be of type 'int',"
+            f" but was {type(source_append_offset).__name__!r}"
+        )
+    if not (0 <= source_append_offset < append_coord.size):
+        raise ValueError(
+            f"'source_append_offset' argument"
+            f" must be >=0 and <{append_coord.size},"
+            f" but was {source_append_offset}"
+        )
 
     logger = logging.getLogger("zappend")
 
@@ -156,11 +202,6 @@ def write_levels(
         xy_dim_names=xy_dim_names,
         agg_methods=agg_methods,
     )
-
-    force_new = zappend_config.pop("force_new", None)
-
-    append_dim = zappend_config.pop("append_dim", "time")
-    append_coord = source_ds.coords[append_dim]
 
     variables = get_variables_config(
         source_ds,
@@ -207,9 +248,10 @@ def write_levels(
 
     subsample_dataset_kwargs = dict(xy_dim_names=xy_dim_names, agg_methods=agg_methods)
 
-    num_slices = append_coord.size
+    num_slices = append_coord.size - source_append_offset
     for slice_index in range(num_slices):
-        slice_ds_indexer = {append_dim: slice(slice_index, slice_index + 1)}
+        append_index = source_append_offset + slice_index
+        slice_ds_indexer = {append_dim: slice(append_index, append_index + 1)}
         slice_ds = source_ds.isel(slice_ds_indexer)
 
         for level_index in range(num_levels):
