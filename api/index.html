@@ -956,6 +956,30 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#contributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Contributions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Contributions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#function-write_levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      Function write_levels()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1540,6 +1564,30 @@
   <a href="#zappend.api.ConfigLike" class="md-nav__link">
     <span class="md-ellipsis">
       ConfigLike
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Contributions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Contributions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#function-write_levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      Function write_levels()
     </span>
   </a>
   
@@ -3351,6 +3399,304 @@ is <code>Context</code>.</p>
     <div class="doc doc-contents first">
 
         <p>Type for a zappend configuration-like object.</p>
+    </div>
+
+</div><h2 id="contributions">Contributions</h2>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+
+    <div class="doc doc-contents first">
+
+        <p>This module contributes to zappend's core functionality.</p>
+<p>The function signatures in this module are less stable, and their implementations
+are considered experimental. They may also rely on external packages. For more
+information, please refer to the individual function documentation.
+Due to these reasons, this module is excluded from the project's automatic
+coverage analysis.</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><h3 id="function-write_levels">Function <code>write_levels()</code></h3>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+    <div class="doc doc-contents first">
+
+        <p>Write a dataset given by <code>source_ds</code> or <code>source_path</code> to <code>target_path</code>
+using the
+<a href="https://xcube.readthedocs.io/en/latest/mldatasets.html">multi-level dataset format</a>
+as specified by
+<a href="https://github.com/xcube-dev/xcube">xcube</a>.</p>
+<p>It resembles the <code>store.write_data(dataset, "&lt;name&gt;.levels", ...)</code> method
+provided by the xcube filesystem data stores ("file", "s3", "memory", etc.).
+The zappend version may be used for potentially very large datasets in terms
+of dimension sizes or for datasets with very large number of chunks.
+It is considerably slower than the xcube version (which basically uses
+<code>xarray.to_zarr()</code> for each resolution level), but should run robustly with
+stable memory consumption.</p>
+<p>The function opens the source dataset and subdivides it into dataset slices
+along the append dimension given by <code>append_dim</code>, which defaults
+to <code>"time"</code>. The slice size in the append dimension is one.
+Each slice is downsampled to the number of levels and each slice level
+dataset is created/appended the target dataset's individual level
+datasets.</p>
+<p>The target dataset's chunk size in the spatial x- and y-dimensions will
+be the same as the specified (or derived) tile size.
+The append dimension will be one. The chunking will be reflected as the
+<code>variables</code> configuration parameter passed to each <code>zappend()</code> call.
+If configuration parameter <code>variables</code> is also given as part of
+<code>zappend_config</code>, it will be merged with the chunk definitions.</p>
+<p><strong>Important notes:</strong></p>
+<ul>
+<li>This function depends on <code>xcube.core.gridmapping.GridMapping</code> and
+  <code>xcube.core.subsampling.subsample_dataset()</code> of the <code>xcube</code> package.</li>
+<li><code>write_levels()</code> is not as robust as zappend itself. For example,
+  there may be inconsistent dataset levels if the processing
+  is interrupted while a level is appended.</li>
+<li>There is a remaining issue that with (coordinate) variables that
+  have a dimension that is not a dimension of any variable that has
+  one of the spatial dimensions, e.g., <code>time_bnds</code> with dimensions
+  <code>time</code> and <code>bnds</code>. Please exclude such variables using the parameter
+  <code>excluded_variables</code>.</li>
+</ul>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>source_ds</code></td>
+            <td>
+                  <code><span title="xarray.Dataset">Dataset</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The source dataset.
+Must be given in case <code>source_path</code> is not given.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>source_path</code></td>
+            <td>
+                  <code>str | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The source dataset path.
+If <code>source_ds</code> is provided and <code>link_level_zero</code> is true,
+then <code>source_path</code> must also be provided in order
+to determine the path of the level zero source.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>source_storage_options</code></td>
+            <td>
+                  <code>dict[str, <span title="typing.Any">Any</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Storage options for the source
+dataset's filesystem.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>source_append_offset</code></td>
+            <td>
+                  <code>int | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional offset in the append dimension.
+Only slices with indexes greater or equal the offset are
+appended.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>target_path</code></td>
+            <td>
+                  <code>str | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The target multi-level dataset path.
+Filename extension should be <code>.levels</code>, by convention.
+If not given, <code>target_dir</code> should be passed as part of the
+<code>zappend_config</code>. (The name <code>target_path</code> is used here for
+consistency with <code>source_path</code>.)</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>num_levels</code></td>
+            <td>
+                  <code>int | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional number of levels.
+If not given, a reasonable number of levels is computed
+from <code>tile_size</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>tile_size</code></td>
+            <td>
+                  <code>tuple[int, int] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional tile size in the x- and y-dimension in pixels.
+If not given, the tile size is computed from the source
+dataset's chunk sizes in the x- and y-dimensions.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>xy_dim_names</code></td>
+            <td>
+                  <code>tuple[str, str] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional dimension names that identify the x- and y-dimensions.
+If not given, derived from the source dataset's grid mapping,
+if any.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>agg_methods</code></td>
+            <td>
+                  <code>str | dict[str, <span title="typing.Any">Any</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An aggregation method for all data variables or a
+mapping that provides the aggregation method for a variable
+name. Possible aggregation methods are
+<code>"first"</code>, <code>"min"</code>, <code>"max"</code>, <code>"mean"</code>, <code>"median"</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>use_saved_levels</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether a given, already written resolution level
+serves as input to aggregation for the next level. If <code>False</code>,
+the default, each resolution level other than zero is computed
+from the source dataset. If <code>True</code>, the function may perform
+significantly faster, but be aware that the aggregation
+methods <code>"first"</code> and <code>"median"</code> will produce inaccurate results.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>link_level_zero</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to <em>not</em> write the level zero of the target
+multi-level dataset and link it instead. In this case, a link
+file <code>{target_path}/0.link</code> will be written.
+If <code>False</code>, the default, a level dataset <code>{target_path}/0.zarr</code>
+will be written instead.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>zappend_config</code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Configuration passed to zappend as <code>zappend(slice, **zappend_config)</code>
+for each slice in the append dimension. The zappend <code>config</code>
+parameter is not supported.</p>
+              </div>
+            </td>
+            <td>
+                  <code>{}</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
     </div>
 
 </div>
