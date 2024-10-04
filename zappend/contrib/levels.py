@@ -31,7 +31,7 @@ def write_levels(
     xy_dim_names: tuple[str, str] | None = None,
     **zappend_config,
 ):
-    """Writes a dataset given by `source_ds` or `source_path` to `target_path`
+    """Write a dataset given by `source_ds` or `source_path` to `target_path`
     using the
     [multi-level dataset format](https://xcube.readthedocs.io/en/latest/mldatasets.html)
     as specified by
@@ -59,7 +59,17 @@ def write_levels(
     If configuration parameter `variables` is also given as part of
     `zappend_config`, it will be merged with the chunk definitions.
 
-    Important: This function requires the `xcube` package to be installed.
+    **Important notes:**
+
+    - This function requires the `xcube` package.
+    - `write_levels()` is not as robust as zappend itself. For example,
+      there may be inconsistent dataset levels if the processing
+      is interrupted while a level is appended.
+    - There is a remaining issue that with (coordinate) variables that
+      have a dimension that is not a dimension of any variable that has
+      one of the spatial dimensions, e.g., `time_bnds` with dimensions
+      `time` and `bnds`. Please exclude such variables using the parameter
+      `excluded_variables`.
 
     Args:
         source_ds: The source dataset.
