@@ -1,0 +1,3 @@
+[run]
+omit =
+    zappend/contrib/*.py

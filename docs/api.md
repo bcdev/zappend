@@ -45,3 +45,11 @@ All described objects can be imported from the `zappend.api` module.
 ::: zappend.api.ConfigLike
     options:
         show_root_heading: true
+
+## Contributions
+
+::: zappend.contrib
+
+### Function `write_levels()`
+
+::: zappend.contrib.write_levels
