@@ -1,6 +1,9 @@
 ## Version 0.8.0 (in development)
 
-* Added experimental function `zappend.levels.write_levels()` that generates
+* Added module `zappend.contrib` that contributes functions to 
+  zappend's core functionality.
+
+* Added experimental function `zappend.contrib.write_levels()` that generates
   datasets using the
   [multi-level dataset format](https://xcube.readthedocs.io/en/latest/mldatasets.html)
   as specified by
