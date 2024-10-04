@@ -1,4 +1,4 @@
-## Version 0.8.0 (in development)
+## Version 0.8.0 (from 2024-10-04)
 
 * Added module `zappend.contrib` that contributes functions to 
   zappend's core functionality.
