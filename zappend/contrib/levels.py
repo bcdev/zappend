@@ -61,7 +61,8 @@ def write_levels(
 
     **Important notes:**
 
-    - This function requires the `xcube` package.
+    - This function depends on `xcube.core.gridmapping.GridMapping` and
+      ` xcube.core.subsampling.subsample_dataset()` of the `xcube` package.
     - `write_levels()` is not as robust as zappend itself. For example,
       there may be inconsistent dataset levels if the processing
       is interrupted while a level is appended.
