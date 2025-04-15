@@ -20,7 +20,9 @@ checklist are addressed in your PR.
 
 **PR checklist**
 
-* Format code using [black](https://black.readthedocs.io/) with default settings.
+* Format code using first [isort](https://pycqa.github.io/isort/) 
+  then [ruff](https://black.readthedocs.io/) with default settings
+  (`ruff format .`).
   Check also section [code style](#code-style) below.
 * Your change shall not break existing unit tests.
   `pytest` must run without errors.
@@ -38,10 +40,9 @@ checklist are addressed in your PR.
 ## Code style
 
 The `zappend` code compliant to [PEP-8](https://pep8.org/) except for a line 
-length of 88 characters as recommended by [black](https://black.readthedocs.io/).
-Since black is un-opinionated regarding the order of imports, 
-we use the following three import blocks separated by an empty 
-line:
+length of 88 characters as used by `ruff format`.
+We structure imports using three blocks separated by an empty 
+line and sort them using `isort` _before_ applying `ruff`:
 
 1. Python standard library imports, e.g., `os`, `typing`, etc
 2. 3rd-party imports, e.g., `xarray`, `zarr`, etc

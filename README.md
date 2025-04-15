@@ -9,7 +9,7 @@
 [![codecov](https://codecov.io/gh/bcdev/zappend/graph/badge.svg?token=B3R6bNmAUp)](https://codecov.io/gh/bcdev/zappend)
 [![PyPI Version](https://img.shields.io/pypi/v/zappend)](https://pypi.org/project/zappend/)
 [![Conda Version](https://anaconda.org/conda-forge/zappend/badges/version.svg)](https://anaconda.org/conda-forge/zappend)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v0.json)](https://github.com/charliermarsh/ruff)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/bcdev/zappend/HEAD?labpath=examples%2Fzappend-demo.ipynb)
 [![GitHub License](https://img.shields.io/github/license/bcdev/zappend)](https://github.com/bcdev/zappend)
 

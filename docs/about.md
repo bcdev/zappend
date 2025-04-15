@@ -45,10 +45,11 @@ pytest --cov=zappend tests
 
 ### Code Style
 
-`zappend` source code is formatted using the [black](https://black.readthedocs.io/) tool.
+`zappend` source code is formatted using the 
+[ruff](https://github.com/charliermarsh/ruff) tool.
 
 ```bash
-black zappend
+ruff format .
 ```
 
 ### Documentation
