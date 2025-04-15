@@ -53,7 +53,7 @@ dev = [
   "h5netcdf",
   "s3fs",
   "scipy",
-  "pyproj"
+  "pyproj",
   "ruff",
 ]
 doc = [
