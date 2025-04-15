@@ -28,7 +28,7 @@ dependencies = [
   "numpy",
   "pyyaml",
   "xarray",
-  "zarr"
+  "zarr >=2,<3"
 ]
 
 [tool.setuptools.dynamic]
