@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -9,8 +9,8 @@ import numpy as np
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.metadata import DatasetMetadata
-from .helpers import clear_memory_fs
-from .helpers import make_test_dataset
+
+from .helpers import clear_memory_fs, make_test_dataset
 
 
 class ContextTest(unittest.TestCase):

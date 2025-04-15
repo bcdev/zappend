@@ -1,3 +1,11 @@
+## Version 0.8.1 (in development)
+
+* Replaced dev tools black and flake8 by isort and ruff. 
+* Reformatted code and fixed linter issues.
+* Added `environment.yml` to setup a conda/mamba development environment. 
+* Updated copyright notice.
+
+
 ## Version 0.8.0 (from 2024-10-04)
 
 * Added module `zappend.contrib` that contributes functions to 

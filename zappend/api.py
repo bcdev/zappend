@@ -1,20 +1,14 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
 from typing import Any, Iterable
 
-from .config import Config
-from .config import ConfigItem
-from .config import ConfigLike
-from .config import ConfigList
+from .config import Config, ConfigItem, ConfigLike, ConfigList
 from .context import Context
 from .fsutil import FileObj
 from .processor import Processor
-from .slice import SliceCallable
-from .slice import SliceItem
-from .slice import SliceSource
-
+from .slice import SliceCallable, SliceItem, SliceSource
 
 __all__ = [
     "Config",

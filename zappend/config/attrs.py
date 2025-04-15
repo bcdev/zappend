@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -172,7 +172,7 @@ def _bounds(array: xr.DataArray | np.ndarray, ref: _CellRef):
     if len(array.shape) != 1:
         raise ValueError(f"array must be 1-dimensional, got shape {array.shape}")
     if array.shape[0] == 0:
-        raise ValueError(f"array must not be empty")
+        raise ValueError("array must not be empty")
     v1, v2 = array[0], array[-1]
     delta = array[1] - v1 if array.size > 1 else 0
     if v1 > v2:

@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -7,8 +7,7 @@ import io
 import pstats
 from typing import Any
 
-from .log import get_log_level
-from .log import logger
+from .log import get_log_level, logger
 
 
 class Profiler:
@@ -52,7 +51,7 @@ class Profiler:
     def __enter__(self):
         if not self.enabled:
             return
-        logger.info(f"Profiling...")
+        logger.info("Profiling...")
         self._profile = cProfile.Profile()
         self._profile.enable()
 

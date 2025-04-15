@@ -1,10 +1,11 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
 import xarray as xr
 
 from zappend.log import logger
+
 from ..source import SliceSource
 
 

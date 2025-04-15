@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -121,8 +121,7 @@ class Transaction:
 
         if not self.target_dir.parent.exists():
             raise FileNotFoundError(
-                f"Target parent directory does not exist:"
-                f" {self.target_dir.parent.path}"
+                f"Target parent directory does not exist: {self.target_dir.parent.path}"
             )
 
         lock_file = self._lock_file
@@ -166,7 +165,7 @@ class Transaction:
         lock_file = self._lock_file
         try:
             lock_file.delete()
-            logger.info(f"Transaction completed.")
+            logger.info("Transaction completed.")
         except OSError:
             logger.warning(f"Failed to remove transaction lock: {lock_file.uri}")
             logger.warning("Note, it should be save to delete it manually.")
@@ -190,7 +189,7 @@ class Transaction:
         self._assert_entered_ctx()
         if not isinstance(action, str):
             raise TypeError(
-                f"Type of 'action' argument must be {str}," f" but was {type(action)}"
+                f"Type of 'action' argument must be {str}, but was {type(action)}"
             )
         if action not in ROLLBACK_ACTIONS:
             actions = ", ".join(map(repr, ROLLBACK_ACTIONS))
@@ -200,16 +199,16 @@ class Transaction:
             )
         if not isinstance(path, str):
             raise TypeError(
-                f"Type of 'path' argument must be {str}," f" but was {type(path)}"
+                f"Type of 'path' argument must be {str}, but was {type(path)}"
             )
         if action == "replace_file":
             if not isinstance(data, bytes):
                 raise TypeError(
-                    f"Type of 'data' argument must be {bytes}," f" but was {type(data)}"
+                    f"Type of 'data' argument must be {bytes}, but was {type(data)}"
                 )
         else:
             if data is not None:
-                raise ValueError(f"Value of 'data' argument must be None")
+                raise ValueError("Value of 'data' argument must be None")
 
         if self._disable_rollback:
             return

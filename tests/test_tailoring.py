@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -9,8 +9,8 @@ import pyproj
 import xarray as xr
 
 from zappend.context import Context
-from zappend.tailoring import tailor_target_dataset
-from zappend.tailoring import tailor_slice_dataset
+from zappend.tailoring import tailor_slice_dataset, tailor_target_dataset
+
 from .helpers import clear_memory_fs
 
 

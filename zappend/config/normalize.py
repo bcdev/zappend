@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -73,9 +73,7 @@ def load_config(config_file: FileObj) -> dict[str, Any]:
     else:
         config = json.load(stream)
     if not isinstance(config, dict):
-        raise TypeError(
-            f"Invalid configuration:" f" {config_file.uri}: object expected"
-        )
+        raise TypeError(f"Invalid configuration: {config_file.uri}: object expected")
     return config
 
 

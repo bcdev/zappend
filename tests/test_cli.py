@@ -1,15 +1,16 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
 import unittest
+
 from click.testing import CliRunner
 
 from zappend import __version__
 from zappend.cli import zappend
 from zappend.fsutil.fileobj import FileObj
-from .helpers import clear_memory_fs
-from .helpers import make_test_dataset
+
+from .helpers import clear_memory_fs, make_test_dataset
 
 
 class CliTest(unittest.TestCase):

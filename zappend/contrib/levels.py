@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -7,8 +7,8 @@ import logging
 import warnings
 from typing import Any, Hashable
 
-import xarray as xr
 import fsspec
+import xarray as xr
 
 from zappend.api import zappend
 
@@ -120,8 +120,7 @@ def write_levels(
             parameter is not supported.
     """
     from xcube.core.gridmapping import GridMapping
-    from xcube.core.subsampling import get_dataset_agg_methods
-    from xcube.core.subsampling import subsample_dataset
+    from xcube.core.subsampling import get_dataset_agg_methods, subsample_dataset
     from xcube.core.tilingscheme import get_num_levels
     from xcube.util.fspath import get_fs_path_class
 
@@ -132,7 +131,7 @@ def write_levels(
     dry_run = zappend_config.pop("dry_run", False)
 
     if dry_run and use_saved_levels:
-        warnings.warn(f"'use_saved_levels' argument is not applicable if dry_run=True")
+        warnings.warn("'use_saved_levels' argument is not applicable if dry_run=True")
         use_saved_levels = False
 
     target_dir = zappend_config.pop("target_dir", None)
@@ -171,8 +170,7 @@ def write_levels(
             )
         if link_level_zero:
             raise ValueError(
-                f"'source_path' argument must be provided"
-                f" if 'link_level_zero' is used"
+                "'source_path' argument must be provided if 'link_level_zero' is used"
             )
 
     append_dim = zappend_config.pop("append_dim", "time")

@@ -2,7 +2,7 @@ site_name: zappend
 repo_url: https://github.com/bcdev/zappend
 repo_name: bcdev/zappend
 
-copyright: Copyright &copy; 2024 Brockmann Consult
+copyright: Copyright &copy; 2024, 2025 Brockmann Consult and contributors
 
 nav:
     - Overview: index.md

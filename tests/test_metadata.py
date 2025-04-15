@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -52,7 +52,7 @@ class DatasetMetadataDimsTest(unittest.TestCase):
             {"a": xr.DataArray(np.zeros((2, 3, 4)), dims=("time", "y", "x"))}
         )
         with pytest.raises(
-            ValueError, match="Size of append dimension 'time'" " must not be fixed"
+            ValueError, match="Size of append dimension 'time' must not be fixed"
         ):
             DatasetMetadata.from_dataset(
                 ds,
@@ -80,8 +80,7 @@ class DatasetMetadataDimsTest(unittest.TestCase):
         )
         with pytest.raises(
             ValueError,
-            match="Wrong size for fixed dimension 'x'"
-            " in dataset: expected 5, found 4",
+            match="Wrong size for fixed dimension 'x' in dataset: expected 5, found 4",
         ):
             DatasetMetadata.from_dataset(
                 ds, make_config({"fixed_dims": {"y": 3, "x": 5}, "append_dim": "time"})
@@ -443,7 +442,7 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
     # noinspection PyMethodMayBeStatic
     def test_it_raises_on_dim_not_found(self):
         with pytest.raises(
-            ValueError, match="Dimension 'Y' of" " variable 'b' not found in dataset"
+            ValueError, match="Dimension 'Y' of variable 'b' not found in dataset"
         ):
             DatasetMetadata.from_dataset(
                 xr.Dataset(
@@ -465,7 +464,7 @@ class DatasetMetadataVariablesTest(unittest.TestCase):
     def test_it_raises_on_missing_dtype_or_fill_value(self):
         with pytest.raises(
             ValueError,
-            match="Missing 'dtype' in encoding configuration" " of variable 'b'",
+            match="Missing 'dtype' in encoding configuration of variable 'b'",
         ):
             DatasetMetadata.from_dataset(
                 xr.Dataset(

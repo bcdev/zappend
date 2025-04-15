@@ -1,13 +1,11 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
 import logging
 import unittest
 
-from zappend.log import configure_logging
-from zappend.log import get_log_level
-from zappend.log import logger
+from zappend.log import configure_logging, get_log_level, logger
 
 
 class LogTest(unittest.TestCase):

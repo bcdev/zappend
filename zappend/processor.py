@@ -1,33 +1,32 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
 import collections.abc
-from typing import Iterable, Any
+from typing import Any, Iterable
 
 import numpy as np
 import xarray as xr
 import zarr.attrs
 import zarr.convenience
 
-from .config import ConfigLike, Config
-from .config import eval_dyn_config_attrs
-from .config import exclude_from_config
-from .config import get_dyn_config_attrs_env
-from .config import has_dyn_config_attrs
-from .config import normalize_config
-from .config import validate_config
+from .config import (
+    Config,
+    ConfigLike,
+    eval_dyn_config_attrs,
+    exclude_from_config,
+    get_dyn_config_attrs_env,
+    has_dyn_config_attrs,
+    normalize_config,
+    validate_config,
+)
 from .context import Context
-from .fsutil.transaction import RollbackCallback
-from .fsutil.transaction import Transaction
-from .log import configure_logging
-from .log import logger
+from .fsutil.transaction import RollbackCallback, Transaction
+from .log import configure_logging, logger
 from .profiler import Profiler
 from .rollbackstore import RollbackStore
-from .slice import SliceItem
-from .slice import open_slice_dataset
-from .tailoring import tailor_slice_dataset
-from .tailoring import tailor_target_dataset
+from .slice import SliceItem, open_slice_dataset
+from .tailoring import tailor_slice_dataset, tailor_target_dataset
 
 
 class Processor:
@@ -51,8 +50,8 @@ class Processor:
         configure_logging(_config.logging)
         if _config.force_new:
             logger.warning(
-                f"Setting 'force_new' is enabled. This will"
-                f" permanently delete existing targets (no rollback)."
+                "Setting 'force_new' is enabled. This will"
+                " permanently delete existing targets (no rollback)."
             )
             delete_target_permanently(_config)
         self._config = _config
@@ -278,8 +277,7 @@ def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):
             deltas = step_sizes - append_step
         if not np.all(deltas == zero):
             raise ValueError(
-                f"Cannot append slice because this would"
-                f" result in an invalid step size."
+                "Cannot append slice because this would result in an invalid step size."
             )
 
 

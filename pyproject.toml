@@ -28,7 +28,7 @@ dependencies = [
   "numpy",
   "pyyaml",
   "xarray",
-  "zarr"
+  "zarr >=2,<3"
 ]
 
 [tool.setuptools.dynamic]
@@ -47,15 +47,14 @@ zappend = "zappend.cli:zappend"
 
 [project.optional-dependencies]
 dev = [
+  "isort",
   "pytest",
   "pytest-cov",
-  "black",
-  "flake8",
-  "flake8-bugbear",
   "h5netcdf",
   "s3fs",
   "scipy",
-  "pyproj"
+  "pyproj",
+  "ruff",
 ]
 doc = [
   "mkdocs",

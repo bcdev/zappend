@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -7,8 +7,7 @@ from typing import Any
 import jsonschema
 import jsonschema.exceptions
 
-from .normalize import ConfigLike
-from .normalize import normalize_config
+from .normalize import ConfigLike, normalize_config
 from .schema import CONFIG_SCHEMA_V1
 
 
@@ -30,6 +29,6 @@ def validate_config(config_like: ConfigLike) -> dict[str, Any]:
         jsonschema.validate(config, CONFIG_SCHEMA_V1)
     except jsonschema.exceptions.ValidationError as e:
         raise ValueError(
-            f"Invalid configuration: {e.message}" f" for {'.'.join(map(str, e.path))}"
+            f"Invalid configuration: {e.message} for {'.'.join(map(str, e.path))}"
         )
     return config

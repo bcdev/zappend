@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -8,11 +8,10 @@ import unittest
 import pytest
 import xarray as xr
 
-from zappend.fsutil import FileObj
+from tests.helpers import clear_memory_fs, make_test_dataset
 from zappend.contrib import write_levels
 from zappend.contrib.levels import get_variables_config
-from tests.helpers import clear_memory_fs
-from tests.helpers import make_test_dataset
+from zappend.fsutil import FileObj
 
 try:
     # noinspection PyUnresolvedReferences

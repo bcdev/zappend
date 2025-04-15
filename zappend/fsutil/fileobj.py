@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -8,7 +8,6 @@ from typing import Any, Literal
 import fsspec
 
 from .path import split_parent
-
 
 # Note, we could make FileObj an ABC and then introduce concrete
 # File and Directory classes which would make code more comprehensible.
@@ -53,9 +52,7 @@ class FileObj:
         if self._storage_options is None:
             return f"FileObj({self.uri!r})"
         else:
-            return (
-                f"FileObj({self.uri!r}," f" storage_options={self._storage_options!r})"
-            )
+            return f"FileObj({self.uri!r}, storage_options={self._storage_options!r})"
 
     def __eq__(self, other) -> bool:
         return self is other or (

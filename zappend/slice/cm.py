@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -8,8 +8,7 @@ from typing import Any, ContextManager
 import xarray as xr
 
 from ..context import Context
-from .source import SliceSource
-from .source import to_slice_source
+from .source import SliceSource, to_slice_source
 
 
 class SliceSourceContextManager(contextlib.AbstractContextManager):

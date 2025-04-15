@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -11,8 +11,8 @@ import zarr.storage
 
 from zappend.fsutil.fileobj import FileObj
 from zappend.rollbackstore import RollbackStore
-from .helpers import clear_memory_fs
-from .helpers import make_test_dataset
+
+from .helpers import clear_memory_fs, make_test_dataset
 
 
 class RollbackStoreImplTest(unittest.TestCase):
@@ -27,7 +27,7 @@ class RollbackStoreImplTest(unittest.TestCase):
     def test_getitem(self):
         with pytest.raises(KeyError):
             # noinspection PyUnusedLocal
-            v1 = self.rb_store["k1"]
+            _v1 = self.rb_store["k1"]
         self.assertIsNone(self.rb_store.get("k1"))
         self.mem_store["k1"] = b"v1"
         self.assertEqual(b"v1", self.rb_store["k1"])

@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -7,8 +7,7 @@ import unittest
 import pytest
 
 from zappend.context import Context
-from zappend.slice.callable import import_attribute
-from zappend.slice.callable import to_slice_args
+from zappend.slice.callable import import_attribute, to_slice_args
 
 
 class ToSliceArgsTest(unittest.TestCase):

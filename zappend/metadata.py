@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -9,8 +9,7 @@ import numcodecs.abc
 import numpy as np
 import xarray as xr
 
-from .config import Config
-from .config import merge_configs
+from .config import Config, merge_configs
 from .log import logger
 
 

@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -10,10 +10,9 @@ import fsspec
 import pytest
 import yaml
 
-from zappend.config import exclude_from_config
-from zappend.config import merge_configs
-from zappend.config import normalize_config
+from zappend.config import exclude_from_config, merge_configs, normalize_config
 from zappend.fsutil import FileObj
+
 from ..helpers import clear_memory_fs
 
 
@@ -88,7 +87,7 @@ class ConfigNormalizeTest(unittest.TestCase):
         file_obj.write("what?")
         with pytest.raises(
             TypeError,
-            match="Invalid configuration:" " memory://config.yaml: object expected",
+            match="Invalid configuration: memory://config.yaml: object expected",
         ):
             normalize_config(file_obj)
 

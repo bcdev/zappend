@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -15,16 +15,14 @@ except ModuleNotFoundError:
 import pytest
 import xarray as xr
 
+from tests.helpers import clear_memory_fs, make_test_dataset
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
-from zappend.slice.cm import SliceSourceContextManager
-from zappend.slice.cm import open_slice_dataset
+from zappend.slice.cm import SliceSourceContextManager, open_slice_dataset
 from zappend.slice.source import SliceSource
 from zappend.slice.sources.memory import MemorySliceSource
 from zappend.slice.sources.persistent import PersistentSliceSource
 from zappend.slice.sources.temporary import TemporarySliceSource
-from tests.helpers import clear_memory_fs
-from tests.helpers import make_test_dataset
 
 
 # noinspection PyShadowingBuiltins,PyRedeclaration,PyMethodMayBeStatic

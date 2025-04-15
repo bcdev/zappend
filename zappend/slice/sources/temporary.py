@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -7,6 +7,7 @@ import xarray as xr
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.log import logger
+
 from .memory import MemorySliceSource
 
 
@@ -34,8 +35,7 @@ class TemporarySliceSource(MemorySliceSource):
             temp_slice_dir.path, create=True
         )
         logger.info(
-            f"Persisting in-memory slice dataset #{slice_index}"
-            f" to {temp_slice_dir.uri}"
+            f"Persisting in-memory slice dataset #{slice_index} to {temp_slice_dir.uri}"
         )
         self._slice_ds.to_zarr(temp_slice_store)
         self._slice_ds = None

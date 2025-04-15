@@ -1,4 +1,4 @@
-# Copyright © 2024 Norman Fomferra and contributors
+# Copyright © 2024, 2025 Brockmann Consult and contributors
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
@@ -23,7 +23,7 @@ class ConfigValidateTest(unittest.TestCase):
         config = {"zarr_version": 1}
         with pytest.raises(
             ValueError,
-            match="Invalid configuration:" " 2 was expected for zarr_version",
+            match="Invalid configuration: 2 was expected for zarr_version",
         ):
             validate_config(config)
 
