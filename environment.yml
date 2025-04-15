@@ -12,7 +12,7 @@ dependencies:
   - numpy
   - pyyaml
   - xarray
-  - zarr >=2.18,!=3.0.0,!=3.0.1
+  - zarr >=2.18,<3
   # Dev Dependencies
   - isort
   - pytest
