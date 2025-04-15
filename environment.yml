@@ -1,0 +1,34 @@
+name: zappend
+channels:
+  - conda-forge
+dependencies:
+  - python >=3.10
+  # Library Dependencies
+  - click
+  - dask
+  - fsspec
+  - jsonschema
+  - numcodecs
+  - numpy
+  - pyyaml
+  - xarray
+  - zarr >=2.18,!=3.0.0,!=3.0.1
+  # Dev Dependencies
+  - isort
+  - pytest
+  - pytest-cov
+  - ruff
+  # Doc Dependencies
+  - mkdocs
+  - mkdocs-autorefs
+  - mkdocs-material
+  - mkdocstrings
+  - mkdocstrings-python
+  # Testing Datasets
+  - dask
+  - pandas
+  - pyproj
+  - netcdf4
+  - h5netcdf
+  - s3fs
+  - scipy
