@@ -7,14 +7,17 @@ import json
 import unittest
 
 import numpy as np
-import xarray as xr
 import pytest
+import xarray as xr
 
-from zappend.config.attrs import ConfigAttrsUserFunctions
-from zappend.config.attrs import eval_dyn_config_attrs
-from zappend.config.attrs import eval_expr
-from zappend.config.attrs import get_dyn_config_attrs_env
-from zappend.config.attrs import has_dyn_config_attrs
+from zappend.config.attrs import (
+    ConfigAttrsUserFunctions,
+    eval_dyn_config_attrs,
+    eval_expr,
+    get_dyn_config_attrs_env,
+    has_dyn_config_attrs,
+)
+
 from ..helpers import make_test_dataset
 
 

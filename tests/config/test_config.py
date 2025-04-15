@@ -11,8 +11,8 @@ from zappend.config import Config
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.slice import SliceSource
-from ..helpers import clear_memory_fs
-from ..helpers import make_test_dataset
+
+from ..helpers import clear_memory_fs, make_test_dataset
 
 
 class ConfigTest(unittest.TestCase):
@@ -151,8 +151,7 @@ class ConfigTest(unittest.TestCase):
         with pytest.raises(
             TypeError,
             match=(
-                "slice_source must a callable"
-                " or the fully qualified name of a callable"
+                "slice_source must a callable or the fully qualified name of a callable"
             ),
         ):
             Config(

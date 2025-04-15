@@ -7,14 +7,13 @@ import unittest
 import pytest
 import xarray as xr
 
+from tests.helpers import clear_memory_fs
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
-from zappend.slice.source import SliceSource
-from zappend.slice.source import to_slice_source
+from zappend.slice.source import SliceSource, to_slice_source
 from zappend.slice.sources.memory import MemorySliceSource
 from zappend.slice.sources.persistent import PersistentSliceSource
 from zappend.slice.sources.temporary import TemporarySliceSource
-from tests.helpers import clear_memory_fs
 
 
 # noinspection PyUnusedLocal

@@ -5,3 +5,9 @@
 from .memory import MemorySliceSource
 from .persistent import PersistentSliceSource
 from .temporary import TemporarySliceSource
+
+__all__ = [
+    "MemorySliceSource",
+    "PersistentSliceSource",
+    "TemporarySliceSource",
+]

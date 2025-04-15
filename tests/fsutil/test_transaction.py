@@ -8,8 +8,8 @@ from typing import Callable
 import pytest
 
 from zappend.fsutil.fileobj import FileObj
-from zappend.fsutil.transaction import Transaction
-from zappend.fsutil.transaction import ROLLBACK_FILE
+from zappend.fsutil.transaction import ROLLBACK_FILE, Transaction
+
 from ..helpers import clear_memory_fs
 
 
@@ -175,7 +175,7 @@ class TransactionTest(unittest.TestCase):
         transaction = Transaction(test_root, rollback_dir)
         with pytest.raises(
             ValueError,
-            match="Transaction instance must be" " used with the 'with' statement",
+            match="Transaction instance must be used with the 'with' statement",
         ):
             transaction._add_rollback_action("delete_file", "path", None)
 

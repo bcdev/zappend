@@ -8,8 +8,7 @@ from typing import Any, ContextManager
 import xarray as xr
 
 from ..context import Context
-from .source import SliceSource
-from .source import to_slice_source
+from .source import SliceSource, to_slice_source
 
 
 class SliceSourceContextManager(contextlib.AbstractContextManager):

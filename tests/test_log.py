@@ -5,9 +5,7 @@
 import logging
 import unittest
 
-from zappend.log import configure_logging
-from zappend.log import get_log_level
-from zappend.log import logger
+from zappend.log import configure_logging, get_log_level, logger
 
 
 class LogTest(unittest.TestCase):

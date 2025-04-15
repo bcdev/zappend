@@ -9,7 +9,6 @@ import fsspec
 
 from .path import split_parent
 
-
 # Note, we could make FileObj an ABC and then introduce concrete
 # File and Directory classes which would make code more comprehensible.
 # But then, we cannot know the concrete type of the resulting type if we
@@ -53,9 +52,7 @@ class FileObj:
         if self._storage_options is None:
             return f"FileObj({self.uri!r})"
         else:
-            return (
-                f"FileObj({self.uri!r}," f" storage_options={self._storage_options!r})"
-            )
+            return f"FileObj({self.uri!r}, storage_options={self._storage_options!r})"
 
     def __eq__(self, other) -> bool:
         return self is other or (

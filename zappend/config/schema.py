@@ -5,14 +5,15 @@
 import json
 from typing import Any, Literal
 
-from .defaults import DEFAULT_APPEND_DIM
-from .defaults import DEFAULT_APPEND_STEP
-from .defaults import DEFAULT_ATTRS_UPDATE_MODE
-from .defaults import DEFAULT_SLICE_POLLING_INTERVAL
-from .defaults import DEFAULT_SLICE_POLLING_TIMEOUT
-from .defaults import DEFAULT_ZARR_VERSION
+from .defaults import (
+    DEFAULT_APPEND_DIM,
+    DEFAULT_APPEND_STEP,
+    DEFAULT_ATTRS_UPDATE_MODE,
+    DEFAULT_SLICE_POLLING_INTERVAL,
+    DEFAULT_SLICE_POLLING_TIMEOUT,
+    DEFAULT_ZARR_VERSION,
+)
 from .markdown import schema_to_markdown
-
 
 SLICE_POLLING_SCHEMA = {
     "category": "Data I/O - Slices",
@@ -20,7 +21,7 @@ SLICE_POLLING_SCHEMA = {
     "oneOf": [
         {
             "description": (
-                "No polling, fail immediately if dataset" " is not available."
+                "No polling, fail immediately if dataset is not available."
             ),
             "const": False,
         },
@@ -98,7 +99,7 @@ VARIABLE_ENCODING_SCHEMA = {
             "oneOf": [
                 {
                     "description": (
-                        "A number of type and unit of the" " given storage `dtype`."
+                        "A number of type and unit of the given storage `dtype`."
                     ),
                     "type": "number",
                 },
@@ -157,8 +158,7 @@ VARIABLE_ENCODING_SCHEMA = {
             "type": ["array", "null"],
             "items": {
                 "description": (
-                    "Filter definition."
-                    " Allowed parameters depend on the value of `id`."
+                    "Filter definition. Allowed parameters depend on the value of `id`."
                 ),
                 "type": "object",
                 "properties": {
@@ -207,7 +207,7 @@ VARIABLES_SCHEMA = {
 }
 
 LOG_REF_URL = (
-    "https://docs.python.org/3/library/logging.config.html" "#logging-config-dictschema"
+    "https://docs.python.org/3/library/logging.config.html#logging-config-dictschema"
 )
 LOG_HDL_CLS_URL = "https://docs.python.org/3/library/logging.handlers.html"
 
@@ -302,8 +302,7 @@ PROFILING_SCHEMA = {
                             },
                             {
                                 "description": (
-                                    "Pattern-match the standard name"
-                                    " that is printed."
+                                    "Pattern-match the standard name that is printed."
                                 ),
                                 "type": "string",
                             },
@@ -403,12 +402,11 @@ DETAILED_LOGGING_SCHEMA = {
                         "enum": LOG_LEVELS,
                     },
                     "formatter ": {
-                        "description": "The id of the formatter" " for this handler.",
+                        "description": "The id of the formatter for this handler.",
                         "type": "string",
                     },
                     "filters": {
-                        "description": "A list of ids of the filters"
-                        " for this logger.",
+                        "description": "A list of ids of the filters for this logger.",
                         "type": "array",
                         "items": {"type": "string"},
                     },
@@ -440,14 +438,14 @@ DETAILED_LOGGING_SCHEMA = {
                     },
                     "filters": {
                         "description": (
-                            "A list of ids of the filters" " for this logger."
+                            "A list of ids of the filters for this logger."
                         ),
                         "type": "array",
                         "items": {"type": "string"},
                     },
                     "handlers": {
                         "description": (
-                            "A list of ids of the handlers" " for this logger."
+                            "A list of ids of the handlers for this logger."
                         ),
                         "type": "array",
                         "items": {"type": "string"},
@@ -620,7 +618,7 @@ CONFIG_SCHEMA_V1 = {
         target_storage_options={
             "category": "Data I/O - Target",
             "description": (
-                "Options for the filesystem given by" " the URI of `target_dir`."
+                "Options for the filesystem given by the URI of `target_dir`."
             ),
             "type": "object",
             "additionalProperties": True,
@@ -707,7 +705,7 @@ CONFIG_SCHEMA_V1 = {
         temp_storage_options={
             "category": "Data I/O - Transactions",
             "description": (
-                "Options for the filesystem given by" " the protocol of `temp_dir`."
+                "Options for the filesystem given by the protocol of `temp_dir`."
             ),
             "type": "object",
             "additionalProperties": True,

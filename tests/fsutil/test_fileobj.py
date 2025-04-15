@@ -2,8 +2,8 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-import unittest
 import os.path
+import unittest
 import uuid
 
 import fsspec
@@ -27,7 +27,7 @@ class FileObjTest(unittest.TestCase):
             "FileObj('memory://test.zarr')", repr(FileObj("memory://test.zarr"))
         )
         self.assertEqual(
-            "FileObj('memory://test.zarr'," " storage_options={'asynchronous': False})",
+            "FileObj('memory://test.zarr', storage_options={'asynchronous': False})",
             repr(
                 FileObj("memory://test.zarr", storage_options=dict(asynchronous=False))
             ),

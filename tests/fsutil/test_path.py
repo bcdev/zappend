@@ -6,8 +6,7 @@ import unittest
 
 import pytest
 
-from zappend.fsutil.path import split_components
-from zappend.fsutil.path import split_parent
+from zappend.fsutil.path import split_components, split_parent
 
 
 class SplitFilenameTest(unittest.TestCase):

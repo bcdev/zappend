@@ -23,7 +23,7 @@ class ConfigValidateTest(unittest.TestCase):
         config = {"zarr_version": 1}
         with pytest.raises(
             ValueError,
-            match="Invalid configuration:" " 2 was expected for zarr_version",
+            match="Invalid configuration: 2 was expected for zarr_version",
         ):
             validate_config(config)
 

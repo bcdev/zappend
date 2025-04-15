@@ -3,7 +3,7 @@
 # https://opensource.org/licenses/MIT.
 
 from collections.abc import MutableMapping
-from typing import Any, Sequence, Mapping
+from typing import Any, Mapping, Sequence
 
 import zarr.context
 import zarr.storage

@@ -10,6 +10,7 @@ import xarray as xr
 from zappend.context import Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.log import logger
+
 from ..source import SliceSource
 
 

@@ -4,7 +4,7 @@
 
 import contextlib
 import warnings
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from typing import Callable, ContextManager, Type
 
 import xarray as xr
@@ -86,10 +86,8 @@ def to_slice_source(
     slice_index: int,
 ) -> SliceSource | ContextManager[xr.Dataset]:
     # prevent cyclic import
-    from .sources import MemorySliceSource
-    from .sources import PersistentSliceSource
-    from .sources import TemporarySliceSource
     from .callable import invoke_slice_callable
+    from .sources import MemorySliceSource, PersistentSliceSource, TemporarySliceSource
 
     slice_callable = ctx.config.slice_source
     if slice_callable is not None:

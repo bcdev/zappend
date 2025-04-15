@@ -9,8 +9,7 @@ import numcodecs.abc
 import numpy as np
 import xarray as xr
 
-from .config import Config
-from .config import merge_configs
+from .config import Config, merge_configs
 from .log import logger
 
 

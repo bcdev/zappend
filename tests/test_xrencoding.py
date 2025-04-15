@@ -2,15 +2,16 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
-from io import StringIO
 import json
 import unittest
+from io import StringIO
 
 import numpy as np
 import pytest
 import xarray as xr
 
 from zappend.fsutil.fileobj import FileObj
+
 from .helpers import clear_memory_fs
 
 TEST_ZARR = "memory://test.zarr"

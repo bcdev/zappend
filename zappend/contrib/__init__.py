@@ -12,4 +12,4 @@ Due to these reasons, this module is excluded from the project's automatic
 coverage analysis.
 """
 
-from .levels import write_levels
+from .levels import write_levels as write_levels

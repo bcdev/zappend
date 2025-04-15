@@ -8,13 +8,11 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from zappend.fsutil.fileobj import FileObj
 from zappend.context import Context
-from zappend.processor import Processor
-from zappend.processor import to_timedelta
-from zappend.processor import verify_append_labels
-from .helpers import clear_memory_fs
-from .helpers import make_test_dataset
+from zappend.fsutil.fileobj import FileObj
+from zappend.processor import Processor, to_timedelta, verify_append_labels
+
+from .helpers import clear_memory_fs, make_test_dataset
 
 
 class ProcessorTest(unittest.TestCase):

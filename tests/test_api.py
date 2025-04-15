@@ -10,12 +10,10 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from zappend.api import FileObj
-from zappend.api import SliceSource
-from zappend.api import zappend
+from zappend.api import FileObj, SliceSource, zappend
 from zappend.fsutil.transaction import Transaction
-from .helpers import clear_memory_fs
-from .helpers import make_test_dataset
+
+from .helpers import clear_memory_fs, make_test_dataset
 
 
 # noinspection PyMethodMayBeStatic
@@ -363,8 +361,7 @@ class ApiTest(unittest.TestCase):
         with pytest.raises(
             ValueError,
             match=(
-                "Cannot append slice because this would result in"
-                " an invalid step size."
+                "Cannot append slice because this would result in an invalid step size."
             ),
         ):
             zappend(slices, target_dir=target_dir, append_step="2D")

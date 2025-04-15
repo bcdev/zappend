@@ -7,8 +7,7 @@ import unittest
 import pytest
 
 from zappend.context import Context
-from zappend.slice.callable import import_attribute
-from zappend.slice.callable import to_slice_args
+from zappend.slice.callable import import_attribute, to_slice_args
 
 
 class ToSliceArgsTest(unittest.TestCase):

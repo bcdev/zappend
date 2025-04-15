@@ -7,8 +7,7 @@ import inspect
 from typing import Any, Type
 
 from ..context import Context
-from .source import SliceCallable
-from .source import SliceItem
+from .source import SliceCallable, SliceItem
 
 
 def invoke_slice_callable(

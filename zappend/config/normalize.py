@@ -73,9 +73,7 @@ def load_config(config_file: FileObj) -> dict[str, Any]:
     else:
         config = json.load(stream)
     if not isinstance(config, dict):
-        raise TypeError(
-            f"Invalid configuration:" f" {config_file.uri}: object expected"
-        )
+        raise TypeError(f"Invalid configuration: {config_file.uri}: object expected")
     return config
 
 

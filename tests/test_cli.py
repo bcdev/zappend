@@ -3,13 +3,14 @@
 # https://opensource.org/licenses/MIT.
 
 import unittest
+
 from click.testing import CliRunner
 
 from zappend import __version__
 from zappend.cli import zappend
 from zappend.fsutil.fileobj import FileObj
-from .helpers import clear_memory_fs
-from .helpers import make_test_dataset
+
+from .helpers import clear_memory_fs, make_test_dataset
 
 
 class CliTest(unittest.TestCase):

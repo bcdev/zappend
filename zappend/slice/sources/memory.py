@@ -5,6 +5,7 @@
 import xarray as xr
 
 from zappend.log import logger
+
 from ..source import SliceSource
 
 

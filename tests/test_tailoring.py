@@ -9,8 +9,8 @@ import pyproj
 import xarray as xr
 
 from zappend.context import Context
-from zappend.tailoring import tailor_target_dataset
-from zappend.tailoring import tailor_slice_dataset
+from zappend.tailoring import tailor_slice_dataset, tailor_target_dataset
+
 from .helpers import clear_memory_fs
 
 

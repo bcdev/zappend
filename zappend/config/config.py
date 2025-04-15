@@ -3,15 +3,17 @@
 # https://opensource.org/licenses/MIT.
 
 import tempfile
-from typing import Any, Dict, Literal, Callable
+from typing import Any, Callable, Dict, Literal
 
-from .defaults import DEFAULT_APPEND_DIM
-from .defaults import DEFAULT_APPEND_STEP
-from .defaults import DEFAULT_ATTRS_UPDATE_MODE
-from .defaults import DEFAULT_SLICE_POLLING_INTERVAL
-from .defaults import DEFAULT_SLICE_POLLING_TIMEOUT
-from .defaults import DEFAULT_ZARR_VERSION
 from ..fsutil.fileobj import FileObj
+from .defaults import (
+    DEFAULT_APPEND_DIM,
+    DEFAULT_APPEND_STEP,
+    DEFAULT_ATTRS_UPDATE_MODE,
+    DEFAULT_SLICE_POLLING_INTERVAL,
+    DEFAULT_SLICE_POLLING_TIMEOUT,
+    DEFAULT_ZARR_VERSION,
+)
 
 
 class Config:
