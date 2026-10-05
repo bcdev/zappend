@@ -1,0 +1,21 @@
+@font-face {
+  font-family: "Roboto";
+  src: url("../assets/downloaded/fonts/Roboto.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 75% 100%;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("../assets/downloaded/fonts/Roboto-Italic.ttf") format("truetype");
+  font-style: italic;
+  font-weight: 100 900;
+  font-stretch: 75% 100%;
+  font-display: swap;
+}
+
+:root {
+  --md-text-font: "Roboto", "Segoe UI", Helvetica, Arial, sans-serif;
+}
