@@ -2,7 +2,7 @@ site_name: zappend
 repo_url: https://github.com/bcdev/zappend
 repo_name: bcdev/zappend
 
-copyright: Copyright &copy; 2024, 2025 Brockmann Consult and contributors
+copyright: Copyright &copy; 2024-2026 Brockmann Consult and contributors
 
 nav:
     - Overview: index.md
@@ -18,6 +18,8 @@ theme:
     name: material
     logo: assets/logo.png
     favicon: assets/logo-small.png
+    font: false
+    custom_dir: docs/overrides
     palette:
         # Palette toggle for light mode
         - scheme: default
@@ -43,6 +45,11 @@ extra:
           link: https://github.com/bcdev/zappend
         - icon: fontawesome/brands/python
           link: https://pypi.org/project/zappend/
+    footer_links:
+        - text: Imprint
+          href: https://www.brockmann-consult.de/imprint/
+        - text: Privacy Policy
+          href: https://www.brockmann-consult.de/privacy-policy-documentation-pages/
 
 plugins:
     - search
@@ -56,3 +63,9 @@ plugins:
                       show_source: false
                       heading_level: 3
                       annotations_path: brief
+
+extra_css:
+  - stylesheet/extra.css
+
+hooks:
+  - docs/hooks/download_fonts.py

@@ -79,4 +79,4 @@ zappend --help-config md > docs/config.md
 `zappend` is open source made available under the terms and conditions of the 
 [MIT License](https://github.com/bcdev/zappend/blob/main/LICENSE).
 
-Copyright © 2024 Brockmann Consult Development
+Copyright © 2024-2026 Brockmann Consult Development
