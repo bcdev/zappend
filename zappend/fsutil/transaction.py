@@ -9,9 +9,7 @@ from typing import Literal
 from zappend.fsutil.fileobj import FileObj
 from zappend.log import logger
 
-RollbackAction = (
-    Literal["delete_dir", "delete_file", "replace_file"]
-)
+RollbackAction = Literal["delete_dir", "delete_file", "replace_file"]
 
 RollbackCallback = Callable[
     [

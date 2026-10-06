@@ -148,11 +148,15 @@ class TransactionTest(unittest.TestCase):
         test_root.mkdir()
         rollback_dir = FileObj("memory://rollback")
         transaction = Transaction(test_root, rollback_dir)
-        with transaction, pytest.raises(
-            ValueError,
-            match="Transaction instance cannot be"
-            " used with nested 'with' statements",
-        ), transaction:
+        with (
+            transaction,
+            pytest.raises(
+                ValueError,
+                match="Transaction instance cannot be"
+                " used with nested 'with' statements",
+            ),
+            transaction,
+        ):
             pass
 
     # noinspection PyMethodMayBeStatic
@@ -213,46 +217,61 @@ class TransactionTest(unittest.TestCase):
         test_root = FileObj("memory://test")
         test_root.mkdir()
         rollback_dir = FileObj("memory://rollback")
-        with pytest.raises(
-            TypeError,
-            match="Transaction._add_rollback_action\\(\\)"
-            " missing 3 required positional arguments:"
-            " 'action', 'path', and 'data'",
-        ), Transaction(test_root, rollback_dir) as callback:
+        with (
+            pytest.raises(
+                TypeError,
+                match="Transaction._add_rollback_action\\(\\)"
+                " missing 3 required positional arguments:"
+                " 'action', 'path', and 'data'",
+            ),
+            Transaction(test_root, rollback_dir) as callback,
+        ):
             callback()
 
-        with pytest.raises(
-            TypeError,
-            match="Type of 'action' argument must be"
-            " <class 'str'>, but was <class 'int'>",
-        ), Transaction(test_root, rollback_dir) as callback:
+        with (
+            pytest.raises(
+                TypeError,
+                match="Type of 'action' argument must be"
+                " <class 'str'>, but was <class 'int'>",
+            ),
+            Transaction(test_root, rollback_dir) as callback,
+        ):
             callback(42, "I/am/the/path", b"I/m/the/data")
 
-        with pytest.raises(
-            TypeError,
-            match="Type of 'path' argument must be"
-            " <class 'str'>, but was <class 'int'>",
-        ), Transaction(test_root, rollback_dir) as callback:
+        with (
+            pytest.raises(
+                TypeError,
+                match="Type of 'path' argument must be"
+                " <class 'str'>, but was <class 'int'>",
+            ),
+            Transaction(test_root, rollback_dir) as callback,
+        ):
             callback("replace_file", 13, b"I/m/the/data")
 
-        with pytest.raises(
-            TypeError,
-            match="Type of 'data' argument must be"
-            " <class 'bytes'>, but was <class 'int'>",
-        ), Transaction(test_root, rollback_dir) as callback:
+        with (
+            pytest.raises(
+                TypeError,
+                match="Type of 'data' argument must be"
+                " <class 'bytes'>, but was <class 'int'>",
+            ),
+            Transaction(test_root, rollback_dir) as callback,
+        ):
             callback("replace_file", "I/am/the/path", 0)
 
         with pytest.raises(ValueError, match="Value of 'data' argument must be None"):
             with Transaction(test_root, rollback_dir) as callback:
                 callback("delete_file", "I/am/the/path", b"I/m/the/data")
 
-        with pytest.raises(
-            ValueError,
-            match="Value of 'action' argument must be one of"
-            " 'delete_dir',"
-            " 'delete_file', 'replace_file',"
-            " but was 'replace_ifle'",
-        ), Transaction(test_root, rollback_dir) as callback:
+        with (
+            pytest.raises(
+                ValueError,
+                match="Value of 'action' argument must be one of"
+                " 'delete_dir',"
+                " 'delete_file', 'replace_file',"
+                " but was 'replace_ifle'",
+            ),
+            Transaction(test_root, rollback_dir) as callback,
+        ):
             callback("replace_ifle", "I/am/the/path", b"I/m/the/data")
 
     def test_paths_for_uri(self):
