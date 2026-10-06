@@ -16,10 +16,11 @@ import rioxarray as rxr
 import xarray as xr
 from zappend.api import zappend
 
+
 def get_dataset_from_geotiff(tiff_path):
     ds = rxr.open_rasterio(tiff_path)
     # Add missing time dimension
-    slice_time = get_slice_time(tiff_path)  
+    slice_time = get_slice_time(tiff_path)
     slice_ds = ds.expand_dims("time", axis=0)
     slice_ds.coords["time"] = xr.Dataset(np.array([slice_time]), dims="time")
     try:
@@ -27,9 +28,12 @@ def get_dataset_from_geotiff(tiff_path):
     finally:
         ds.close()
 
-zappend(sorted(glob.glob("inputs/*.tif")),
-        slice_source=get_dataset_from_geotiff,
-        target_dir="output/tif-cube.zarr")
+
+zappend(
+    sorted(glob.glob("inputs/*.tif")),
+    slice_source=get_dataset_from_geotiff,
+    target_dir="output/tif-cube.zarr",
+)
 ```
 
 In the example above, function `get_slice_time()` returns the time label

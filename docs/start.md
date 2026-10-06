@@ -66,17 +66,21 @@ Process list of slices stored in S3 [configuration](config.md) in `config`:
 ```python
 from zappend.api import zappend
 
-config = { 
+config = {
     "target_dir": "target.zarr",
     "slice_storage_options": {
-        "key": "...",               
-        "secret": "...",               
-    } 
+        "key": "...",
+        "secret": "...",
+    },
 }
 
-zappend((f"s3:/mybucket/data/{name}" 
-         for name in ["slice-1.nc", "slice-2.nc", "slice-3.nc"]), 
-        config=config)
+zappend(
+    (
+        f"s3:/mybucket/data/{name}"
+        for name in ["slice-1.nc", "slice-2.nc", "slice-3.nc"]
+    ),
+    config=config,
+)
 ```
 
 Slice items can also be arguments passed to your custom _slice source_, 
@@ -91,9 +95,12 @@ def get_dataset(path: str):
     ds = xr.open_dataset(path)
     return ds.drop_vars(["ndvi_min", "ndvi_max"])
 
-zappend(["slice-1.nc", "slice-2.nc", "slice-3.nc"], 
-        slice_source=get_dataset,
-        target_dir="target.zarr")
+
+zappend(
+    ["slice-1.nc", "slice-2.nc", "slice-3.nc"],
+    slice_source=get_dataset,
+    target_dir="target.zarr",
+)
 ```
 
 For the details, please refer to the section [_Slice Sources_](guide.md#slice-sources) in the 
