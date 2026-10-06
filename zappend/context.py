@@ -2,7 +2,7 @@
 #  Permissions are hereby granted under the terms of the MIT License:
 #  https://opensource.org/licenses/MIT.
 
-from typing import Any, Dict
+from typing import Any
 
 import xarray as xr
 
@@ -20,7 +20,7 @@ class Context:
         ValueError: If `target_dir` is missing in the configuration.
     """
 
-    def __init__(self, config: Dict[str, Any] | Config):
+    def __init__(self, config: dict[str, Any] | Config):
         _config: Config = config if isinstance(config, Config) else Config(config)
         last_append_label = None
         try:

@@ -23,7 +23,7 @@ except ImportError:
 class GetVariablesConfigTest(unittest.TestCase):
     def test_no_variables_given(self):
         dataset = make_test_dataset()
-        variables = get_variables_config(dataset, dict(x=512, y=256, time=1))
+        variables = get_variables_config(dataset, {"x": 512, "y": 256, "time": 1})
         self.assertEqual(
             {
                 "x": {"dims": ["x"], "encoding": {"chunks": None}},
@@ -45,7 +45,7 @@ class GetVariablesConfigTest(unittest.TestCase):
         dataset = make_test_dataset()
         variables = get_variables_config(
             dataset,
-            dict(x=512, y=256, time=1),
+            {"x": 512, "y": 256, "time": 1},
             variables={
                 "time": {"encoding": {"chunks": [3]}},
                 "chl": {"encoding": {"chunks": [3, 100, 100]}},
@@ -116,20 +116,22 @@ class WriteLevelsArgsTest(unittest.TestCase):
             )
 
     def test_dry_run_and_use_saved_levels_given(self):
-        with pytest.raises(
-            FileNotFoundError,
-            match="Target parent directory does not exist: /target.levels",
-        ):
-            with pytest.warns(
+        with (
+            pytest.raises(
+                FileNotFoundError,
+                match="Target parent directory does not exist: /target.levels",
+            ),
+            pytest.warns(
                 UserWarning,
                 match="'use_saved_levels' argument is not applicable if dry_run=True",
-            ):
-                write_levels(
-                    source_path=source_path,
-                    target_path=target_path,
-                    dry_run=True,
-                    use_saved_levels=True,
-                )
+            ),
+        ):
+            write_levels(
+                source_path=source_path,
+                target_path=target_path,
+                dry_run=True,
+                use_saved_levels=True,
+            )
 
     def test_source_path_and_source_ds_not_given(self):
         with pytest.raises(

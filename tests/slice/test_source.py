@@ -77,7 +77,7 @@ class ToSliceSourceTest(unittest.TestCase):
 
     def test_slice_item_is_dataset_with_slice_source_function(self):
         def my_slice_source(arg1, arg2=None, ctx=None):
-            return xr.Dataset(attrs=dict(arg1=arg1, arg2=arg2, ctx=ctx))
+            return xr.Dataset(attrs={"arg1": arg1, "arg2": arg2, "ctx": ctx})
 
         ctx = make_ctx(slice_source=my_slice_source)
         slice_source = to_slice_source(ctx, ([13], {"arg2": True}), 0)
@@ -92,7 +92,7 @@ class ToSliceSourceTest(unittest.TestCase):
 
         @contextlib.contextmanager
         def my_slice_source(ctx, arg1, arg2=None):
-            _ds = xr.Dataset(attrs=dict(arg1=arg1, arg2=arg2, ctx=ctx))
+            _ds = xr.Dataset(attrs={"arg1": arg1, "arg2": arg2, "ctx": ctx})
             try:
                 yield _ds
             finally:

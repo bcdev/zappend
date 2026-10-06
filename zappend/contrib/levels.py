@@ -5,7 +5,8 @@
 import json
 import logging
 import warnings
-from typing import Any, Hashable
+from collections.abc import Hashable
+from typing import Any
 
 import fsspec
 import xarray as xr
@@ -236,12 +237,12 @@ def write_levels(
 
     if not dry_run:
         with target_fs.open(f"{target_root}/.zlevels", "wt") as fp:
-            levels_data: dict[str, Any] = dict(
-                version="1.0",
-                num_levels=num_levels,
-                agg_methods=agg_methods,
-                use_saved_levels=use_saved_levels,
-            )
+            levels_data: dict[str, Any] = {
+                "version": "1.0",
+                "num_levels": num_levels,
+                "agg_methods": agg_methods,
+                "use_saved_levels": use_saved_levels,
+            }
             json.dump(levels_data, fp, indent=2)
 
     if (not dry_run) and link_level_zero:
@@ -255,7 +256,10 @@ def write_levels(
         with target_fs.open(f"{target_root}/0.link", "wt") as fp:
             fp.write(rel_source_path)
 
-    subsample_dataset_kwargs = dict(xy_dim_names=xy_dim_names, agg_methods=agg_methods)
+    subsample_dataset_kwargs = {
+        "xy_dim_names": xy_dim_names,
+        "agg_methods": agg_methods,
+    }
 
     num_slices = append_coord.size - source_append_offset
     for slice_index in range(num_slices):

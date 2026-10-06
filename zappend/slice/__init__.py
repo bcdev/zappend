@@ -8,9 +8,9 @@ from .source import SliceItem, SliceSource
 
 __all__ = [
     "SliceCallable",
-    "invoke_slice_callable",
-    "to_slice_callable",
-    "open_slice_dataset",
     "SliceItem",
     "SliceSource",
+    "invoke_slice_callable",
+    "open_slice_dataset",
+    "to_slice_callable",
 ]

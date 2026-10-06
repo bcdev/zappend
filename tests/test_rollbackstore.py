@@ -186,7 +186,7 @@ class RollbackStoreZarrTest(unittest.TestCase):
                 ("delete_file", "tsm/0.0.0"),
                 ("delete_file", "tsm/0.0.1"),
             },
-            set([r[:2] for r in self.records]),
+            {r[:2] for r in self.records},
         )
 
         #####################################################################
@@ -199,7 +199,7 @@ class RollbackStoreZarrTest(unittest.TestCase):
             [k for k, v in slice_1.variables.items() if "time" not in v.sizes]
         )
         slice_1.attrs = {}
-        for k, v in slice_1.variables.items():
+        for v in slice_1.variables.values():
             v.encoding = {}
             v.attrs = {}
 
@@ -237,7 +237,7 @@ class RollbackStoreZarrTest(unittest.TestCase):
                 ("replace_file", "tsm/0.0.0"),
                 ("replace_file", "tsm/0.0.1"),
             },
-            set([r[:2] for r in self.records]),
+            {r[:2] for r in self.records},
         )
 
         #####################################################################
@@ -249,7 +249,7 @@ class RollbackStoreZarrTest(unittest.TestCase):
         slice_2 = slice_2.drop_vars(
             [k for k, v in slice_2.variables.items() if "time" not in v.sizes]
         )
-        for k, v in slice_2.variables.items():
+        for v in slice_2.variables.values():
             v.encoding = {}
             v.attrs = {}
 
@@ -287,7 +287,7 @@ class RollbackStoreZarrTest(unittest.TestCase):
                 ("delete_file", "tsm/1.0.0"),
                 ("delete_file", "tsm/1.0.1"),
             },
-            set([r[:2] for r in self.records]),
+            {r[:2] for r in self.records},
         )
 
     def assert_dataset_ok(
@@ -299,5 +299,5 @@ class RollbackStoreZarrTest(unittest.TestCase):
         self.assertEqual(expected_sizes, ds.sizes)
         self.assertEqual(
             expected_chunks,
-            {k: ds[k].encoding.get("chunks") for k in ds.variables.keys()},
+            {k: ds[k].encoding.get("chunks") for k in ds.variables},
         )

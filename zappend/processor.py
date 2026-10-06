@@ -3,7 +3,8 @@
 #  https://opensource.org/licenses/MIT.
 
 import collections.abc
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 import numpy as np
 import xarray as xr
@@ -281,7 +282,7 @@ def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):
             )
 
 
-def to_timedelta(append_step: str | int | float) -> np.timedelta64:
+def to_timedelta(append_step: str | float) -> np.timedelta64:
     if isinstance(append_step, str):
         i = 0
         for i in range(len(append_step)):

@@ -17,9 +17,7 @@ class FileObjTest(unittest.TestCase):
         self.assertEqual("memory://test.zarr", str(FileObj("memory://test.zarr")))
         self.assertEqual(
             "memory://test.zarr",
-            str(
-                FileObj("memory://test.zarr", storage_options=dict(asynchronous=False))
-            ),
+            str(FileObj("memory://test.zarr", storage_options={"asynchronous": False})),
         )
 
     def test_repr(self):
@@ -29,7 +27,7 @@ class FileObjTest(unittest.TestCase):
         self.assertEqual(
             "FileObj('memory://test.zarr', storage_options={'asynchronous': False})",
             repr(
-                FileObj("memory://test.zarr", storage_options=dict(asynchronous=False))
+                FileObj("memory://test.zarr", storage_options={"asynchronous": False})
             ),
         )
 
@@ -63,8 +61,8 @@ class FileObjTest(unittest.TestCase):
             FileObj("s3://test.zarr", storage_options={"anon": False}),
         ]
         self.assertEqual(4, len(set(files)))
-        self.assertEqual(4, len(set(hash(f) for f in files)))
-        self.assertEqual(list(hash(f) for f in files), list(hash(f) for f in files))
+        self.assertEqual(4, len({hash(f) for f in files}))
+        self.assertEqual([hash(f) for f in files], [hash(f) for f in files])
 
     def test_memory_protocol(self):
         zarr_dir = FileObj("memory://test.zarr")

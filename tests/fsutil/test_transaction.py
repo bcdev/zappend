@@ -3,7 +3,7 @@
 #  https://opensource.org/licenses/MIT.
 
 import unittest
-from typing import Callable
+from collections.abc import Callable
 
 import pytest
 
@@ -148,24 +148,28 @@ class TransactionTest(unittest.TestCase):
         test_root.mkdir()
         rollback_dir = FileObj("memory://rollback")
         transaction = Transaction(test_root, rollback_dir)
-        with transaction:
-            with pytest.raises(
+        with (
+            transaction,
+            pytest.raises(
                 ValueError,
                 match="Transaction instance cannot be"
                 " used with nested 'with' statements",
-            ):
-                with transaction:
-                    pass
+            ),
+            transaction,
+        ):
+            pass
 
     # noinspection PyMethodMayBeStatic
     def test_it_raises_on_locked_target(self):
         test_root = FileObj("memory://test")
         test_root.mkdir()
         rollback_dir = FileObj("memory://rollback")
-        with Transaction(test_root, rollback_dir):
-            with pytest.raises(OSError, match="Target is locked: memory://test.lock"):
-                with Transaction(test_root, rollback_dir):
-                    pass
+        with (
+            Transaction(test_root, rollback_dir),
+            pytest.raises(OSError, match="Target is locked: memory://test.lock"),
+            Transaction(test_root, rollback_dir),
+        ):
+            pass
 
     # noinspection PyMethodMayBeStatic
     def test_it_raises_if_not_used_with_with(self):
@@ -215,52 +219,64 @@ class TransactionTest(unittest.TestCase):
         test_root = FileObj("memory://test")
         test_root.mkdir()
         rollback_dir = FileObj("memory://rollback")
-        with pytest.raises(
-            TypeError,
-            match="Transaction._add_rollback_action\\(\\)"
-            " missing 3 required positional arguments:"
-            " 'action', 'path', and 'data'",
+        with (
+            pytest.raises(
+                TypeError,
+                match="Transaction._add_rollback_action\\(\\)"
+                " missing 3 required positional arguments:"
+                " 'action', 'path', and 'data'",
+            ),
+            Transaction(test_root, rollback_dir) as callback,
         ):
-            with Transaction(test_root, rollback_dir) as callback:
-                callback()
+            callback()
 
-        with pytest.raises(
-            TypeError,
-            match="Type of 'action' argument must be"
-            " <class 'str'>, but was <class 'int'>",
+        with (
+            pytest.raises(
+                TypeError,
+                match="Type of 'action' argument must be"
+                " <class 'str'>, but was <class 'int'>",
+            ),
+            Transaction(test_root, rollback_dir) as callback,
         ):
-            with Transaction(test_root, rollback_dir) as callback:
-                callback(42, "I/am/the/path", b"I/m/the/data")
+            callback(42, "I/am/the/path", b"I/m/the/data")
 
-        with pytest.raises(
-            TypeError,
-            match="Type of 'path' argument must be"
-            " <class 'str'>, but was <class 'int'>",
+        with (
+            pytest.raises(
+                TypeError,
+                match="Type of 'path' argument must be"
+                " <class 'str'>, but was <class 'int'>",
+            ),
+            Transaction(test_root, rollback_dir) as callback,
         ):
-            with Transaction(test_root, rollback_dir) as callback:
-                callback("replace_file", 13, b"I/m/the/data")
+            callback("replace_file", 13, b"I/m/the/data")
 
-        with pytest.raises(
-            TypeError,
-            match="Type of 'data' argument must be"
-            " <class 'bytes'>, but was <class 'int'>",
+        with (
+            pytest.raises(
+                TypeError,
+                match="Type of 'data' argument must be"
+                " <class 'bytes'>, but was <class 'int'>",
+            ),
+            Transaction(test_root, rollback_dir) as callback,
         ):
-            with Transaction(test_root, rollback_dir) as callback:
-                callback("replace_file", "I/am/the/path", 0)
+            callback("replace_file", "I/am/the/path", 0)
 
-        with pytest.raises(ValueError, match="Value of 'data' argument must be None"):
-            with Transaction(test_root, rollback_dir) as callback:
-                callback("delete_file", "I/am/the/path", b"I/m/the/data")
-
-        with pytest.raises(
-            ValueError,
-            match="Value of 'action' argument must be one of"
-            " 'delete_dir',"
-            " 'delete_file', 'replace_file',"
-            " but was 'replace_ifle'",
+        with (
+            pytest.raises(ValueError, match="Value of 'data' argument must be None"),
+            Transaction(test_root, rollback_dir) as callback,
         ):
-            with Transaction(test_root, rollback_dir) as callback:
-                callback("replace_ifle", "I/am/the/path", b"I/m/the/data")
+            callback("delete_file", "I/am/the/path", b"I/m/the/data")
+
+        with (
+            pytest.raises(
+                ValueError,
+                match="Value of 'action' argument must be one of"
+                " 'delete_dir',"
+                " 'delete_file', 'replace_file',"
+                " but was 'replace_ifle'",
+            ),
+            Transaction(test_root, rollback_dir) as callback,
+        ):
+            callback("replace_ifle", "I/am/the/path", b"I/m/the/data")
 
     def test_paths_for_uri(self):
         t = Transaction(FileObj("memory:///target.zarr"), FileObj("memory:///temp"))
