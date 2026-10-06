@@ -49,7 +49,9 @@ class OpenSliceDatasetTest(unittest.TestCase):
 
     def test_slice_item_is_persisted_dataset(self):
         dataset = make_test_dataset()
-        ctx = Context({"target_dir": "memory://target.zarr", "persist_mem_slices": True})
+        ctx = Context(
+            {"target_dir": "memory://target.zarr", "persist_mem_slices": True}
+        )
         slice_cm = open_slice_dataset(ctx, dataset)
         self.assertIsInstance(slice_cm, SliceSourceContextManager)
         self.assertIsInstance(slice_cm.slice_source, TemporarySliceSource)

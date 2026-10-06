@@ -17,9 +17,7 @@ class FileObjTest(unittest.TestCase):
         self.assertEqual("memory://test.zarr", str(FileObj("memory://test.zarr")))
         self.assertEqual(
             "memory://test.zarr",
-            str(
-                FileObj("memory://test.zarr", storage_options={"asynchronous": False})
-            ),
+            str(FileObj("memory://test.zarr", storage_options={"asynchronous": False})),
         )
 
     def test_repr(self):

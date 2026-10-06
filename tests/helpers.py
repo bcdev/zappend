@@ -35,10 +35,16 @@ def make_test_config(
                 "chunks": list(chunks),
             },
             "chl": {
-                "dtype": "uint16", "scale_factor": 0.2, "add_offset": 0, "fill_value": 9999
+                "dtype": "uint16",
+                "scale_factor": 0.2,
+                "add_offset": 0,
+                "fill_value": 9999,
             },
             "tsm": {
-                "dtype": "int16", "scale_factor": 0.01, "add_offset": -200, "fill_value": -9999
+                "dtype": "int16",
+                "scale_factor": 0.01,
+                "add_offset": -200,
+                "fill_value": -9999,
             },
             dims[0]: {
                 "dtype": "uint64",

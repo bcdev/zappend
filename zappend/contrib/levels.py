@@ -256,7 +256,10 @@ def write_levels(
         with target_fs.open(f"{target_root}/0.link", "wt") as fp:
             fp.write(rel_source_path)
 
-    subsample_dataset_kwargs = {"xy_dim_names": xy_dim_names, "agg_methods": agg_methods}
+    subsample_dataset_kwargs = {
+        "xy_dim_names": xy_dim_names,
+        "agg_methods": agg_methods,
+    }
 
     num_slices = append_coord.size - source_append_offset
     for slice_index in range(num_slices):
