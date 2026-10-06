@@ -132,7 +132,7 @@ class XArrayEncodingTest(unittest.TestCase):
         self.ds.v.encoding.update(chunks=(20,))
         with pytest.raises(
             (NotImplementedError, ValueError),
-            match="Specified zarr chunks"
+            match="Specified [Zz]arr chunks"
             " encoding\\['chunks'\\]=\\(20,\\)"
             " for variable named 'v'",
         ):

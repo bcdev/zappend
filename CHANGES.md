@@ -4,6 +4,8 @@
 * Reformatted code and fixed linter issues.
 * Added `environment.yml` to setup a conda/mamba development environment. 
 * Updated copyright notice.
+* Changed the development dependency from `h5netcdf` to `h5netcdf[h5py]`
+  to ensure the HDF5 backend required by NetCDF tests is installed. (#110)
 
 
 ## Version 0.8.0 (from 2024-10-04)

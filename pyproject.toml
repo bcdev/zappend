@@ -50,7 +50,7 @@ dev = [
   "isort",
   "pytest",
   "pytest-cov",
-  "h5netcdf",
+  "h5netcdf[h5py]",
   "s3fs",
   "scipy",
   "pyproj",
