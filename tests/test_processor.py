@@ -23,8 +23,8 @@ class ProcessorTest(unittest.TestCase):
         target_dir = FileObj("memory://target.zarr")
         self.assertFalse(target_dir.exists())
 
-        processor = Processor(dict(target_dir=target_dir.uri))
-        test_ds_kwargs = dict(shape=(1, 10, 20), chunks=(1, 5, 10))
+        processor = Processor({"target_dir": target_dir.uri})
+        test_ds_kwargs = {"shape": (1, 10, 20), "chunks": (1, 5, 10)}
         make_test_dataset(uri="memory://slice-1.zarr", **test_ds_kwargs)
         processor.process_slices(["memory://slice-1.zarr"])
 
@@ -45,8 +45,8 @@ class ProcessorTest(unittest.TestCase):
         target_dir = FileObj("memory://target.zarr")
         self.assertFalse(target_dir.exists())
 
-        processor = Processor(dict(target_dir=target_dir.uri))
-        test_ds_kwargs = dict(shape=(1, 10, 20), chunks=(1, 5, 10))
+        processor = Processor({"target_dir": target_dir.uri})
+        test_ds_kwargs = {"shape": (1, 10, 20), "chunks": (1, 5, 10)}
         make_test_dataset(uri="memory://slice-1.zarr", **test_ds_kwargs)
         make_test_dataset(uri="memory://slice-2.zarr", **test_ds_kwargs)
         processor.process_slices(["memory://slice-1.zarr", "memory://slice-2.zarr"])
@@ -114,15 +114,15 @@ class ProcessorTest(unittest.TestCase):
         self.assertFalse(target_dir.exists())
 
         processor = Processor(
-            dict(
-                target_dir=target_dir.uri,
-                variables=dict(
-                    chl=dict(encoding=dict(chunks=[3, 5, 10])),
-                    tsm=dict(encoding=dict(chunks=[3, 5, 10])),
-                ),
-            )
+            {
+                "target_dir": target_dir.uri,
+                "variables": {
+                    "chl": {"encoding": {"chunks": [3, 5, 10]}},
+                    "tsm": {"encoding": {"chunks": [3, 5, 10]}},
+                },
+            }
         )
-        test_ds_kwargs = dict(shape=(2, 10, 20), chunks=(2, 5, 10))
+        test_ds_kwargs = {"shape": (2, 10, 20), "chunks": (2, 5, 10)}
         make_test_dataset(uri="memory://slice-1.zarr", **test_ds_kwargs)
         make_test_dataset(uri="memory://slice-2.zarr", **test_ds_kwargs)
         processor.process_slices(["memory://slice-1.zarr", "memory://slice-2.zarr"])

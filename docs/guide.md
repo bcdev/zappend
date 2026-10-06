@@ -67,11 +67,12 @@ types. Configuration sequences are again merged into one.
 import os
 from zappend.api import zappend
 
-zappend(os.listdir("inputs"), 
-        config=["configs/base.yaml",
-                "configs/mycube.yaml"], 
-        target_dir="outputs/mycube.zarr",
-        dry_run=True)
+zappend(
+    os.listdir("inputs"),
+    config=["configs/base.yaml", "configs/mycube.yaml"],
+    target_dir="outputs/mycube.zarr",
+    dry_run=True,
+)
 ```
 
 The remainder of this guide explains the how to use the various `zappend` 
@@ -463,8 +464,8 @@ You can compute `scale_factor` and `add_offset` from given data range in physica
 according to
 
 ```python
-  add_offset = memory_value_min
-  scale_factor = (memory_value_max - memory_value_min) / (2 ** num_bits - 1)
+add_offset = memory_value_min
+scale_factor = (memory_value_max - memory_value_min) / (2**num_bits - 1)
 ```
 
 with `num_bits` being the number of bits for the integer type to be used.
@@ -706,6 +707,7 @@ an `xarray.Dataset`:
 ```python
 import xarray as xr
 
+
 # Slice source argument `path` is just an example.
 def get_dataset(path: str) -> xr.Dataset:
     # Provide dataset here. No matter how, e.g.:
@@ -720,6 +722,7 @@ you can turn your slice source function into a
 ```python
 from contextlib import contextmanager
 import xarray as xr
+
 
 # Slice source argument `path` is just an example.
 @contextmanager
@@ -746,6 +749,7 @@ You can also implement your slice source as a class derived from the abstract
 ```python
 import xarray as xr
 from zappend.api import SliceSource
+
 
 class MySliceSource(SliceSource):
     # Slice source argument `path` is just an example.
@@ -781,9 +785,11 @@ qualified name of the slice source function or class:
 If you use the `zappend` function, you can pass the function or class directly:
 
 ```python
-zappend(["slice-1.nc", "slice-2.nc", "slice-3.nc"],
-        target_dir="target.zarr",
-        slice_source=MySliceSource)
+zappend(
+    ["slice-1.nc", "slice-2.nc", "slice-3.nc"],
+    target_dir="target.zarr",
+    slice_source=MySliceSource,
+)
 ```
 
 If the slice source setting is used, each slice item passed to `zappend` is passed as 
@@ -835,6 +841,7 @@ from zappend.api import Context
 from zappend.api import SliceSource
 from zappend.api import zappend
 
+
 class MySliceSource(SliceSource):
     def __init__(self, ctx: Context, slice_path: str):
         self.quantiles = ctx.config.extra.get("quantiles", [0.5])
@@ -849,25 +856,28 @@ class MySliceSource(SliceSource):
         if self.ds is not None:
             self.ds.close()
 
-    def get_agg_slice(self, slice_ds: xr.Dataset) -> xr.Dataset: 
+    def get_agg_slice(self, slice_ds: xr.Dataset) -> xr.Dataset:
         agg_slice_ds = slice_ds.quantile(self.quantiles, dim="time")
         # Re-introduce time dimension of size one
         agg_slice_ds = agg_slice_ds.expand_dims("time", axis=0)
         agg_slice_ds.coords["time"] = self.get_mean_time(slice_ds)
-        return agg_slice_ds 
+        return agg_slice_ds
 
     @classmethod
     def get_mean_time(cls, slice_ds: xr.Dataset) -> xr.DataArray:
         time = slice_ds.time
         t0 = time[0]
         dt = time[-1] - t0
-        return xr.DataArray(np.array([t0 + dt / 2], 
-                                     dtype=slice_ds.time.dtype), 
-                            dims="time")
-        
-zappend(["slice-1.nc", "slice-2.nc", "slice-3.nc"],
-        target_dir="target.zarr",
-        slice_source=MySliceSource)
+        return xr.DataArray(
+            np.array([t0 + dt / 2], dtype=slice_ds.time.dtype), dims="time"
+        )
+
+
+zappend(
+    ["slice-1.nc", "slice-2.nc", "slice-3.nc"],
+    target_dir="target.zarr",
+    slice_source=MySliceSource,
+)
 ```
 
 ## Profiling

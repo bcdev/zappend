@@ -163,20 +163,20 @@ class EvalExprTest(unittest.TestCase):
         time = datetime.date.fromisoformat("2024-01-02")
         self.assertEqual(
             "2024-01-02",
-            eval_expr("time", dict(time=time)),
+            eval_expr("time", {"time": time}),
         )
         time = datetime.datetime.fromisoformat("2024-01-02T10:20:30")
         self.assertEqual(
             "2024-01-02T10:20:30",
-            eval_expr("time", dict(time=time)),
+            eval_expr("time", {"time": time}),
         )
         with pytest.raises(
             ValueError, match="cannot serialize value of type <class 'object'>"
         ):
-            eval_expr("obj", dict(obj=object()))
+            eval_expr("obj", {"obj": object()})
 
     def test_dict_result(self):
-        self.assertEqual({}, eval_expr("d", dict(d={})))
+        self.assertEqual({}, eval_expr("d", {"d": {}}))
         self.assertEqual(
             {
                 "b": True,
@@ -189,8 +189,8 @@ class EvalExprTest(unittest.TestCase):
             },
             eval_expr(
                 "d",
-                dict(
-                    d={
+                {
+                    "d": {
                         "b": True,
                         "i": 13,
                         "t": (1, "B", {}),
@@ -199,7 +199,7 @@ class EvalExprTest(unittest.TestCase):
                         "np_a": np.array([0.1, 0.2]),
                         "xr_a": xr.DataArray(np.array([0.3, 0.4])),
                     }
-                ),
+                },
             ),
         )
 
@@ -218,7 +218,7 @@ class EvalExprTest(unittest.TestCase):
                 " of type <class 'numpy.ndarray'>, dtype=dtype\\('O'\\)"
             ),
         ):
-            eval_expr("a", dict(a=xr.DataArray([object(), object()])))
+            eval_expr("a", {"a": xr.DataArray([object(), object()])})
 
     def test_array_2d_result(self):
         self.assert_array_ok([[3, 4], [5, 6]])
@@ -227,33 +227,33 @@ class EvalExprTest(unittest.TestCase):
         # Test list
         self.assertEqual(
             a,
-            eval_expr("a", dict(a=a)),
+            eval_expr("a", {"a": a}),
         )
         self.assertEqual(
             a[0],
-            eval_expr("a[0]", dict(a=a)),
+            eval_expr("a[0]", {"a": a}),
         )
 
         # Test numpy.ndarray
         np_a = np.array(a, dtype=dtype) if dtype is not None else np.array(a)
         self.assertEqual(
             a,
-            eval_expr("a", dict(a=np_a)),
+            eval_expr("a", {"a": np_a}),
         )
         self.assertEqual(
             a[0],
-            eval_expr("a[0]", dict(a=np_a)),
+            eval_expr("a[0]", {"a": np_a}),
         )
 
         # Test xarray-DataArray
         xr_a = xr.DataArray(np_a)
         self.assertEqual(
             a,
-            eval_expr("a", dict(a=xr_a)),
+            eval_expr("a", {"a": xr_a}),
         )
         self.assertEqual(
             a[0],
-            eval_expr("a[0]", dict(a=xr_a)),
+            eval_expr("a[0]", {"a": xr_a}),
         )
 
 

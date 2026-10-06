@@ -177,7 +177,7 @@ class ConfigNormalizeTest(unittest.TestCase):
         with pytest.raises(TypeError):
             normalize_config(True)
         with pytest.raises(TypeError):
-            normalize_config(bytes())
+            normalize_config(b"")
 
     def test_merge_config(self):
         self.assertEqual({}, merge_configs())

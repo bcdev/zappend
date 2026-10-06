@@ -4,7 +4,7 @@
 
 import importlib
 import inspect
-from typing import Any, Type
+from typing import Any
 
 from ..context import Context
 from .source import SliceCallable, SliceItem
@@ -75,7 +75,7 @@ def to_slice_args(arg: Any) -> tuple[tuple[...], dict[str, Any]]:
     return args, kwargs
 
 
-def to_slice_callable(slice_source_type: str | Type) -> SliceCallable | None:
+def to_slice_callable(slice_source_type: str | type) -> SliceCallable | None:
     """Convert a string or type into a slice callable.
 
     Args:

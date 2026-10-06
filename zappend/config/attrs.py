@@ -131,7 +131,7 @@ def get_dyn_config_attrs_env(ds: xr.Dataset, **kwargs):
     )
 
 
-_CellRef = Literal["lower"] | Literal["center"] | Literal["upper"]
+_CellRef = Literal["lower", "center", "upper"]
 
 
 class ConfigAttrsUserFunctions:

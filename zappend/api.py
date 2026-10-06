@@ -2,7 +2,8 @@
 #  Permissions are hereby granted under the terms of the MIT License:
 #  https://opensource.org/licenses/MIT.
 
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from .config import Config, ConfigItem, ConfigLike, ConfigList
 from .context import Context
