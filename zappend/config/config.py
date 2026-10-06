@@ -3,7 +3,8 @@
 #  https://opensource.org/licenses/MIT.
 
 import tempfile
-from typing import Any, Callable, Dict, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
 from ..fsutil.fileobj import FileObj
 from .defaults import (
@@ -26,7 +27,7 @@ class Config:
         ValueError: If `target_dir` is missing in the configuration.
     """
 
-    def __init__(self, config_dict: Dict[str, Any]):
+    def __init__(self, config_dict: dict[str, Any]):
         self._config = config_dict
 
         target_uri = config_dict.get("target_dir")
@@ -93,7 +94,7 @@ class Config:
     @property
     def attrs_update_mode(
         self,
-    ) -> Literal["keep"] | Literal["replace"] | Literal["update"]:
+    ) -> Literal["keep", "replace", "update"]:
         """The mode used to deal with global slice dataset attributes.
         One of `"keep"`, `"replace"`, `"update"`.
         """

@@ -201,7 +201,7 @@ class FileObj:
         self._resolve()
         self._fs.mkdir(self._path, create_parents=False)
 
-    def read(self, mode: Literal["rb"] | Literal["r"] = "rb") -> bytes | str:
+    def read(self, mode: Literal["rb", "r"] = "rb") -> bytes | str:
         """Read the contents of the file represented by this file object.
 
         Args:
@@ -218,7 +218,7 @@ class FileObj:
     def write(
         self,
         data: str | bytes,
-        mode: Literal["wb"] | Literal["w"] | Literal["ab"] | Literal["a"] | None = None,
+        mode: Literal["wb", "w", "ab", "a"] | None = None,
     ) -> int:
         """Write the contents of the file represented by this file object.
 

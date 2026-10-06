@@ -770,7 +770,7 @@ CONFIG_SCHEMA_V1 = {
 
 # noinspection PyShadowingBuiltins
 def get_config_schema(
-    format: Literal["md"] | Literal["json"] | Literal["dict"] = "dict",
+    format: Literal["md", "json", "dict"] = "dict",
 ) -> str | dict[str, Any]:
     """Get the configuration schema in the given format.
 

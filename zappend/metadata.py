@@ -2,7 +2,8 @@
 #  Permissions are hereby granted under the terms of the MIT License:
 #  https://opensource.org/licenses/MIT.
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import numcodecs
 import numcodecs.abc
@@ -39,9 +40,9 @@ class VariableEncoding:
         self,
         dtype: np.dtype | Undefined = UNDEFINED,
         chunks: tuple[int] | None | Undefined = UNDEFINED,
-        fill_value: int | float | None | Undefined = UNDEFINED,
-        scale_factor: int | float | Undefined = UNDEFINED,
-        add_offset: int | float | Undefined = UNDEFINED,
+        fill_value: float | None | Undefined = UNDEFINED,
+        scale_factor: float | Undefined = UNDEFINED,
+        add_offset: float | Undefined = UNDEFINED,
         units: str | Undefined = UNDEFINED,
         calendar: str | Undefined = UNDEFINED,
         compressor: Codec | None | Undefined = UNDEFINED,

@@ -119,17 +119,16 @@ class WriteLevelsArgsTest(unittest.TestCase):
         with pytest.raises(
             FileNotFoundError,
             match="Target parent directory does not exist: /target.levels",
+        ), pytest.warns(
+            UserWarning,
+            match="'use_saved_levels' argument is not applicable if dry_run=True",
         ):
-            with pytest.warns(
-                UserWarning,
-                match="'use_saved_levels' argument is not applicable if dry_run=True",
-            ):
-                write_levels(
-                    source_path=source_path,
-                    target_path=target_path,
-                    dry_run=True,
-                    use_saved_levels=True,
-                )
+            write_levels(
+                source_path=source_path,
+                target_path=target_path,
+                dry_run=True,
+                use_saved_levels=True,
+            )
 
     def test_source_path_and_source_ds_not_given(self):
         with pytest.raises(

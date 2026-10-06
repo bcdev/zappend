@@ -5,7 +5,8 @@
 import contextlib
 import warnings
 from abc import ABC, abstractmethod
-from typing import Callable, ContextManager, Type
+from collections.abc import Callable
+from typing import ContextManager
 
 import xarray as xr
 
@@ -71,7 +72,7 @@ class SliceSource(ABC):
 SliceItem = str | FileObj | xr.Dataset | ContextManager[xr.Dataset] | SliceSource
 """The possible types that can represent a slice dataset."""
 
-SliceCallable = Type[SliceSource] | Callable[[...], SliceItem]
+SliceCallable = type[SliceSource] | Callable[[...], SliceItem]
 """This type is either a class derived from `SliceSource` or a function that 
 returns a `SliceItem`. Both can be invoked with any number of positional or 
 keyword arguments. The processing context, if used, must be named `ctx` and 

@@ -88,7 +88,7 @@ def merge_configs(*configs: dict[str, Any]) -> dict[str, Any]:
 
 def _merge_dicts(dict_1: dict[str, Any], dict_2: dict[str, Any]) -> dict[str, Any]:
     merged = dict(dict_1)
-    for key in dict_2.keys():
+    for key in dict_2:
         if key in merged:
             merged[key] = _merge_values(merged[key], dict_2[key])
         else:

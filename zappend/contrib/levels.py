@@ -5,7 +5,8 @@
 import json
 import logging
 import warnings
-from typing import Any, Hashable
+from collections.abc import Hashable
+from typing import Any
 
 import fsspec
 import xarray as xr

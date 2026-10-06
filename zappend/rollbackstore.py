@@ -2,8 +2,8 @@
 #  Permissions are hereby granted under the terms of the MIT License:
 #  https://opensource.org/licenses/MIT.
 
-from collections.abc import MutableMapping
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, MutableMapping, Sequence
+from typing import Any
 
 import zarr.context
 import zarr.storage
@@ -40,7 +40,7 @@ class RollbackStore(zarr.storage.Store):
     def __contains__(self, key: str):
         return key in self._store
 
-    def __eq__(self, other: Any):
+    def __eq__(self, other: object):
         return self is other or (
             isinstance(other, RollbackStore)
             and self._rollback_cb is other._rollback_cb

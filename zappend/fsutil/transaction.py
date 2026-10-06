@@ -3,13 +3,14 @@
 #  https://opensource.org/licenses/MIT.
 
 import uuid
-from typing import Callable, Literal
+from collections.abc import Callable
+from typing import Literal
 
 from zappend.fsutil.fileobj import FileObj
 from zappend.log import logger
 
 RollbackAction = (
-    Literal["delete_dir"] | Literal["delete_file"] | Literal["replace_file"]
+    Literal["delete_dir", "delete_file", "replace_file"]
 )
 
 RollbackCallback = Callable[

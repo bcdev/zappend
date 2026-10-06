@@ -139,9 +139,8 @@ class OpenSliceDatasetTest(unittest.TestCase):
             )
         )
         slice_cm = open_slice_dataset(ctx, slice_dir.uri)
-        with pytest.raises(FileNotFoundError, match=slice_dir.uri):
-            with slice_cm:
-                pass
+        with pytest.raises(FileNotFoundError, match=slice_dir.uri), slice_cm:
+            pass
 
     def test_slice_item_is_context_manager(self):
         @contextlib.contextmanager
