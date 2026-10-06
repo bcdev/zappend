@@ -11,7 +11,7 @@ dependencies:
   - numcodecs
   - numpy
   - pyyaml
-  - xarray
+  - xarray <2026.4 # constrain to <2026.4 to retain compatibility with zarr 2.
   - zarr >=2.18,<3
   # Dev Dependencies
   - isort
