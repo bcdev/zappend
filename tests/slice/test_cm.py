@@ -217,9 +217,11 @@ class OpenSliceDatasetTest(unittest.TestCase):
         slice_cm = open_slice_dataset(ctx, "bibo")
         self.assertIsInstance(slice_cm, SliceSourceContextManager)
         self.assertIsInstance(slice_cm.slice_source, SliceSource)
-        with pytest.warns(expected_warning=DeprecationWarning):
-            with slice_cm as slice_ds:
-                self.assertIsInstance(slice_ds, xr.Dataset)
+        with (
+            pytest.warns(expected_warning=DeprecationWarning),
+            slice_cm as slice_ds,
+        ):
+            self.assertIsInstance(slice_ds, xr.Dataset)
 
     def test_slice_item_is_slice_source_arg_with_extra_kwargs(self):
         class MySliceSource(SliceSource):

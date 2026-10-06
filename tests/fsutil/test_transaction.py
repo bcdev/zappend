@@ -164,10 +164,12 @@ class TransactionTest(unittest.TestCase):
         test_root = FileObj("memory://test")
         test_root.mkdir()
         rollback_dir = FileObj("memory://rollback")
-        with Transaction(test_root, rollback_dir):
-            with pytest.raises(OSError, match="Target is locked: memory://test.lock"):
-                with Transaction(test_root, rollback_dir):
-                    pass
+        with (
+            Transaction(test_root, rollback_dir),
+            pytest.raises(OSError, match="Target is locked: memory://test.lock"),
+            Transaction(test_root, rollback_dir),
+        ):
+            pass
 
     # noinspection PyMethodMayBeStatic
     def test_it_raises_if_not_used_with_with(self):
@@ -258,9 +260,11 @@ class TransactionTest(unittest.TestCase):
         ):
             callback("replace_file", "I/am/the/path", 0)
 
-        with pytest.raises(ValueError, match="Value of 'data' argument must be None"):
-            with Transaction(test_root, rollback_dir) as callback:
-                callback("delete_file", "I/am/the/path", b"I/m/the/data")
+        with (
+            pytest.raises(ValueError, match="Value of 'data' argument must be None"),
+            Transaction(test_root, rollback_dir) as callback,
+        ):
+            callback("delete_file", "I/am/the/path", b"I/m/the/data")
 
         with (
             pytest.raises(
