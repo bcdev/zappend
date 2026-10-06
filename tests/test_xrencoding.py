@@ -44,12 +44,12 @@ class XArrayEncodingTest(unittest.TestCase):
         self.assertFalse(FileObj(TEST_ZARR).exists())
 
         self.ds = xr.Dataset(
-            data_vars=dict(v=xr.DataArray(np.ones(100, dtype=np.float64), dims="x")),
-            coords=dict(
-                x=xr.DataArray(
+            data_vars={"v": xr.DataArray(np.ones(100, dtype=np.float64), dims="x")},
+            coords={
+                "x": xr.DataArray(
                     np.linspace(0, 1, 100, endpoint=False, dtype=np.float32), dims="x"
                 )
-            ),
+            },
         )
         self.ds_v_attrs = {"_ARRAY_DIMENSIONS": ["x"]}
         self.ds_v_meta = {
@@ -70,14 +70,14 @@ class XArrayEncodingTest(unittest.TestCase):
         }
 
         self.ds_2 = xr.Dataset(
-            data_vars=dict(
-                v=xr.DataArray(np.full(100, 2.0, dtype=np.float64), dims="x")
-            ),
-            coords=dict(
-                x=xr.DataArray(
+            data_vars={
+                "v": xr.DataArray(np.full(100, 2.0, dtype=np.float64), dims="x")
+            },
+            coords={
+                "x": xr.DataArray(
                     np.linspace(1, 2, 100, endpoint=False, dtype=np.float32), dims="x"
                 )
-            ),
+            },
         )
 
     def test_no_encoding_given(self):
@@ -92,7 +92,7 @@ class XArrayEncodingTest(unittest.TestCase):
         )
 
     def test_chunks_in_encoding_kwargs_works(self):
-        self.ds.to_zarr(TEST_ZARR, encoding=dict(v=dict(chunks=(20,))))
+        self.ds.to_zarr(TEST_ZARR, encoding={"v": {"chunks": (20,)}})
         self.assertEqual(self.ds_v_attrs, get_v_attrs())
         self.assertEqual({**self.ds_v_meta, "chunks": [20]}, get_v_meta())
         # test append
@@ -116,7 +116,7 @@ class XArrayEncodingTest(unittest.TestCase):
 
     def test_chunks_in_kwargs_override_v_encoding(self):
         self.ds.v.encoding.update(chunks=(20,))
-        self.ds.to_zarr(TEST_ZARR, encoding=dict(v=dict(chunks=(30,))))
+        self.ds.to_zarr(TEST_ZARR, encoding={"v": {"chunks": (30,)}})
         self.assertEqual(self.ds_v_attrs, get_v_attrs())
         self.assertEqual({**self.ds_v_meta, "chunks": [30]}, get_v_meta())
         # test append

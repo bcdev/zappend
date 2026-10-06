@@ -29,20 +29,20 @@ SLICE_POLLING_SCHEMA = {
         {
             "description": "Polling parameters.",
             "type": "object",
-            "properties": dict(
-                interval={
+            "properties": {
+                "interval": {
                     "description": "Polling interval in seconds.",
                     "type": "number",
                     "exclusiveMinimum": 0,
                     "default": DEFAULT_SLICE_POLLING_INTERVAL,
                 },
-                timeout={
+                "timeout": {
                     "description": "Polling timeout in seconds.",
                     "type": "number",
                     "exclusiveMinimum": 0,
                     "default": DEFAULT_SLICE_POLLING_TIMEOUT,
                 },
-            ),
+            },
             "required": ["interval", "timeout"],
         },
     ],
@@ -55,8 +55,8 @@ VARIABLE_ENCODING_SCHEMA = {
         " first contributing dataset."
     ),
     "type": "object",
-    "properties": dict(
-        dtype={
+    "properties": {
+        "dtype": {
             "description": "Storage data type",
             "enum": [
                 "int8",
@@ -71,7 +71,7 @@ VARIABLE_ENCODING_SCHEMA = {
                 "float64",
             ],
         },
-        chunks={
+        "chunks": {
             "description": "Storage chunking.",
             "oneOf": [
                 {
@@ -94,7 +94,7 @@ VARIABLE_ENCODING_SCHEMA = {
                 {"description": "Disable chunking in all dimensions.", "const": None},
             ],
         },
-        fill_value={
+        "fill_value": {
             "description": "Storage fill value.",
             "oneOf": [
                 {
@@ -113,7 +113,7 @@ VARIABLE_ENCODING_SCHEMA = {
                 {"description": "No fill value.", "const": None},
             ],
         },
-        scale_factor={
+        "scale_factor": {
             "description": (
                 "Scale factor for computing the in-memory value:"
                 " `memory_value = scale_factor * storage_value"
@@ -121,7 +121,7 @@ VARIABLE_ENCODING_SCHEMA = {
             ),
             "type": "number",
         },
-        add_offset={
+        "add_offset": {
             "description": (
                 "Add offset for computing the in-memory value:"
                 " `memory_value = scale_factor * storage_value"
@@ -129,19 +129,19 @@ VARIABLE_ENCODING_SCHEMA = {
             ),
             "type": "number",
         },
-        units={
+        "units": {
             "description": (
                 "Units of the storage data type if memory data type is date/time."
             ),
             "type": "string",
         },
-        calendar={
+        "calendar": {
             "description": (
                 "The calendar to be used if memory data type is date/time."
             ),
             "type": "string",
         },
-        compressor={
+        "compressor": {
             "description": (
                 "Compressor definition. Set to `null` to disable data compression."
                 " Allowed parameters depend on the value of `id`."
@@ -153,7 +153,7 @@ VARIABLE_ENCODING_SCHEMA = {
             "required": ["id"],
             "additionalProperties": True,
         },
-        filters={
+        "filters": {
             "description": "List of filters. Set to `null` to not use filters.",
             "type": ["array", "null"],
             "items": {
@@ -168,7 +168,7 @@ VARIABLE_ENCODING_SCHEMA = {
                 "additionalProperties": True,
             },
         },
-    ),
+    },
 }
 
 VARIABLES_SCHEMA = {
@@ -185,8 +185,8 @@ VARIABLES_SCHEMA = {
     "additionalProperties": {
         "description": "Variable metadata.",
         "type": "object",
-        "properties": dict(
-            dims={
+        "properties": {
+            "dims": {
                 "description": (
                     "The names of the variable's dimensions"
                     " in the given order. Each dimension"
@@ -195,13 +195,13 @@ VARIABLES_SCHEMA = {
                 "type": "array",
                 "items": {"type": "string", "minLength": 1},
             },
-            encoding=VARIABLE_ENCODING_SCHEMA,
-            attrs={
+            "encoding": VARIABLE_ENCODING_SCHEMA,
+            "attrs": {
                 "description": "Arbitrary variable metadata attributes.",
                 "type": "object",
                 "additionalProperties": True,
             },
-        ),
+        },
         "additionalProperties": False,
     },
 }
@@ -323,9 +323,9 @@ DETAILED_LOGGING_SCHEMA = {
         f" of the Python module `logging.config`."
     ),
     "type": "object",
-    "properties": dict(
-        version={"description": "Logging schema version.", "const": 1},
-        formatters={
+    "properties": {
+        "version": {"description": "Logging schema version.", "const": 1},
+        "formatters": {
             "description": (
                 "Formatter definitions."
                 " Each key is a formatter id and each value is an"
@@ -336,13 +336,13 @@ DETAILED_LOGGING_SCHEMA = {
             "additionalProperties": {
                 "description": "Formatter configuration.",
                 "type": "object",
-                "properties": dict(
-                    format={
+                "properties": {
+                    "format": {
                         "description": "Format string in the given `style`.",
                         "type": "string",
                         "default": "%(message)s",
                     },
-                    datefmt={
+                    "datefmt": {
                         "description": (
                             "Format string in the given `style`"
                             " for the date/time portion."
@@ -350,16 +350,16 @@ DETAILED_LOGGING_SCHEMA = {
                         "type": "string",
                         "default": "%Y-%m-%d %H:%M:%S,uuu",
                     },
-                    style={
+                    "style": {
                         "description": "Determines how the format string"
                         " will be merged with its data.",
                         "enum": ["%", "{", "$"],
                     },
-                ),
+                },
                 "additionalProperties": False,
             },
         },
-        filters={
+        "filters": {
             "description": (
                 "Filter definitions."
                 " Each key is a filter id and each value is a dict"
@@ -373,7 +373,7 @@ DETAILED_LOGGING_SCHEMA = {
                 "additionalProperties": True,
             },
         },
-        handlers={
+        "handlers": {
             "description": (
                 "Handler definitions."
                 " Each key is a handler id and each value is an"
@@ -415,7 +415,7 @@ DETAILED_LOGGING_SCHEMA = {
                 "additionalProperties": True,
             },
         },
-        loggers={
+        "loggers": {
             "description": (
                 "Logger definitions."
                 " Each key is a logger name and each value is an"
@@ -454,7 +454,7 @@ DETAILED_LOGGING_SCHEMA = {
                 "additionalProperties": True,
             },
         },
-    ),
+    },
     "required": ["version"],
     "additionalProperties": True,
 }
@@ -483,15 +483,15 @@ LOGGING_SCHEMA = {
 
 CONFIG_SCHEMA_V1 = {
     "type": "object",
-    "properties": dict(
-        append_dim={
+    "properties": {
+        "append_dim": {
             "category": "Target Outline",
             "description": "The name of the variadic append dimension.",
             "type": "string",
             "minLength": 1,
             "default": DEFAULT_APPEND_DIM,
         },
-        append_step={
+        "append_step": {
             "category": "Target Outline",
             "description": (
                 "If set, enforces a step size in the append dimension between two"
@@ -520,7 +520,7 @@ CONFIG_SCHEMA_V1 = {
             ],
             "default": DEFAULT_APPEND_STEP,
         },
-        fixed_dims={
+        "fixed_dims": {
             "category": "Target Outline",
             "description": (
                 "Specifies the fixed dimensions of the"
@@ -530,7 +530,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "object",
             "additionalProperties": {"type": "integer", "minimum": 1},
         },
-        included_variables={
+        "included_variables": {
             "category": "Target Outline",
             "description": (
                 "Specifies the names of variables to be included in"
@@ -540,7 +540,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "array",
             "items": {"type": "string", "minLength": 1},
         },
-        excluded_variables={
+        "excluded_variables": {
             "category": "Target Outline",
             "description": (
                 "Specifies the names of individual variables"
@@ -549,8 +549,8 @@ CONFIG_SCHEMA_V1 = {
             "type": "array",
             "items": {"type": "string", "minLength": 1},
         },
-        variables=VARIABLES_SCHEMA,
-        attrs={
+        "variables": VARIABLES_SCHEMA,
+        "attrs": {
             "category": "Target Outline",
             "description": (
                 "Arbitrary dataset attributes."
@@ -564,7 +564,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "object",
             "additionalProperties": True,
         },
-        attrs_update_mode={
+        "attrs_update_mode": {
             "category": "Target Outline",
             "description": (
                 "The mode used update target attributes from slice"
@@ -600,13 +600,13 @@ CONFIG_SCHEMA_V1 = {
             ],
             "default": DEFAULT_ATTRS_UPDATE_MODE,
         },
-        zarr_version={
+        "zarr_version": {
             "category": "Target Outline",
             "description": "The Zarr version to be used.",
             "const": DEFAULT_ZARR_VERSION,
             "default": DEFAULT_ZARR_VERSION,
         },
-        target_dir={
+        "target_dir": {
             "category": "Data I/O - Target",
             "description": (
                 "The URI or local path of the target Zarr dataset."
@@ -615,7 +615,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "string",
             "minLength": 1,
         },
-        target_storage_options={
+        "target_storage_options": {
             "category": "Data I/O - Target",
             "description": (
                 "Options for the filesystem given by the URI of `target_dir`."
@@ -623,7 +623,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "object",
             "additionalProperties": True,
         },
-        force_new={
+        "force_new": {
             "category": "Data I/O - Target",
             "description": (
                 "Force creation of a new target dataset. "
@@ -634,7 +634,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "boolean",
             "default": False,
         },
-        slice_storage_options={
+        "slice_storage_options": {
             "category": "Data I/O - Slices",
             "description": (
                 "Options for the filesystem given by"
@@ -644,7 +644,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "object",
             "additionalProperties": True,
         },
-        slice_engine={
+        "slice_engine": {
             "category": "Data I/O - Slices",
             "description": (
                 "The name of the engine to be used for opening"
@@ -655,8 +655,8 @@ CONFIG_SCHEMA_V1 = {
             "type": "string",
             "minLength": 1,
         },
-        slice_polling=SLICE_POLLING_SCHEMA,
-        slice_source={
+        "slice_polling": SLICE_POLLING_SCHEMA,
+        "slice_source": {
             "category": "Data I/O - Slices",
             "description": (
                 "The fully qualified name of a class or function that receives a"
@@ -672,7 +672,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "string",
             "minLength": 1,
         },
-        slice_source_kwargs={
+        "slice_source_kwargs": {
             "category": "Data I/O - Slices",
             "description": (
                 "Extra keyword-arguments passed to a configured `slice_source`"
@@ -681,7 +681,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "object",
             "additionalProperties": True,
         },
-        persist_mem_slices={
+        "persist_mem_slices": {
             "category": "Data I/O - Slices",
             "description": (
                 "Persist in-memory slices and reopen from a temporary Zarr before"
@@ -692,7 +692,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "boolean",
             "default": False,
         },
-        temp_dir={
+        "temp_dir": {
             "category": "Data I/O - Transactions",
             "description": (
                 "The URI or local path of the directory that"
@@ -702,7 +702,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "string",
             "minLength": 1,
         },
-        temp_storage_options={
+        "temp_storage_options": {
             "category": "Data I/O - Transactions",
             "description": (
                 "Options for the filesystem given by the protocol of `temp_dir`."
@@ -710,7 +710,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "object",
             "additionalProperties": True,
         },
-        disable_rollback={
+        "disable_rollback": {
             "category": "Data I/O - Transactions",
             "description": (
                 "Disable rolling back dataset changes on failure."
@@ -720,7 +720,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "boolean",
             "default": False,
         },
-        version={
+        "version": {
             "category": "Miscellaneous",
             "description": (
                 "Configuration schema version."
@@ -730,7 +730,7 @@ CONFIG_SCHEMA_V1 = {
             "const": 1,
             "default": 1,
         },
-        dry_run={
+        "dry_run": {
             "category": "Miscellaneous",
             "description": (
                 "If `true`, log only what would have been done,"
@@ -739,7 +739,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "boolean",
             "default": False,
         },
-        permit_eval={
+        "permit_eval": {
             "category": "Miscellaneous",
             "description": (
                 "Allow for dynamically computed values in dataset attributes"
@@ -751,7 +751,7 @@ CONFIG_SCHEMA_V1 = {
             "type": "boolean",
             "default": False,
         },
-        extra={
+        "extra": {
             "category": "Miscellaneous",
             "description": (
                 "Extra settings."
@@ -761,9 +761,9 @@ CONFIG_SCHEMA_V1 = {
             "type": "object",
             "additionalProperties": True,
         },
-        profiling=PROFILING_SCHEMA,
-        logging=LOGGING_SCHEMA,
-    ),
+        "profiling": PROFILING_SCHEMA,
+        "logging": LOGGING_SCHEMA,
+    },
     "additionalProperties": False,
 }
 

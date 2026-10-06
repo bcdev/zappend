@@ -25,41 +25,41 @@ def make_test_config(
     shape: tuple[int, int, int] = default_shape,
     chunks: tuple[int, int, int] = default_chunks,
 ) -> dict[str, Any]:
-    return dict(
-        fixed_dims={dims[1]: shape[1], dims[2]: shape[2]},
-        append_dim="time",
-        variables={
-            "*": dict(
-                dims=list(dims),
-                shape=list(shape),
-                chunks=list(chunks),
-            ),
-            "chl": dict(
-                dtype="uint16", scale_factor=0.2, add_offset=0, fill_value=9999
-            ),
-            "tsm": dict(
-                dtype="int16", scale_factor=0.01, add_offset=-200, fill_value=-9999
-            ),
-            dims[0]: dict(
-                dtype="uint64",
-                dims=dims[0],
-                shape=shape[0],
-                chunks=None,
-            ),
-            dims[1]: dict(
-                dtype="float64",
-                dims=dims[1],
-                shape=shape[1],
-                chunks=None,
-            ),
-            dims[2]: dict(
-                dtype="float64",
-                dims=dims[2],
-                shape=shape[2],
-                chunks=None,
-            ),
+    return {
+        "fixed_dims": {dims[1]: shape[1], dims[2]: shape[2]},
+        "append_dim": "time",
+        "variables": {
+            "*": {
+                "dims": list(dims),
+                "shape": list(shape),
+                "chunks": list(chunks),
+            },
+            "chl": {
+                "dtype": "uint16", "scale_factor": 0.2, "add_offset": 0, "fill_value": 9999
+            },
+            "tsm": {
+                "dtype": "int16", "scale_factor": 0.01, "add_offset": -200, "fill_value": -9999
+            },
+            dims[0]: {
+                "dtype": "uint64",
+                "dims": dims[0],
+                "shape": shape[0],
+                "chunks": None,
+            },
+            dims[1]: {
+                "dtype": "float64",
+                "dims": dims[1],
+                "shape": shape[1],
+                "chunks": None,
+            },
+            dims[2]: {
+                "dtype": "float64",
+                "dims": dims[2],
+                "shape": shape[2],
+                "chunks": None,
+            },
         },
-    )
+    }
 
 
 def make_test_dataset(
@@ -81,18 +81,18 @@ def make_test_dataset(
     x_res = 1.0 / shape[-1]
     y_res = 1.0 / shape[-2]
     ds = xr.Dataset(
-        data_vars=dict(
-            chl=xr.DataArray(
+        data_vars={
+            "chl": xr.DataArray(
                 np.full(shape, index, dtype="uint16"),
                 dims=dims,
-                attrs=dict(scale_factor=0.2, add_offset=0, _FillValue=9999),
+                attrs={"scale_factor": 0.2, "add_offset": 0, "_FillValue": 9999},
             ),
-            tsm=xr.DataArray(
+            "tsm": xr.DataArray(
                 np.full(shape, index, dtype="int16"),
                 dims=dims,
-                attrs=dict(scale_factor=0.01, add_offset=-200, _FillValue=-9999),
+                attrs={"scale_factor": 0.01, "add_offset": -200, "_FillValue": -9999},
             ),
-        ),
+        },
         coords={
             dims[0]: xr.DataArray(
                 np.arange(

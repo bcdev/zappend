@@ -23,7 +23,7 @@ except ImportError:
 class GetVariablesConfigTest(unittest.TestCase):
     def test_no_variables_given(self):
         dataset = make_test_dataset()
-        variables = get_variables_config(dataset, dict(x=512, y=256, time=1))
+        variables = get_variables_config(dataset, {"x": 512, "y": 256, "time": 1})
         self.assertEqual(
             {
                 "x": {"dims": ["x"], "encoding": {"chunks": None}},
@@ -45,7 +45,7 @@ class GetVariablesConfigTest(unittest.TestCase):
         dataset = make_test_dataset()
         variables = get_variables_config(
             dataset,
-            dict(x=512, y=256, time=1),
+            {"x": 512, "y": 256, "time": 1},
             variables={
                 "time": {"encoding": {"chunks": [3]}},
                 "chl": {"encoding": {"chunks": [3, 100, 100]}},

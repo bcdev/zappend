@@ -105,12 +105,12 @@ class VariableMetadata:
 
     def to_dict(self):
         """Convert this object into a dictionary."""
-        return dict(
-            dims=self.dims,
-            shape=self.shape,
-            encoding=self.encoding.to_dict(),
-            attrs=self.attrs,
-        )
+        return {
+            "dims": self.dims,
+            "shape": self.shape,
+            "encoding": self.encoding.to_dict(),
+            "attrs": self.attrs,
+        }
 
 
 class DatasetMetadata:
@@ -133,11 +133,11 @@ class DatasetMetadata:
 
     def to_dict(self):
         """Convert this object into a dictionary."""
-        return dict(
-            sizes=self.sizes,
-            variables={k: v.to_dict() for k, v in self.variables.items()},
-            attrs=self.attrs,
-        )
+        return {
+            "sizes": self.sizes,
+            "variables": {k: v.to_dict() for k, v in self.variables.items()},
+            "attrs": self.attrs,
+        }
 
     def assert_compatible_slice(
         self, slice_metadata: "DatasetMetadata", append_dim: str
@@ -289,12 +289,12 @@ def _get_effective_variables(
         if ds_var is not None:
             # Variable found in dataset: use dataset variable to complement
             # variable definition from configuration (if any)
-            ds_var_def = dict(
-                dims=tuple(map(str, ds_var.dims)),
-                shape=ds_var.shape,
-                encoding=dict(ds_var.encoding),
-                attrs=dict(ds_var.attrs),
-            )
+            ds_var_def = {
+                "dims": tuple(map(str, ds_var.dims)),
+                "shape": ds_var.shape,
+                "encoding": dict(ds_var.encoding),
+                "attrs": dict(ds_var.attrs),
+            }
             ds_var_dims = ds_var_def["dims"]
             config_var_dims = config_var_def.get("dims")
             if config_var_dims is not None:
@@ -333,9 +333,8 @@ def _get_effective_variables(
         encoding = dict(config_var_def.get("encoding") or {})
         attrs = dict(config_var_def.get("attrs") or {})
         for prop_name, normalize_value in _ENCODING_PROPS.items():
-            if prop_name in attrs:
-                if prop_name not in encoding:
-                    encoding[prop_name] = attrs.pop(prop_name)
+            if prop_name in attrs and prop_name not in encoding:
+                encoding[prop_name] = attrs.pop(prop_name)
             if prop_name in encoding:
                 encoding[prop_name] = normalize_value(encoding[prop_name])
         if "_FillValue" in encoding:
