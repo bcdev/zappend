@@ -358,7 +358,7 @@ def _get_effective_variables(
             if "chunks" not in encoding:
                 encoding["chunks"] = chunk_sizes
 
-        if "shards" in encoding:
+        if encoding.get("shards") is not None:
             if zarr_version != 3:
                 raise ValueError(
                     f"Variable {var_name!r} configures 'shards', "
@@ -388,6 +388,11 @@ def _get_effective_variables(
                     f"Shard sizes for variable {var_name!r} must be multiples "
                     "of, and no smaller than, chunk sizes"
                 )
+        else:
+            # Xarray running with Zarr-Python v3 reports ``shards: None`` for
+            # unsharded source arrays, including Zarr v2 targets. It is not a
+            # request to write shards and must not leak into v2 encoding.
+            encoding.pop("shards", None)
 
         # Handle case where a chunk size in None to indicate
         # dimension is not chunked.

@@ -246,9 +246,9 @@ def resolve_target_attrs(
         zarr.consolidate_metadata(target_store)
 
 
-def _consolidated_option(zarr_version: int) -> bool | None:
-    """Use v2 consolidated metadata and Zarr v3's native metadata layout."""
-    return True if zarr_version == 2 else None
+def _consolidated_option(zarr_version: int) -> bool:
+    """Return True for Zarr v2 and False for Zarr v3."""
+    return zarr_version == 2
 
 
 def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):

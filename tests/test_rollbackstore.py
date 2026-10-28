@@ -18,7 +18,7 @@ class RollbackStoreTest(unittest.TestCase):
             store = MemoryStore()
             prototype = default_buffer_prototype()
             await store.set("existing", prototype.buffer.from_bytes(b"before"))
-            rollback_store = RollbackStore(store, records.append)
+            rollback_store = RollbackStore(store, lambda *args: records.append(args))
 
             await rollback_store.set("existing", prototype.buffer.from_bytes(b"one"))
             await rollback_store.set("existing", prototype.buffer.from_bytes(b"two"))

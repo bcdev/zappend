@@ -106,7 +106,11 @@ def _complete_dataset(
                 # May emit warning for large shapes
                 chunks = var_metadata.shape
             if chunks is not undefined:
-                var = var.chunk(chunks=chunks)
+                # Xarray validates Dask chunks against outer shard boundaries
+                # for Zarr v3 writes. Rechunk to shards when requested, while
+                # retaining ``chunks`` as the Zarr array's inner chunk shape.
+                write_chunks = encoding.get("shards") or chunks
+                var = var.chunk(chunks=write_chunks)
         else:
             logger.warning(
                 f"Variable {var_name!r} not found in slice dataset; creating it."
