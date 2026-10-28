@@ -9,7 +9,9 @@ from typing import Literal
 from zappend.fsutil.fileobj import FileObj
 from zappend.log import logger
 
-RollbackAction = Literal["delete_dir", "delete_file", "replace_file"]
+RollbackAction = Literal[
+    "create_file", "delete_dir", "delete_file", "rename_file", "replace_file"
+]
 
 RollbackCallback = Callable[
     [
@@ -24,7 +26,13 @@ LOCK_EXT = ".lock"
 ROLLBACK_FILE = "__rollback__.txt"
 ROLLBACK_CSV_SEP = ";"
 
-ROLLBACK_ACTIONS = "delete_dir", "delete_file", "replace_file"
+ROLLBACK_ACTIONS = (
+    "create_file",
+    "delete_dir",
+    "delete_file",
+    "rename_file",
+    "replace_file",
+)
 
 
 class Transaction:
@@ -151,7 +159,9 @@ class Transaction:
 
             if rollback_records:
                 logger.info(f"Rolling back {len(rollback_records)} action(s)")
-                for record in rollback_records:
+                # Undo the most recent mutation first. This matters when a
+                # transaction changes related paths more than once.
+                for record in reversed(rollback_records):
                     logger.debug(f"Running rollback {record}")
                     action = record[0]
                     args = record[1:]
@@ -177,6 +187,16 @@ class Transaction:
         _file = self._target_dir / target_path
         _file.delete()
 
+    def _create_file(self, target_path, rollback_filename):
+        _file = self._target_dir / target_path
+        data = (self._rollback_dir / rollback_filename).read()
+        _file.write(data)
+
+    def _rename_file(self, target_path, rollback_target_path):
+        target_file = self._target_dir / target_path
+        rollback_file = self._target_dir / rollback_target_path
+        target_file.fs.mv(target_file.path, rollback_file.path)
+
     def _replace_file(self, target_path, rollback_filename):
         _file = self._target_dir / target_path
         data = (self._rollback_dir / rollback_filename).read()
@@ -200,7 +220,7 @@ class Transaction:
             raise TypeError(
                 f"Type of 'path' argument must be {str}, but was {type(path)}"
             )
-        if action == "replace_file":
+        if action in ("create_file", "replace_file"):
             if not isinstance(data, bytes):
                 raise TypeError(
                     f"Type of 'data' argument must be {bytes}, but was {type(data)}"

@@ -27,6 +27,7 @@ class Context:
             with xr.open_zarr(
                 _config.target_dir.uri,
                 storage_options=_config.target_dir.storage_options,
+                zarr_format=_config.zarr_version,
             ) as target_dataset:
                 if _config.append_step is not None:
                     append_var = target_dataset.get(_config.append_dim)

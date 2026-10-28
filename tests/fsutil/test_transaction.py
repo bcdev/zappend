@@ -270,8 +270,8 @@ class TransactionTest(unittest.TestCase):
             pytest.raises(
                 ValueError,
                 match="Value of 'action' argument must be one of"
-                " 'delete_dir',"
-                " 'delete_file', 'replace_file',"
+                " 'create_file', 'delete_dir',"
+                " 'delete_file', 'rename_file', 'replace_file',"
                 " but was 'replace_ifle'",
             ),
             Transaction(test_root, rollback_dir) as callback,
