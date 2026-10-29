@@ -33,3 +33,34 @@ class RollbackStoreTest(unittest.TestCase):
             )
 
         asyncio.run(run_test())
+
+    def test_records_batch_sets_and_deletions(self):
+        async def run_test():
+            records = []
+            store = MemoryStore()
+            prototype = default_buffer_prototype()
+            await store.set("existing", prototype.buffer.from_bytes(b"before"))
+            await store.set("dir/a", prototype.buffer.from_bytes(b"a"))
+            await store.set("dir/b", prototype.buffer.from_bytes(b"b"))
+            rollback_store = RollbackStore(store, lambda *args: records.append(args))
+
+            await rollback_store.set_if_not_exists(
+                "existing", prototype.buffer.from_bytes(b"ignored")
+            )
+            await rollback_store._set_many(
+                [("batch", prototype.buffer.from_bytes(b"batch"))]
+            )
+            await rollback_store.delete("existing")
+            await rollback_store.delete_dir("dir")
+
+            self.assertEqual(
+                [
+                    ("replace_file", "existing", b"before"),
+                    ("delete_file", "batch", None),
+                    ("replace_file", "dir/a", b"a"),
+                    ("replace_file", "dir/b", b"b"),
+                ],
+                records,
+            )
+
+        asyncio.run(run_test())

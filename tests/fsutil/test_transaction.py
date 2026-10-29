@@ -214,6 +214,30 @@ class TransactionTest(unittest.TestCase):
         self.assertEqual(True, delete_called)
         self.assertTrue(transaction.lock_file.exists())
 
+    def test_restores_file_from_create_action(self):
+        test_root = FileObj("memory://test")
+        test_root.mkdir()
+        transaction = Transaction(test_root, FileObj("memory://temp"))
+        transaction.rollback_dir.mkdir()
+        (transaction.rollback_dir / "backup").write(b"original")
+
+        transaction._create_file("restored.txt", "backup")
+
+        self.assertEqual(b"original", (test_root / "restored.txt").read())
+
+    def test_renames_file_during_rollback(self):
+        test_root = FileObj("memory://test")
+        test_root.mkdir()
+        source = test_root / "new.txt"
+        target = test_root / "old.txt"
+        source.write(b"data")
+        transaction = Transaction(test_root, FileObj("memory://temp"))
+
+        transaction._rename_file(source.filename, target.filename)
+
+        self.assertFalse(source.exists())
+        self.assertEqual(b"data", target.read())
+
     # noinspection PyMethodMayBeStatic
     def test_it_raises_on_illegal_callback_calls(self):
         test_root = FileObj("memory://test")
