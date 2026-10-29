@@ -1,5 +1,6 @@
 testdata/
 site/
+examples/outputs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

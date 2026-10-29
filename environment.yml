@@ -32,3 +32,6 @@ dependencies:
   - h5netcdf
   - s3fs
   - scipy
+  # Development Dependencies - Demos
+  - jupyterlab
+  - matplotlib

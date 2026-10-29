@@ -238,6 +238,26 @@ class TransactionTest(unittest.TestCase):
         self.assertFalse(source.exists())
         self.assertEqual(b"data", target.read())
 
+    def test_rollback_continues_after_a_new_file_was_not_written(self):
+        test_root = FileObj("memory://test")
+        test_root.mkdir()
+        metadata_file = test_root / "metadata"
+        metadata_file.write(b"before")
+
+        with (
+            pytest.raises(ValueError, match="simulated write failure"),
+            Transaction(test_root, FileObj("memory://temp")) as rollback_cb,
+        ):
+            rollback_cb("replace_file", "metadata", b"before")
+            metadata_file.write(b"changed")
+            # A failed asynchronous write may have recorded this action
+            # but never created the file.
+            rollback_cb("delete_file", "chunk-not-written", None)
+            raise ValueError("simulated write failure")
+
+        self.assertEqual(b"before", metadata_file.read())
+        self.assertFalse((test_root / "chunk-not-written").exists())
+
     # noinspection PyMethodMayBeStatic
     def test_it_raises_on_illegal_callback_calls(self):
         test_root = FileObj("memory://test")

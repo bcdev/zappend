@@ -6,6 +6,7 @@
 
 from collections.abc import MutableMapping
 
+import fsspec.implementations.local
 from zarr.abc.store import Store
 from zarr.core.buffer import default_buffer_prototype
 from zarr.storage import FsspecStore, WrapperStore
@@ -66,6 +67,12 @@ class RollbackStore(WrapperStore[Store]):
 
 def make_zarr_store(store: MutableMapping) -> Store:
     """Adapt an fsspec mapper to Zarr-Python v3's asynchronous Store API."""
+    # Zarr v3 chunk keys are nested paths (for example ``time/c/1``). The
+    # FsspecStore adapter writes them through LocalFileSystem.pipe_file(),
+    # which only creates intermediate directories when auto_mkdir is enabled.
+    # The mapper obtained from FileObj has it disabled by default.
+    if isinstance(store.fs, fsspec.implementations.local.LocalFileSystem):
+        store.fs.auto_mkdir = True
     return FsspecStore.from_mapper(store)
 
 

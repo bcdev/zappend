@@ -185,7 +185,12 @@ class Transaction:
 
     def _delete_file(self, target_path):
         _file = self._target_dir / target_path
-        _file.delete()
+        # A rollback action is recorded before a Zarr store write. With
+        # asynchronous stores, another Dask task can fail before that write
+        # creates its key. Deleting a missing prospective file is therefore
+        # a successful rollback no-op, not a rollback failure.
+        if _file.exists():
+            _file.delete()
 
     def _create_file(self, target_path, rollback_filename):
         _file = self._target_dir / target_path

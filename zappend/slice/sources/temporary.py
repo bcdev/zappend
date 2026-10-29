@@ -37,13 +37,14 @@ class TemporarySliceSource(MemorySliceSource):
         self._slice_ds.to_zarr(
             temp_slice_dir.uri,
             storage_options=temp_slice_dir.storage_options,
-            zarr_format=2,
+            zarr_format=self._config.zarr_version,
         )
         self._slice_ds = None
         self._temp_slice_ds = xr.open_zarr(
             temp_slice_dir.uri,
             storage_options=temp_slice_dir.storage_options,
-            zarr_format=2,
+            zarr_format=self._config.zarr_version,
+            consolidated=self._config.zarr_version == 2,
         )
         return self._temp_slice_ds
 

@@ -3,6 +3,7 @@
 #  https://opensource.org/licenses/MIT.
 
 import unittest
+from tempfile import TemporaryDirectory
 
 import xarray as xr
 import zarr
@@ -43,3 +44,16 @@ class ZarrV3Test(unittest.TestCase):
                 for codec in group["chl"].metadata.codecs
             )
         )
+
+    def test_append_v3_target_on_local_filesystem(self):
+        with TemporaryDirectory() as temp_dir:
+            target_dir = f"{temp_dir}/target.zarr"
+            slices = [
+                make_test_dataset(shape=(1, 2, 3), chunks=(1, 1, 1), index=0),
+                make_test_dataset(shape=(1, 2, 3), chunks=(1, 1, 1), index=1),
+            ]
+
+            zappend(slices, target_dir=target_dir, zarr_version=3)
+
+            with xr.open_zarr(target_dir, zarr_format=3) as dataset:
+                self.assertEqual({"time": 2, "y": 2, "x": 3}, dataset.sizes)
