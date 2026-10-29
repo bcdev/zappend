@@ -152,7 +152,7 @@ def create_target_from_slice(
             storage_options=target_dir.storage_options,
             zarr_format=ctx.config.zarr_version,
             write_empty_chunks=False,
-            consolidated=_consolidated_option(ctx.config.zarr_version),
+            consolidated=ctx.config.zarr_version == 2,
         )
 
         post_create_target(ctx, target_ds)
@@ -179,7 +179,7 @@ def update_target_from_slice(
     slice_ds.to_zarr(
         store=target_store,
         write_empty_chunks=False,
-        consolidated=_consolidated_option(ctx.config.zarr_version),
+        consolidated=ctx.config.zarr_version == 2,
         mode="a",
         append_dim=ctx.config.append_dim,
         zarr_format=ctx.config.zarr_version,
@@ -244,11 +244,6 @@ def resolve_target_attrs(
     target_group.attrs.update(resolved_attrs)
     if zarr_version == 2:
         zarr.consolidate_metadata(target_store)
-
-
-def _consolidated_option(zarr_version: int) -> bool:
-    """Return True for Zarr v2 and False for Zarr v3."""
-    return zarr_version == 2
 
 
 def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):

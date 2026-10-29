@@ -34,7 +34,7 @@ class ZarrV3Test(unittest.TestCase):
             },
         )
 
-        with xr.open_zarr(target_dir, zarr_format=3) as dataset:
+        with xr.open_zarr(target_dir, zarr_format=3, consolidated=False) as dataset:
             self.assertEqual({"time": 2, "y": 10, "x": 20}, dataset.sizes)
 
         group = zarr.open_group(target_dir, zarr_format=3)
@@ -55,5 +55,5 @@ class ZarrV3Test(unittest.TestCase):
 
             zappend(slices, target_dir=target_dir, zarr_version=3)
 
-            with xr.open_zarr(target_dir, zarr_format=3) as dataset:
+            with xr.open_zarr(target_dir, zarr_format=3, consolidated=False) as dataset:
                 self.assertEqual({"time": 2, "y": 2, "x": 3}, dataset.sizes)
