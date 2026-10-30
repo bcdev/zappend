@@ -40,10 +40,13 @@ class ConfigSchemaTest(unittest.TestCase):
                 "temp_storage_options",
                 "variables",
                 "version",
+                "zarr_format",
                 "zarr_version",
             },
             set(schema["properties"].keys()),
         )
+
+        self.assertNotIn("default", schema["properties"]["zarr_format"])
 
     def test_get_config_schema_json(self):
         # Smoke test is sufficient here

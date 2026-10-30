@@ -71,7 +71,7 @@ class PersistentSliceSource(SliceSource):
             return xr.open_zarr(
                 self._slice_file.uri,
                 storage_options=storage_options,
-                consolidated=self._config.zarr_version == 2,
+                consolidated=self._config.zarr_format == 2,
             )
 
         fs = self._slice_file.fs

@@ -3,6 +3,7 @@
 #  https://opensource.org/licenses/MIT.
 
 import tempfile
+import warnings
 from collections.abc import Callable
 from typing import Any, Literal
 
@@ -13,7 +14,6 @@ from .defaults import (
     DEFAULT_ATTRS_UPDATE_MODE,
     DEFAULT_SLICE_POLLING_INTERVAL,
     DEFAULT_SLICE_POLLING_TIMEOUT,
-    DEFAULT_ZARR_VERSION,
 )
 
 
@@ -29,6 +29,7 @@ class Config:
 
     def __init__(self, config_dict: dict[str, Any]):
         self._config = config_dict
+        self._effective_zarr_format: Literal[2, 3] | None = None
 
         target_uri = config_dict.get("target_dir")
         if not target_uri:
@@ -47,9 +48,49 @@ class Config:
         self._slice_source = to_slice_callable(slice_source)
 
     @property
-    def zarr_version(self) -> int:
-        """The configured Zarr version for the target dataset."""
-        return self._config.get("zarr_version", DEFAULT_ZARR_VERSION)
+    def zarr_format(self) -> Literal[2, 3]:
+        """The configured Zarr format for the target dataset."""
+        if self._effective_zarr_format is not None:
+            return self._effective_zarr_format
+
+        zarr_format = self._config.get("zarr_format")
+        if zarr_format is not None:
+            if "zarr_version" in self._config:
+                warnings.warn(
+                    "Configuration setting 'zarr_version' is deprecated and "
+                    "ignored because 'zarr_format' is also set.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+            self._effective_zarr_format = zarr_format
+        elif "zarr_version" in self._config:
+            warnings.warn(
+                "Configuration setting 'zarr_version' is deprecated; "
+                "use 'zarr_format' instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            self._effective_zarr_format = self._config["zarr_version"]
+        else:
+            warnings.warn(
+                "Configuration does not define 'zarr_format'; treating it as a "
+                "legacy configuration and using Zarr format 2. Set "
+                "'zarr_format' explicitly; new configurations should use 3.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            self._effective_zarr_format = 2
+        return self._effective_zarr_format
+
+    @property
+    def zarr_version(self) -> Literal[2, 3]:
+        """Deprecated alias for :attr:`zarr_format`."""
+        warnings.warn(
+            "Config.zarr_version is deprecated; use Config.zarr_format instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.zarr_format
 
     @property
     def fixed_dims(self) -> dict[str, int] | None:

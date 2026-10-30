@@ -66,7 +66,7 @@ class VariableEncoding:
                 ", ".join(unknown_settings.keys()),
             )
 
-    def to_dict(self, zarr_version: int = 2):
+    def to_dict(self, zarr_format: int = 3):
         """Convert this object into a dictionary.
         Includes attributes with value `None`,
         but excludes attributes with value `UNDEFINED`.
@@ -78,7 +78,7 @@ class VariableEncoding:
         }
         if "fill_value" in d:
             d["_FillValue"] = d.pop("fill_value")
-        if zarr_version == 3:
+        if zarr_format == 3:
             # Zarr v3 uses an ordered codec pipeline instead of v2's
             # compressor/filters fields. Xarray cannot safely translate
             # arbitrary numcodecs v2 codecs, so let it select v3 defaults.
@@ -226,7 +226,7 @@ class DatasetMetadata:
             config.included_variables,
             config.excluded_variables,
             config.variables,
-            config.zarr_version,
+            config.zarr_format,
         )
 
         attrs = merge_configs(dataset.attrs, config.attrs)
@@ -265,7 +265,7 @@ def _get_effective_variables(
     config_included_variables: list[str] | None,
     config_excluded_variables: list[str] | None,
     config_variables: dict[str, dict[str, Any]] | None,
-    zarr_version: int,
+    zarr_format: int,
 ) -> dict[str, VariableMetadata]:
     config_variables = dict(config_variables or {})
     # Get and remove defaults for all variables
@@ -359,35 +359,40 @@ def _get_effective_variables(
                 encoding["chunks"] = chunk_sizes
 
         if encoding.get("shards") is not None:
-            if zarr_version != 3:
-                raise ValueError(
-                    f"Variable {var_name!r} configures 'shards', "
-                    "which is supported only for Zarr version 3"
+            if zarr_format != 3:
+                logger.warning(
+                    "Ignoring 'shards' for variable %r because Zarr format %s "
+                    "does not support sharding.",
+                    var_name,
+                    zarr_format,
                 )
-            encoding["shards"] = _normalize_chunks(encoding["shards"])
+                encoding.pop("shards")
+            else:
+                encoding["shards"] = _normalize_chunks(encoding["shards"])
 
-            shards = encoding["shards"]
-            assert shards is not None
-            if len(shards) != len(dims):
-                raise ValueError(
-                    f"Wrong number of shard sizes for variable {var_name!r}: "
-                    f"expected {len(dims)}, found {len(shards)}"
-                )
-            chunks = encoding.get("chunks")
-            if chunks is None:
-                chunks = shape
-            if len(chunks) != len(dims):
-                raise ValueError(
-                    f"Wrong number of chunk sizes for variable {var_name!r}: "
-                    f"expected {len(dims)}, found {len(chunks)}"
-                )
-            if any(
-                shard < chunk or shard % chunk for shard, chunk in zip(shards, chunks)
-            ):
-                raise ValueError(
-                    f"Shard sizes for variable {var_name!r} must be multiples "
-                    "of, and no smaller than, chunk sizes"
-                )
+                shards = encoding["shards"]
+                assert shards is not None
+                if len(shards) != len(dims):
+                    raise ValueError(
+                        f"Wrong number of shard sizes for variable {var_name!r}: "
+                        f"expected {len(dims)}, found {len(shards)}"
+                    )
+                chunks = encoding.get("chunks")
+                if chunks is None:
+                    chunks = shape
+                if len(chunks) != len(dims):
+                    raise ValueError(
+                        f"Wrong number of chunk sizes for variable {var_name!r}: "
+                        f"expected {len(dims)}, found {len(chunks)}"
+                    )
+                if any(
+                    shard < chunk or shard % chunk
+                    for shard, chunk in zip(shards, chunks)
+                ):
+                    raise ValueError(
+                        f"Shard sizes for variable {var_name!r} must be multiples "
+                        "of, and no smaller than, chunk sizes"
+                    )
         else:
             # Xarray running with Zarr-Python v3 reports ``shards: None`` for
             # unsharded source arrays, including Zarr v2 targets. It is not a

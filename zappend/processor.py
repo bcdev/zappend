@@ -47,6 +47,7 @@ class Processor:
         with exclude_from_config(config, "slice_source") as c:
             validate_config(c)
         _config = Config(config)
+        config["zarr_format"] = _config.zarr_format
         configure_logging(_config.logging)
         if _config.force_new:
             logger.warning(
@@ -150,9 +151,9 @@ def create_target_from_slice(
         target_ds.to_zarr(
             store=target_dir.uri,
             storage_options=target_dir.storage_options,
-            zarr_format=ctx.config.zarr_version,
+            zarr_format=ctx.config.zarr_format,
             write_empty_chunks=False,
-            consolidated=ctx.config.zarr_version == 2,
+            consolidated=ctx.config.zarr_format == 2,
         )
 
         post_create_target(ctx, target_ds)
@@ -179,10 +180,10 @@ def update_target_from_slice(
     slice_ds.to_zarr(
         store=target_store,
         write_empty_chunks=False,
-        consolidated=ctx.config.zarr_version == 2,
+        consolidated=ctx.config.zarr_format == 2,
         mode="a",
         append_dim=ctx.config.append_dim,
-        zarr_format=ctx.config.zarr_version,
+        zarr_format=ctx.config.zarr_format,
     )
 
     post_update_target(ctx, target_store, slice_ds)
@@ -205,7 +206,7 @@ def post_create_target(ctx: Context, target_ds: xr.Dataset):
             make_zarr_store(target_store),
             target_ds,
             target_attrs,
-            ctx.config.zarr_version,
+            ctx.config.zarr_format,
         )
 
 
@@ -221,10 +222,10 @@ def post_update_target(ctx: Context, target_store: Any, slice_ds: xr.Dataset):
     target_attrs = slice_ds.attrs
     if ctx.config.permit_eval and has_dyn_config_attrs(target_attrs):
         with xr.open_zarr(
-            target_store, zarr_format=ctx.config.zarr_version
+            target_store, zarr_format=ctx.config.zarr_format
         ) as target_ds:
             resolve_target_attrs(
-                target_store, target_ds, target_attrs, ctx.config.zarr_version
+                target_store, target_ds, target_attrs, ctx.config.zarr_format
             )
 
 
@@ -232,17 +233,17 @@ def resolve_target_attrs(
     target_store: collections.abc.MutableMapping,
     target_ds: xr.Dataset,
     target_attrs: dict[str, Any],
-    zarr_version: int,
+    zarr_format: int,
 ):
     resolved_attrs = eval_dyn_config_attrs(
         target_attrs,
         get_dyn_config_attrs_env(target_ds),
     )
     target_group = zarr.open_group(
-        store=target_store, mode="a", zarr_format=zarr_version
+        store=target_store, mode="a", zarr_format=zarr_format
     )
     target_group.attrs.update(resolved_attrs)
-    if zarr_version == 2:
+    if zarr_format == 2:
         zarr.consolidate_metadata(target_store)
 
 

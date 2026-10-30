@@ -78,7 +78,8 @@ Variable metadata.
             Its value is `null`.
       - `shards`:
         Zarr v3 shard sizes for each dimension of the variable. Each shard size
-        must be a multiple of the corresponding chunk size. The items of the
+        must be a multiple of the corresponding chunk size. Ignored with a
+        warning for formats that do not support sharding. The items of the
         list are positive integers.
       - `fill_value`:
         Must be one of the following:
@@ -136,10 +137,16 @@ Must be one of the following:
 
 Defaults to `"keep"`.
 
+### `zarr_format`
+
+The Zarr format to be used. Required for new configurations. If it is omitted,
+the configuration is treated as
+legacy and Zarr v2 is used with a warning. Allowed values are `2` and `3`.
+
 ### `zarr_version`
 
-The Zarr version to be used. Allowed values are `2` and `3`.
-Defaults to `2`.
+Deprecated alias for `zarr_format`. Use `zarr_format` in new configurations.
+Allowed values are `2` and `3`.
 
 ## Data I/O - Target
 

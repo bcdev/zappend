@@ -11,7 +11,11 @@ or the `zappend` [Python function](api.md)
 ```bash
 from zappend.api import zappend
 
-zappend(os.listdir("inputs"), target_dir="output/mycube.zarr")
+zappend(
+    os.listdir("inputs"),
+    target_dir="output/mycube.zarr",
+    zarr_format=3,
+)
 ```
 
 Both invocations will create the Zarr dataset `output/mycube.zarr` by concatenating
@@ -32,10 +36,12 @@ dedicated configuration settings. More on this is given
 in section [_Data I/O_](#data-io) below.
 
 !!! note "Zarr formats"
-    By default, `zappend` uses the [Zarr storage specification 2](https://zarr.readthedocs.io/en/stable/spec/v2.html)
-    for compatibility with existing clients. Set `zarr_version` to `3` to write
-    Zarr v3. The target's format is fixed when it is created; use the same
-    setting for all later appends.
+    New configurations must set `zarr_format`; use `zarr_format: 3` for the
+    recommended [Zarr storage specification 3](https://zarr.readthedocs.io/en/stable/spec/v3.html),
+    or `zarr_format: 2` for Zarr v2 compatibility. Configurations that omit it
+    are treated as legacy and use Zarr v2 with a warning. `zarr_version` is a
+    deprecated alias. The target's format is fixed when it is created; use the
+    same setting for all later appends.
 
 The tool takes care of generating the target dataset from slice datasets, but doesn't 
 care how the slice datasets are created. Hence, when using the Python `zappend()` 
@@ -338,14 +344,15 @@ The value of `chunks` can also be `null`, which means no chunking is
 desired and the variable's data array will be persisted as one block. 
 
 For Zarr v3, `shards` may additionally be configured for a variable. A shard
-contains an integer number of regular chunks, reducing object counts while
+contains an integer number of regular chunks, reducing file or object counts while
 retaining smaller read/write chunks. Each shard size must be at least its
 corresponding chunk size and an exact multiple of it. Shards are not available
-for Zarr v2.
+for Zarr v2; if configured for an unsupported format, they are ignored with a
+warning.
 
 ```json
 {
-    "zarr_version": 3,
+    "zarr_format": 3,
     "variables": {
         "chl": {
             "encoding": {

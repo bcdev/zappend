@@ -2,6 +2,8 @@
 #  Permissions are hereby granted under the terms of the MIT License:
 #  https://opensource.org/licenses/MIT.
 
+# Deprecated compatibility constant for callers that imported the former
+# implicit Zarr-version default. New configurations must set ``zarr_format``.
 DEFAULT_ZARR_VERSION = 2
 DEFAULT_APPEND_DIM = "time"
 DEFAULT_APPEND_STEP = None

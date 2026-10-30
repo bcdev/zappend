@@ -14,26 +14,30 @@ class ConfigValidateTest(unittest.TestCase):
         config = {}
         self.assertIs(config, validate_config(config))
 
-    def test_validate_versions_ok(self):
-        config = {"version": 1, "zarr_version": 2}
+    def test_validate_zarr_format_ok(self):
+        config = {"version": 1, "zarr_format": 2}
         self.assertIs(config, validate_config(config))
 
     # noinspection PyMethodMayBeStatic
     def test_validate_versions_fail(self):
-        config = {"zarr_version": 1}
+        config = {"zarr_format": 1}
         with pytest.raises(
             ValueError,
-            match="Invalid configuration: 1 is not one of \\[2, 3\\] for zarr_version",
+            match="Invalid configuration: 1 is not one of \\[2, 3\\] for zarr_format",
         ):
             validate_config(config)
 
     def test_validate_zarr_v3_ok(self):
-        config = {"zarr_version": 3}
+        config = {"zarr_format": 3}
+        self.assertIs(config, validate_config(config))
+
+    def test_validate_legacy_zarr_version_ok(self):
+        config = {"zarr_version": 2}
         self.assertIs(config, validate_config(config))
 
     def test_validate_shards(self):
         config = {
-            "zarr_version": 3,
+            "zarr_format": 3,
             "variables": {"v": {"encoding": {"shards": [2, 4]}}},
         }
         self.assertIs(config, validate_config(config))
@@ -41,7 +45,7 @@ class ConfigValidateTest(unittest.TestCase):
     # noinspection PyMethodMayBeStatic
     def test_validate_variable_fail(self):
         config = {
-            "zarr_version": 2,
+            "zarr_format": 2,
             "variables": {
                 "chl": {
                     "dims": [10, 20, 30],

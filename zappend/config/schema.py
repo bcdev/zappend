@@ -11,7 +11,6 @@ from .defaults import (
     DEFAULT_ATTRS_UPDATE_MODE,
     DEFAULT_SLICE_POLLING_INTERVAL,
     DEFAULT_SLICE_POLLING_TIMEOUT,
-    DEFAULT_ZARR_VERSION,
 )
 from .markdown import schema_to_markdown
 
@@ -97,7 +96,8 @@ VARIABLE_ENCODING_SCHEMA = {
         "shards": {
             "description": (
                 "Zarr v3 shard sizes for each dimension of the variable. "
-                "Each shard size must be a multiple of the corresponding chunk size."
+                "Each shard size must be a multiple of the corresponding chunk size. "
+                "Ignored with a warning if `zarr_format` is `2`."
             ),
             "type": "array",
             "items": {"type": "integer", "minimum": 1},
@@ -608,11 +608,22 @@ CONFIG_SCHEMA_V1 = {
             ],
             "default": DEFAULT_ATTRS_UPDATE_MODE,
         },
+        "zarr_format": {
+            "category": "Target Outline",
+            "description": (
+                "The Zarr format to be used. Required for new configurations. "
+                "If it is omitted, the "
+                "configuration is treated as legacy and Zarr v2 is used with a warning."
+            ),
+            "enum": [2, 3],
+        },
         "zarr_version": {
             "category": "Target Outline",
-            "description": "The Zarr version to be used.",
+            "description": (
+                "Deprecated alias for `zarr_format`. Use `zarr_format` in new "
+                "configurations."
+            ),
             "enum": [2, 3],
-            "default": DEFAULT_ZARR_VERSION,
         },
         "target_dir": {
             "category": "Data I/O - Target",

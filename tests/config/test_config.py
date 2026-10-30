@@ -31,6 +31,50 @@ class ConfigTest(unittest.TestCase):
         config = Config({"target_dir": "memory://target.zarr", "force_new": True})
         self.assertEqual(True, config.force_new)
 
+    def test_zarr_format(self):
+        self.assertEqual(
+            3,
+            Config(
+                {"target_dir": "memory://target.zarr", "zarr_format": 3}
+            ).zarr_format,
+        )
+
+    def test_legacy_zarr_version(self):
+        with self.assertWarnsRegex(DeprecationWarning, "'zarr_version' is deprecated"):
+            zarr_format = Config(
+                {"target_dir": "memory://target.zarr", "zarr_version": 2}
+            ).zarr_format
+        self.assertEqual(2, zarr_format)
+
+    def test_zarr_format_takes_precedence_over_legacy_zarr_version(self):
+        with self.assertWarnsRegex(
+            DeprecationWarning, "'zarr_version' is deprecated and ignored"
+        ):
+            zarr_format = Config(
+                {
+                    "target_dir": "memory://target.zarr",
+                    "zarr_format": 3,
+                    "zarr_version": 2,
+                }
+            ).zarr_format
+        self.assertEqual(3, zarr_format)
+
+    def test_missing_zarr_format_uses_legacy_default(self):
+        with self.assertWarnsRegex(
+            DeprecationWarning, "does not define 'zarr_format'"
+        ):
+            zarr_format = Config({"target_dir": "memory://target.zarr"}).zarr_format
+        self.assertEqual(2, zarr_format)
+
+    def test_config_zarr_version_property_is_deprecated(self):
+        with self.assertWarnsRegex(
+            DeprecationWarning, "Config.zarr_version is deprecated"
+        ):
+            zarr_format = Config(
+                {"target_dir": "memory://target.zarr", "zarr_format": 3}
+            ).zarr_version
+        self.assertEqual(3, zarr_format)
+
     def test_append_dim(self):
         config = Config({"target_dir": "memory://target.zarr"})
         self.assertEqual("time", config.append_dim)

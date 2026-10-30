@@ -27,7 +27,7 @@ class ZarrV3Test(unittest.TestCase):
         zappend(
             slices,
             target_dir=target_dir,
-            zarr_version=3,
+            zarr_format=3,
             variables={
                 "chl": {"encoding": {"chunks": [1, 5, 10], "shards": [2, 10, 20]}},
                 "tsm": {"encoding": {"chunks": [1, 5, 10], "shards": [2, 10, 20]}},
@@ -53,7 +53,7 @@ class ZarrV3Test(unittest.TestCase):
                 make_test_dataset(shape=(1, 2, 3), chunks=(1, 1, 1), index=1),
             ]
 
-            zappend(slices, target_dir=target_dir, zarr_version=3)
+            zappend(slices, target_dir=target_dir, zarr_format=3)
 
             with xr.open_zarr(target_dir, zarr_format=3, consolidated=False) as dataset:
                 self.assertEqual({"time": 2, "y": 2, "x": 3}, dataset.sizes)

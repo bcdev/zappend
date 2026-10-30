@@ -1,7 +1,9 @@
 ## Version 0.8.1 (in development)
 
-* Migrated to the Zarr v3 Python API. Supports writing Zarr v2 and v3 stores, 
-  with Zarr v2 as the default. (#111)
+* Migrated to use `zarr >=3`. Supports writing Zarr v2 and v3 stores, with
+  Zarr v3 as the recommended format for new configurations. The `zarr_version`
+  setting is deprecated in favor of `zarr_format`; legacy configurations
+  without either setting retain Zarr v2 with a warning. (#111)
 * Replaced dev tools black and flake8 by isort and ruff. 
 * Reformatted code and fixed linter issues.
 * Added `environment.yml` to setup a conda/mamba development environment. 
