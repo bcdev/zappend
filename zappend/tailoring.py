@@ -17,7 +17,7 @@ def tailor_target_dataset(ctx: Context, slice_ds: xr.Dataset) -> xr.Dataset:
     attrs = ctx.config.attrs
 
     target_ds = _strip_dataset(slice_ds, target_metadata)
-    target_ds = _complete_dataset(target_ds, target_metadata)
+    target_ds = _complete_dataset(target_ds, target_metadata, ctx.config.zarr_version)
 
     # Set initial dataset attributes
     if attrs_update_mode == "ignore":
@@ -32,7 +32,7 @@ def tailor_target_dataset(ctx: Context, slice_ds: xr.Dataset) -> xr.Dataset:
     # Set variable encoding and attributes
     for var_name, var_metadata in target_metadata.variables.items():
         variable = target_ds.variables[var_name]
-        variable.encoding = var_metadata.encoding.to_dict()
+        variable.encoding = var_metadata.encoding.to_dict(ctx.config.zarr_version)
         variable.attrs = var_metadata.attrs
 
     return target_ds
@@ -45,7 +45,7 @@ def tailor_slice_dataset(ctx: Context, slice_ds: xr.Dataset) -> xr.Dataset:
     attrs = ctx.config.attrs
 
     slice_ds = _strip_dataset(slice_ds, target_metadata)
-    slice_ds = _complete_dataset(slice_ds, target_metadata)
+    slice_ds = _complete_dataset(slice_ds, target_metadata, ctx.config.zarr_version)
 
     const_variables = [
         k for k, v in slice_ds.variables.items() if append_dim not in v.dims
@@ -91,7 +91,7 @@ def _strip_dataset(dataset: xr.Dataset, target_metadata: DatasetMetadata) -> xr.
 
 
 def _complete_dataset(
-    dataset: xr.Dataset, target_metadata: DatasetMetadata
+    dataset: xr.Dataset, target_metadata: DatasetMetadata, zarr_version: int
 ) -> xr.Dataset:
     undefined = object()
     """Chunk existing variables according to chunks in encoding or 
@@ -99,14 +99,18 @@ def _complete_dataset(
     """
     for var_name, var_metadata in target_metadata.variables.items():
         var = dataset.variables.get(var_name)
-        encoding = var_metadata.encoding.to_dict()
+        encoding = var_metadata.encoding.to_dict(zarr_version)
         chunks = encoding.get("chunks", undefined)
         if var is not None:
             if chunks is None:
                 # May emit warning for large shapes
                 chunks = var_metadata.shape
             if chunks is not undefined:
-                var = var.chunk(chunks=chunks)
+                # Xarray validates Dask chunks against outer shard boundaries
+                # for Zarr v3 writes. Rechunk to shards when requested, while
+                # retaining ``chunks`` as the Zarr array's inner chunk shape.
+                write_chunks = encoding.get("shards") or chunks
+                var = var.chunk(chunks=write_chunks)
         else:
             logger.warning(
                 f"Variable {var_name!r} not found in slice dataset; creating it."

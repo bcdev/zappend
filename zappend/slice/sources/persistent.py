@@ -68,7 +68,11 @@ class PersistentSliceSource(SliceSource):
             engine = "zarr"
         if engine == "zarr":
             storage_options = self._config.slice_storage_options
-            return xr.open_zarr(self._slice_file.uri, storage_options=storage_options)
+            return xr.open_zarr(
+                self._slice_file.uri,
+                storage_options=storage_options,
+                consolidated=self._config.zarr_version == 2,
+            )
 
         fs = self._slice_file.fs
         if isinstance(fs, fsspec.implementations.local.LocalFileSystem):

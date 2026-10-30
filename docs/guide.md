@@ -31,10 +31,11 @@ one, if their paths are given as URIs prefixed with a filesystem protocol such a
 dedicated configuration settings. More on this is given
 in section [_Data I/O_](#data-io) below.
 
-!!! note "Zarr Format v2"
+!!! note "Zarr formats"
     By default, `zappend` uses the [Zarr storage specification 2](https://zarr.readthedocs.io/en/stable/spec/v2.html)
-    and has only been tested with this version. The `zarr_version` setting can be used 
-    to change it, e,g, to `3`, but any other value than `2` is currently unsupported.
+    for compatibility with existing clients. Set `zarr_version` to `3` to write
+    Zarr v3. The target's format is fixed when it is created; use the same
+    setting for all later appends.
 
 The tool takes care of generating the target dataset from slice datasets, but doesn't 
 care how the slice datasets are created. Hence, when using the Python `zappend()` 
@@ -335,6 +336,26 @@ persisted in remote filesystems such as S3. The chunk sizes are specified
 using the `chunks` setting in the encoding of each variable.
 The value of `chunks` can also be `null`, which means no chunking is 
 desired and the variable's data array will be persisted as one block. 
+
+For Zarr v3, `shards` may additionally be configured for a variable. A shard
+contains an integer number of regular chunks, reducing object counts while
+retaining smaller read/write chunks. Each shard size must be at least its
+corresponding chunk size and an exact multiple of it. Shards are not available
+for Zarr v2.
+
+```json
+{
+    "zarr_version": 3,
+    "variables": {
+        "chl": {
+            "encoding": {
+                "chunks": [1, 512, 512],
+                "shards": [8, 2048, 2048]
+            }
+        }
+    }
+}
+```
 
 By default, the chunking of the coordinate variable corresponding to the append 
 dimension will be its dimension size in the first slice dataset. Often, the size 

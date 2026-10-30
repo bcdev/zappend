@@ -88,6 +88,44 @@ class DatasetMetadataDimsTest(unittest.TestCase):
 
 
 class DatasetMetadataVariablesTest(unittest.TestCase):
+    def test_it_rejects_shards_for_zarr_v2(self):
+        dataset = xr.Dataset({"a": xr.DataArray(np.zeros((2, 3)), dims=("time", "x"))})
+        with pytest.raises(ValueError, match="supported only for Zarr version 3"):
+            DatasetMetadata.from_dataset(
+                dataset,
+                make_config({"variables": {"a": {"encoding": {"shards": [2, 3]}}}}),
+            )
+
+    def test_it_validates_zarr_v3_shards(self):
+        dataset = xr.Dataset({"a": xr.DataArray(np.zeros((2, 3)), dims=("time", "x"))})
+
+        metadata = DatasetMetadata.from_dataset(
+            dataset,
+            make_config(
+                {
+                    "zarr_version": 3,
+                    "variables": {"a": {"encoding": {"shards": [2, 3]}}},
+                }
+            ),
+        )
+        self.assertEqual((2, 3), metadata.variables["a"].encoding.shards)
+
+        for encoding, message in [
+            ({"shards": [2]}, "Wrong number of shard sizes"),
+            ({"chunks": [1], "shards": [2, 3]}, "Wrong number of chunk sizes"),
+            ({"chunks": [1, 2], "shards": [1, 3]}, "must be multiples"),
+        ]:
+            with (
+                self.subTest(encoding=encoding),
+                pytest.raises(ValueError, match=message),
+            ):
+                DatasetMetadata.from_dataset(
+                    dataset,
+                    make_config(
+                        {"zarr_version": 3, "variables": {"a": {"encoding": encoding}}}
+                    ),
+                )
+
     def test_add_missing_variables(self):
         self.assertEqual(
             {

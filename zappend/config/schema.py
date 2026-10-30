@@ -94,6 +94,14 @@ VARIABLE_ENCODING_SCHEMA = {
                 {"description": "Disable chunking in all dimensions.", "const": None},
             ],
         },
+        "shards": {
+            "description": (
+                "Zarr v3 shard sizes for each dimension of the variable. "
+                "Each shard size must be a multiple of the corresponding chunk size."
+            ),
+            "type": "array",
+            "items": {"type": "integer", "minimum": 1},
+        },
         "fill_value": {
             "description": "Storage fill value.",
             "oneOf": [
@@ -603,7 +611,7 @@ CONFIG_SCHEMA_V1 = {
         "zarr_version": {
             "category": "Target Outline",
             "description": "The Zarr version to be used.",
-            "const": DEFAULT_ZARR_VERSION,
+            "enum": [2, 3],
             "default": DEFAULT_ZARR_VERSION,
         },
         "target_dir": {

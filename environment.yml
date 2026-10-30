@@ -11,8 +11,8 @@ dependencies:
   - numcodecs
   - numpy
   - pyyaml
-  - xarray <2026.4 # constrain to <2026.4 to retain compatibility with zarr 2.
-  - zarr >=2.18,<3
+  - xarray <2026.4
+  - zarr >=3,<4
   # Dev Dependencies
   - isort
   - pytest
@@ -32,3 +32,6 @@ dependencies:
   - h5netcdf
   - s3fs
   - scipy
+  # Development Dependencies - Demos
+  - jupyterlab
+  - matplotlib

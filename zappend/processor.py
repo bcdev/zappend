@@ -8,8 +8,7 @@ from typing import Any
 
 import numpy as np
 import xarray as xr
-import zarr.attrs
-import zarr.convenience
+import zarr
 
 from .config import (
     Config,
@@ -25,7 +24,7 @@ from .context import Context
 from .fsutil.transaction import RollbackCallback, Transaction
 from .log import configure_logging, logger
 from .profiler import Profiler
-from .rollbackstore import RollbackStore
+from .rollbackstore import make_rollback_store, make_zarr_store
 from .slice import SliceItem, open_slice_dataset
 from .tailoring import tailor_slice_dataset, tailor_target_dataset
 
@@ -151,9 +150,9 @@ def create_target_from_slice(
         target_ds.to_zarr(
             store=target_dir.uri,
             storage_options=target_dir.storage_options,
-            zarr_version=ctx.config.zarr_version,
+            zarr_format=ctx.config.zarr_version,
             write_empty_chunks=False,
-            consolidated=True,
+            consolidated=ctx.config.zarr_version == 2,
         )
 
         post_create_target(ctx, target_ds)
@@ -174,15 +173,16 @@ def update_target_from_slice(
     if ctx.config.dry_run:
         return
 
-    target_store = RollbackStore(
+    target_store = make_rollback_store(
         target_dir.fs.get_mapper(root=target_dir.path), rollback_cb
     )
     slice_ds.to_zarr(
         store=target_store,
         write_empty_chunks=False,
-        consolidated=True,
+        consolidated=ctx.config.zarr_version == 2,
         mode="a",
         append_dim=ctx.config.append_dim,
+        zarr_format=ctx.config.zarr_version,
     )
 
     post_update_target(ctx, target_store, slice_ds)
@@ -201,10 +201,15 @@ def post_create_target(ctx: Context, target_ds: xr.Dataset):
         target_store = ctx.config.target_dir.fs.get_mapper(
             root=ctx.config.target_dir.path
         )
-        resolve_target_attrs(target_store, target_ds, target_attrs)
+        resolve_target_attrs(
+            make_zarr_store(target_store),
+            target_ds,
+            target_attrs,
+            ctx.config.zarr_version,
+        )
 
 
-def post_update_target(ctx: Context, target_store: RollbackStore, slice_ds: xr.Dataset):
+def post_update_target(ctx: Context, target_store: Any, slice_ds: xr.Dataset):
     """Post-process the target dataset given by `target_store` that has just
     been updated by `slice_ds`.
 
@@ -215,22 +220,30 @@ def post_update_target(ctx: Context, target_store: RollbackStore, slice_ds: xr.D
     """
     target_attrs = slice_ds.attrs
     if ctx.config.permit_eval and has_dyn_config_attrs(target_attrs):
-        with xr.open_zarr(target_store) as target_ds:
-            resolve_target_attrs(target_store, target_ds, target_attrs)
+        with xr.open_zarr(
+            target_store, zarr_format=ctx.config.zarr_version
+        ) as target_ds:
+            resolve_target_attrs(
+                target_store, target_ds, target_attrs, ctx.config.zarr_version
+            )
 
 
 def resolve_target_attrs(
     target_store: collections.abc.MutableMapping,
     target_ds: xr.Dataset,
     target_attrs: dict[str, Any],
+    zarr_version: int,
 ):
     resolved_attrs = eval_dyn_config_attrs(
         target_attrs,
         get_dyn_config_attrs_env(target_ds),
     )
-    zarr.attrs.Attributes(target_store).update(resolved_attrs)
-    # noinspection PyTypeChecker
-    zarr.convenience.consolidate_metadata(target_store)
+    target_group = zarr.open_group(
+        store=target_store, mode="a", zarr_format=zarr_version
+    )
+    target_group.attrs.update(resolved_attrs)
+    if zarr_version == 2:
+        zarr.consolidate_metadata(target_store)
 
 
 def verify_append_labels(ctx: Context, slice_ds: xr.Dataset):

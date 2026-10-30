@@ -23,9 +23,20 @@ class ConfigValidateTest(unittest.TestCase):
         config = {"zarr_version": 1}
         with pytest.raises(
             ValueError,
-            match="Invalid configuration: 2 was expected for zarr_version",
+            match="Invalid configuration: 1 is not one of \\[2, 3\\] for zarr_version",
         ):
             validate_config(config)
+
+    def test_validate_zarr_v3_ok(self):
+        config = {"zarr_version": 3}
+        self.assertIs(config, validate_config(config))
+
+    def test_validate_shards(self):
+        config = {
+            "zarr_version": 3,
+            "variables": {"v": {"encoding": {"shards": [2, 4]}}},
+        }
+        self.assertIs(config, validate_config(config))
 
     # noinspection PyMethodMayBeStatic
     def test_validate_variable_fail(self):
