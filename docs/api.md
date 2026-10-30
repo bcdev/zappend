@@ -53,7 +53,3 @@ All described objects can be imported from the `zappend.api` module.
 ### Function `write_levels()`
 
 ::: zappend.contrib.write_levels
-
-### Function `zappend_datatrees()`
-
-::: zappend.contrib.zappend_datatrees

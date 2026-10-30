@@ -553,6 +553,10 @@ immediately after a target dataset modification failed. The rollback include res
 all changed files and removing added files. After the rollback you can analyse what
 went wrong and try to continue appending slices at the point it failed.
 
+For an `xarray.DataTree` slice, this transaction spans all data-bearing Zarr
+groups in the tree. If appending one group fails, changes already made to the
+other groups for that same slice are rolled back too.
+
 To allow for rollbacks, a slice append operation is treated as a transaction,
 hence temporary files must be written, e.g., to record required rollback actions and to
 save backup files with the original data. The location of the temporary transaction 
@@ -631,8 +635,26 @@ to `zappend`. Slice datasets can be provided in various ways.
   of slice items or provide a Python generator that provides the slice items.
 
 Each slice item can be a local file path or URI of type `str` or `FileObj`, 
-a dataset of type `xarray.Dataset`, or a `SliceSource` object explained in more detail 
-below.
+a dataset of type `xarray.Dataset`, a nested dataset of type `xarray.DataTree`,
+or a `SliceSource` object explained in more detail below.
+
+#### Nested Zarr Groups and DataTree
+
+Nested Zarr inputs are represented by
+[`xarray.DataTree`](https://docs.xarray.dev/en/stable/generated/xarray.DataTree.html).
+Pass a DataTree directly, return one from a `SliceSource`, or pass a path to a
+nested Zarr store: zappend opens the latter as a DataTree automatically.
+
+All DataTree slices in one run must have the same group paths. DataTree and
+Dataset slices cannot be mixed in one run. Each data-bearing group is appended
+along the configured append dimension, and the complete DataTree slice is
+rolled back if any group append fails.
+
+Use `group_variables` to override variable encoding for individual absolute
+group paths. Group settings override global `variables`; groups without an
+override use global `variables`, or the encoding of their first slice when no
+global setting exists. See the [configuration reference](config.md#group_variables)
+and `examples/datatree.ipynb` for a complete example.
 
 #### Paths and URIs
 
@@ -682,13 +704,17 @@ An alternative to providing the slice dataset as path or URI is using the
 `zappend.api.FileObj` class, which combines a URI with dedicated filesystem 
 storage options.
 
-#### Dataset Objects
+#### Dataset and DataTree Objects
 
 You can also use dataset objects of type 
 [`xarray.Dataset`](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html) 
 as slice item. Such objects may originate from opening datasets from some storage, e.g., 
 `xarray.open_dataset(slice_store, ...)` or by composing, aggregating, resampling 
 slice datasets from other datasets and dataset variables.
+
+Nested inputs can instead be passed as
+[`xarray.DataTree`](https://docs.xarray.dev/en/stable/generated/xarray.DataTree.html)
+objects. The same resource-management and persistence considerations apply.
 
 !!! note "Datasets are not closed automatically"
     If you pass [`xarray.Dataset`](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html) objects to `zappend` they will not be
@@ -722,8 +748,8 @@ at the cost of additional i/o. It therefore defaults to `false`.
 
 A slice source gives you full control about how a slice dataset is created, loaded, 
 or generated and how its bound resources, if any, are released. In its simplest form, 
-a slice source is a plain Python function that can take any arguments and returns 
-an `xarray.Dataset`:
+a slice source is a plain Python function that can take any arguments and returns
+an `xarray.Dataset` or `xarray.DataTree`:
 
 ```python
 import xarray as xr
@@ -761,8 +787,8 @@ def get_dataset(path: str) -> xr.Dataset:
 You can also implement your slice source as a class derived from the abstract 
 `zappend.api.SliceSource` class. Its interface methods are:
 
-* `get_dataset()`: a zero-argument method that returns the slice dataset of type 
-  `xarray.Dataset`. You must implement this abstract method. 
+* `get_dataset()`: a zero-argument method that returns the slice object of type
+  `xarray.Dataset` or `xarray.DataTree`. You must implement this abstract method.
 * `close()`: Optional method. Put your cleanup code here. 
   (in zappend < v0.7, the `close` method was called `dispose`).
 

@@ -7,11 +7,15 @@ of the `zappend` tool.
 
 * Create a target Zarr dataset by appending Zarr dataset slices along a 
   given *append dimension*, usually `time`.   
+* Create a target nested Zarr store by appending compatible
+  `xarray.DataTree` slices along the append dimension of every data-bearing
+  group.
 * The tool takes care of modifying the target dataset using the slices,
   but doesn't care how the slice datasets are created.
 * Slice datasets may be given as URIs with storage options or as 
   in-memory datasets of type 
   [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html)
+  or [xarray.DataTree](https://docs.xarray.dev/en/stable/generated/xarray.DataTree.html)
   or 
   [xcube.core.mldataset.MultiLevelDataset](https://xcube.readthedocs.io/en/latest/mldatasets.html).
 * Target and slices are allowed to live in different filesystems.

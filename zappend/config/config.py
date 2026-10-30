@@ -131,10 +131,11 @@ class Config:
     @property
     def slice_source(self) -> Callable[[...], Any] | None:
         """A class or function that receives a
-        slice item as argument(s) and provides the slice dataset.
+        slice item as argument(s) and provides a slice object.
 
         * If a class is given, it must be derived from `zappend.api.SliceSource`.
-        * If the function is a context manager, it must yield an `xarray.Dataset`.
+        * If the function is a context manager, it must yield an `xarray.Dataset`
+          or `xarray.DataTree`.
         * If a plain function is given, it must return any valid slice item type.
 
         Refer to the user guide for more information.

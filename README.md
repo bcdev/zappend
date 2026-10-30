@@ -49,7 +49,8 @@ The `zappend` tool provides the following features:
   created, effectively preventing concurrent dataset modifications.
 * **Transaction-based dataset appends**: On failure during an append step, 
   the transaction is rolled back, so that the target dataset remains valid and 
-  preserves its integrity.
+  preserves its integrity. A nested `xarray.DataTree` slice is rolled back as
+  a whole if appending any of its groups fails.
 * **Filesystem transparency**: The target dataset may be generated and updated 
   in any writable filesystems supported by the 
   [fsspec](https://filesystem-spec.readthedocs.io/) package. 
@@ -62,7 +63,8 @@ The `zappend` tool provides the following features:
   [`zappend`](cli.md) command or from Python. When used from Python using the 
   [`zappend()`](api.md) function, slice datasets can be passed as local file 
   paths, URIs, as datasets of type 
-  [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html), or as custom
+  [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html),
+  [xarray.DataTree](https://docs.xarray.dev/en/stable/generated/xarray.DataTree.html), or as custom
   [slice sources](https://bcdev.github.io/zappend/guide/#slice-sources).
 
   

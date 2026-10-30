@@ -10,6 +10,8 @@ Usage: zappend [OPTIONS] [SLICES]...
 
   The zappend command concatenates the dataset SLICES along a given append
   dimension, e.g., "time" (the default) for geospatial satellite observations.
+  A nested Zarr slice is opened as an xarray.DataTree and its groups are
+  appended as one transaction.
   Each append step is atomic, that is, the append operation is a transaction
   that can be rolled back, in case the append operation fails. This ensures
   integrity of the target data cube given by TARGET or in CONFIG.
