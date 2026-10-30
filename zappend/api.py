@@ -45,7 +45,7 @@ def zappend(
     is configured or not (setting `slice_source`).
 
     If no slice source is configured, a slice item must be an object of type
-    `str`, `FileObj`, `xarray.Dataset`, or `SliceSource`.
+    `str`, `FileObj`, `xarray.Dataset`, `xarray.DataTree`, or `SliceSource`.
     If `str` or `FileObj` are used, they are interpreted as local dataset path or
     dataset URI. If a URI is used, protocol-specific parameters apply, given by the
     configuration parameter `slice_storage_options`.
@@ -53,6 +53,12 @@ def zappend(
     If a slice source is configured, a slice item represents the argument(s) passed
     to that slice source. Multiple positional arguments can be passed as `list`,
     multiple keyword arguments as `dict`, and both as a `tuple` of `list` and `dict`.
+    A slice source may return an `xarray.DataTree` for a nested Zarr store.
+    zappend appends its data-bearing nodes to their corresponding Zarr groups.
+    A DataTree slice is transactional as a whole: if appending any group fails,
+    all changes made while appending that DataTree slice are rolled back.
+    The first opened slice establishes whether the run uses Dataset or DataTree
+    slices; the two container types cannot be mixed in one run.
 
     Args:
         slices: An iterable that yields slice items.

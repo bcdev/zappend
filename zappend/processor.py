@@ -17,6 +17,7 @@ from .config import (
     exclude_from_config,
     get_dyn_config_attrs_env,
     has_dyn_config_attrs,
+    merge_configs,
     normalize_config,
     validate_config,
 )
@@ -55,6 +56,11 @@ class Processor:
             )
             delete_target_permanently(_config)
         self._config = _config
+        # Keep the normalized configuration so DataTree child groups can use
+        # the same settings with only their target path changed.
+        self._config_dict = dict(config)
+        self._slice_container_type: type[xr.Dataset | xr.DataTree] | None = None
+        self._datatree_group_paths: frozenset[str] | None = None
         self._profiler = Profiler(_config.profiling)
 
     def process_slices(self, slices: Iterable[SliceItem]) -> int:
@@ -99,27 +105,215 @@ class Processor:
 
         ctx = Context(self._config)
 
-        with open_slice_dataset(ctx, slice_item, slice_index) as slice_dataset:
-            slice_metadata = ctx.get_dataset_metadata(slice_dataset)
-            if ctx.target_metadata is None:
-                ctx.target_metadata = slice_metadata
+        with open_slice_dataset(ctx, slice_item, slice_index) as slice_data:
+            if isinstance(slice_data, xr.Dataset):
+                self._assert_slice_container_type(xr.Dataset)
+                self.process_dataset_slice(ctx, slice_data)
+            elif isinstance(slice_data, xr.DataTree):
+                self._assert_slice_container_type(xr.DataTree)
+                self.process_datatree_slice(ctx, slice_data)
             else:
-                ctx.target_metadata.assert_compatible_slice(
-                    slice_metadata, ctx.config.append_dim
+                raise TypeError(
+                    "slice source must yield an xarray.Dataset or xarray.DataTree, "
+                    f"but yielded {type(slice_data).__name__!r}"
                 )
 
-            verify_append_labels(ctx, slice_dataset)
+    def _assert_slice_container_type(
+        self, container_type: type[xr.Dataset | xr.DataTree]
+    ):
+        """Ensure a streaming run does not mix Dataset and DataTree slices."""
+        if self._slice_container_type is None:
+            self._slice_container_type = container_type
+        elif container_type is not self._slice_container_type:
+            raise TypeError(
+                "Cannot mix xarray.Dataset and xarray.DataTree slices in one "
+                f"zappend run; expected {self._slice_container_type.__name__}, "
+                f"got {container_type.__name__}"
+            )
 
+    def process_datatree_slice(self, ctx: Context, tree: xr.DataTree):
+        """Append one DataTree slice in a transaction spanning all groups.
+
+        This is deliberately part of :class:`Processor`: DataTrees can now be
+        returned by any configured slice source and use the same polling,
+        profiling, force-new, and configuration flow as Dataset slices.
+        Each child group's rollback actions are registered relative to the
+        DataTree root, so an error restores the complete tree to its state
+        before this slice began.
+        """
+        group_paths = frozenset(tree.groups)
+        unknown_group_paths = set(ctx.config.group_variables) - group_paths
+        if unknown_group_paths:
+            raise ValueError(
+                "group_variables contains paths that are not present in the "
+                f"DataTree: {sorted(unknown_group_paths)!r}"
+            )
+        if self._datatree_group_paths is None:
+            self._datatree_group_paths = group_paths
+        elif group_paths != self._datatree_group_paths:
+            raise ValueError(
+                "DataTree has different group paths; expected "
+                f"{sorted(self._datatree_group_paths)!r}, got {sorted(group_paths)!r}"
+            )
+
+        transaction = Transaction(
+            ctx.config.target_dir,
+            ctx.config.temp_dir,
+            disable_rollback=ctx.config.disable_rollback,
+        )
+        with transaction as rollback_callback:
+            self._process_datatree_slice(ctx, tree, rollback_callback)
+
+    def _process_datatree_slice(
+        self, ctx: Context, tree: xr.DataTree, rollback_callback: RollbackCallback
+    ):
+        """Process a DataTree while recording all paths relative to its root."""
+
+        data_paths = tuple(
+            sorted(
+                (node.path for node in tree.subtree if node.ds.data_vars),
+                key=lambda path: (path.count("/"), path),
+            )
+        )
+        root_has_data = "/" in data_paths
+        if (
+            not root_has_data
+            and not ctx.config.dry_run
+            and not ctx.config.target_dir.exists()
+        ):
+            # Child group transactions require their parent directory. Avoid
+            # consolidating here, as it would be stale after child writes.
+            rollback_callback("delete_dir", "", None)
+            xr.Dataset().to_zarr(
+                ctx.config.target_dir.uri,
+                mode="w",
+                zarr_format=ctx.config.zarr_version,
+                consolidated=False,
+                storage_options=ctx.config.target_dir.storage_options,
+            )
+
+        for group_path in data_paths:
+            group_variables = ctx.config.group_variables.get(group_path)
+            if group_path == "/" and group_variables is None:
+                group_ctx = ctx
+            else:
+                group_target = (
+                    ctx.config.target_dir
+                    if group_path == "/"
+                    else ctx.config.target_dir / group_path.lstrip("/")
+                )
+                group_config = dict(self._config_dict)
+                group_config["target_dir"] = group_target.uri
+                group_config["variables"] = merge_configs(
+                    self._config_dict.get("variables") or {}, group_variables or {}
+                )
+                # force_new was already applied once to the complete root in
+                # Processor.__init__, never once per child group.
+                group_config["force_new"] = False
+                group_ctx = Context(group_config)
+            self.process_dataset_slice(
+                group_ctx,
+                tree[group_path].ds,
+                rollback_callback=prefix_rollback_callback(
+                    rollback_callback, group_path
+                ),
+            )
+
+        if not root_has_data and not ctx.config.dry_run:
+            update_datatree_root_attrs(ctx, tree, rollback_callback)
+
+        if not ctx.config.dry_run and ctx.config.zarr_version == 2:
+            zarr.consolidate_metadata(
+                make_rollback_store(
+                    ctx.config.target_dir.fs.get_mapper(root=ctx.config.target_dir.path),
+                    rollback_callback,
+                )
+            )
+
+    @staticmethod
+    def process_dataset_slice(
+        ctx: Context,
+        slice_dataset: xr.Dataset,
+        rollback_callback: RollbackCallback | None = None,
+    ):
+        """Process one Dataset slice using the normal transactional append path."""
+        slice_metadata = ctx.get_dataset_metadata(slice_dataset)
+        if ctx.target_metadata is None:
+            ctx.target_metadata = slice_metadata
+        else:
+            ctx.target_metadata.assert_compatible_slice(
+                slice_metadata, ctx.config.append_dim
+            )
+
+        verify_append_labels(ctx, slice_dataset)
+
+        if rollback_callback is None:
             transaction = Transaction(
                 ctx.config.target_dir,
                 ctx.config.temp_dir,
                 disable_rollback=ctx.config.disable_rollback,
             )
-            with transaction as rollback_callback:
-                if ctx.target_metadata is slice_metadata:
-                    create_target_from_slice(ctx, slice_dataset, rollback_callback)
-                else:
-                    update_target_from_slice(ctx, slice_dataset, rollback_callback)
+            with transaction as transaction_rollback_callback:
+                process_dataset_slice_with_rollback(
+                    ctx, slice_dataset, slice_metadata, transaction_rollback_callback
+                )
+        else:
+            process_dataset_slice_with_rollback(
+                ctx, slice_dataset, slice_metadata, rollback_callback
+            )
+
+
+def process_dataset_slice_with_rollback(
+    ctx: Context,
+    slice_dataset: xr.Dataset,
+    slice_metadata: Any,
+    rollback_callback: RollbackCallback,
+):
+    if ctx.target_metadata is slice_metadata:
+        create_target_from_slice(ctx, slice_dataset, rollback_callback)
+    else:
+        update_target_from_slice(ctx, slice_dataset, rollback_callback)
+
+
+def prefix_rollback_callback(
+    rollback_callback: RollbackCallback, group_path: str
+) -> RollbackCallback:
+    """Adapt child-group paths to the root transaction's relative paths."""
+    prefix = group_path.strip("/")
+    if not prefix:
+        return rollback_callback
+
+    def prefixed_callback(action, target_path, data):
+        path = prefix if not target_path else f"{prefix}/{target_path}"
+        rollback_callback(action, path, data)
+
+    return prefixed_callback
+
+
+def update_datatree_root_attrs(
+    ctx: Context, tree: xr.DataTree, rollback_callback: RollbackCallback
+):
+    """Apply Dataset attribute semantics to a metadata-only DataTree root."""
+    root_group = zarr.open_group(
+        make_rollback_store(
+            ctx.config.target_dir.fs.get_mapper(root=ctx.config.target_dir.path),
+            rollback_callback,
+        ),
+        mode="a",
+        zarr_format=ctx.config.zarr_version,
+    )
+    attrs = dict(tree.ds.attrs)
+    attrs.update(ctx.config.attrs)
+    if ctx.config.attrs_update_mode == "replace":
+        root_group.attrs.clear()
+        root_group.attrs.update(attrs)
+    elif ctx.config.attrs_update_mode == "update":
+        root_group.attrs.update(attrs)
+    elif ctx.config.attrs_update_mode == "keep":
+        for key, value in attrs.items():
+            root_group.attrs.setdefault(key, value)
+    elif ctx.config.attrs_update_mode == "ignore":
+        root_group.attrs.update(ctx.config.attrs)
 
 
 def delete_target_permanently(config: Config):

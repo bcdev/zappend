@@ -34,7 +34,18 @@ class Context:
                     append_var = target_dataset.get(_config.append_dim)
                     if append_var is not None and append_var.size > 0:
                         last_append_label = append_var[-1]
-                target_metadata = DatasetMetadata.from_dataset(target_dataset, _config)
+                try:
+                    target_metadata = DatasetMetadata.from_dataset(
+                        target_dataset, _config
+                    )
+                except ValueError:
+                    # A DataTree may have a metadata-only root node and its
+                    # appendable datasets in child Zarr groups. Such a root is
+                    # not a Dataset target itself, so its metadata is not used
+                    # by the Dataset processing path.
+                    if target_dataset.data_vars or _config.append_dim in target_dataset.sizes:
+                        raise
+                    target_metadata = None
         except FileNotFoundError:
             target_metadata = None
 

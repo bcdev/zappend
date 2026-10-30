@@ -112,6 +112,30 @@ Variable metadata.
   - `attrs`:
     Arbitrary variable metadata attributes.
 
+### `group_variables`
+
+Type _object_.
+Optional variable-configuration overrides for individual `xarray.DataTree`
+groups. Keys are absolute Zarr group paths such as `"/group_0"` or `"/group_1"`; each
+value uses the same syntax as [`variables`](#variables).
+
+For a group, its configuration is merged over the global `variables`
+configuration. If a group has no entry here, normal zappend behavior applies:
+the global `variables` setting is used if present, otherwise encoding such as
+chunk sizes is taken from that group's first slice.
+
+```yaml
+group_variables:
+  "/group_0":
+    var_0:
+      encoding:
+        chunks: [31, 450, 450]
+  "/group_1":
+    var_0:
+      encoding:
+        chunks: [31, 450, 450]
+```
+
 ### `attrs`
 
 Type _object_.

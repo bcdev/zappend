@@ -26,9 +26,9 @@ class PersistentSliceSource(SliceSource):
     def __init__(self, ctx: Context, slice_file: FileObj):
         self._config = ctx.config
         self._slice_file = slice_file
-        self._slice_ds: xr.Dataset | None = None
+        self._slice_ds: xr.Dataset | xr.DataTree | None = None
 
-    def get_dataset(self) -> xr.Dataset:
+    def get_dataset(self) -> xr.Dataset | xr.DataTree:
         logger.info(f"Opening slice dataset from {self._slice_file.uri}")
         self._slice_ds = self._wait_for_slice_dataset()
         return self._slice_ds
@@ -39,7 +39,7 @@ class PersistentSliceSource(SliceSource):
             self._slice_ds = None
         logger.info(f"Slice dataset {self._slice_file.uri} closed")
 
-    def _wait_for_slice_dataset(self) -> xr.Dataset:
+    def _wait_for_slice_dataset(self) -> xr.Dataset | xr.DataTree:
         interval, timeout = self._config.slice_polling
         if timeout is None:
             return self._open_slice_dataset()
@@ -59,7 +59,7 @@ class PersistentSliceSource(SliceSource):
                 )
                 time.sleep(interval)
 
-    def _open_slice_dataset(self) -> xr.Dataset:
+    def _open_slice_dataset(self) -> xr.Dataset | xr.DataTree:
         engine = self._config.slice_engine
         if engine is None and (
             self._slice_file.path.endswith(".zarr")
@@ -68,6 +68,17 @@ class PersistentSliceSource(SliceSource):
             engine = "zarr"
         if engine == "zarr":
             storage_options = self._config.slice_storage_options
+            tree = xr.open_datatree(
+                self._slice_file.uri,
+                engine="zarr",
+                storage_options=storage_options,
+                consolidated=self._config.zarr_version == 2,
+            )
+            # Preserve the existing Dataset behaviour for ordinary Zarr
+            # stores, but expose actual nested stores as DataTrees.
+            if len(tree.groups) > 1:
+                return tree
+            tree.close()
             return xr.open_zarr(
                 self._slice_file.uri,
                 storage_options=storage_options,

@@ -29,16 +29,14 @@ class SliceSource(ABC):
     """
 
     @abstractmethod
-    def get_dataset(self) -> xr.Dataset:
-        """Open this slice source, do some processing and return a dataset of type
-        [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html)
-        as result.
+    def get_dataset(self) -> xr.Dataset | xr.DataTree:
+        """Open this slice source and return a dataset or a data tree.
 
         This method is not intended to be called directly and is called exactly
         once for each instance of this class.
 
-        It should return a dataset that is compatible with
-        target dataset:
+        It should return a dataset, or a data tree whose data-bearing nodes
+        are compatible with their corresponding target Zarr groups:
 
         * slice must have same fixed dimensions;
         * append dimension must exist in slice.
@@ -70,7 +68,12 @@ class SliceSource(ABC):
 
 
 SliceItem: TypeAlias = (
-    str | FileObj | xr.Dataset | AbstractContextManager[xr.Dataset] | SliceSource
+    str
+    | FileObj
+    | xr.Dataset
+    | xr.DataTree
+    | AbstractContextManager[xr.Dataset | xr.DataTree]
+    | SliceSource
 )
 
 """The possible types that can represent a slice dataset."""
@@ -106,7 +109,7 @@ def to_slice_source(
         return PersistentSliceSource(ctx, slice_file)
     if isinstance(slice_item, FileObj):
         return PersistentSliceSource(ctx, slice_item)
-    if isinstance(slice_item, xr.Dataset):
+    if isinstance(slice_item, (xr.Dataset, xr.DataTree)):
         if ctx.config.persist_mem_slices:
             return TemporarySliceSource(ctx, slice_item, slice_index)
         else:

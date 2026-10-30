@@ -24,6 +24,7 @@ class ConfigSchemaTest(unittest.TestCase):
                 "extra",
                 "force_new",
                 "fixed_dims",
+                "group_variables",
                 "included_variables",
                 "logging",
                 "permit_eval",

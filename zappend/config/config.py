@@ -47,7 +47,7 @@ class Config:
         self._slice_source = to_slice_callable(slice_source)
 
     @property
-    def zarr_version(self) -> int:
+    def zarr_version(self) -> Literal[2, 3]:
         """The configured Zarr version for the target dataset."""
         return self._config.get("zarr_version", DEFAULT_ZARR_VERSION)
 
@@ -83,6 +83,11 @@ class Config:
     def variables(self) -> dict[str, Any]:
         """Variable definitions."""
         return self._config.get("variables") or {}
+
+    @property
+    def group_variables(self) -> dict[str, dict[str, Any]]:
+        """Variable-definition overrides keyed by absolute DataTree group path."""
+        return self._config.get("group_variables") or {}
 
     @property
     def attrs(self) -> dict[str, Any]:

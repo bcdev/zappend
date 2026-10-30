@@ -13,4 +13,3 @@ coverage analysis.
 """
 
 from .levels import write_levels as write_levels
-from .datatree import zappend_datatrees as zappend_datatrees
