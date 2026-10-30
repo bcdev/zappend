@@ -4,7 +4,7 @@
   with Zarr v2 as the default. (#111)
 * Added support for nested Zarr structures represented by `xarray.DataTree`,
   including atomic rollback of complete DataTree slices and optional per-group
-  variable encoding configuration.
+  variable encoding configuration. (#113)
 * Replaced dev tools black and flake8 by isort and ruff. 
 * Reformatted code and fixed linter issues.
 * Added `environment.yml` to setup a conda/mamba development environment. 
