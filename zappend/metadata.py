@@ -40,6 +40,7 @@ class VariableEncoding:
         self,
         dtype: np.dtype | Undefined = UNDEFINED,
         chunks: tuple[int] | None | Undefined = UNDEFINED,
+        shards: tuple[int, ...] | Undefined = UNDEFINED,
         fill_value: float | None | Undefined = UNDEFINED,
         scale_factor: float | Undefined = UNDEFINED,
         add_offset: float | Undefined = UNDEFINED,
@@ -51,6 +52,7 @@ class VariableEncoding:
     ):
         self.dtype = dtype
         self.chunks = chunks
+        self.shards = shards
         self.fill_value = fill_value
         self.scale_factor = scale_factor
         self.add_offset = add_offset
@@ -64,7 +66,7 @@ class VariableEncoding:
                 ", ".join(unknown_settings.keys()),
             )
 
-    def to_dict(self):
+    def to_dict(self, zarr_version: int = 2):
         """Convert this object into a dictionary.
         Includes attributes with value `None`,
         but excludes attributes with value `UNDEFINED`.
@@ -76,6 +78,12 @@ class VariableEncoding:
         }
         if "fill_value" in d:
             d["_FillValue"] = d.pop("fill_value")
+        if zarr_version == 3:
+            # Zarr v3 uses an ordered codec pipeline instead of v2's
+            # compressor/filters fields. Xarray cannot safely translate
+            # arbitrary numcodecs v2 codecs, so let it select v3 defaults.
+            d.pop("compressor", None)
+            d.pop("filters", None)
         return d
 
 
@@ -218,6 +226,7 @@ class DatasetMetadata:
             config.included_variables,
             config.excluded_variables,
             config.variables,
+            config.zarr_version,
         )
 
         attrs = merge_configs(dataset.attrs, config.attrs)
@@ -256,6 +265,7 @@ def _get_effective_variables(
     config_included_variables: list[str] | None,
     config_excluded_variables: list[str] | None,
     config_variables: dict[str, dict[str, Any]] | None,
+    zarr_version: int,
 ) -> dict[str, VariableMetadata]:
     config_variables = dict(config_variables or {})
     # Get and remove defaults for all variables
@@ -348,6 +358,42 @@ def _get_effective_variables(
             if "chunks" not in encoding:
                 encoding["chunks"] = chunk_sizes
 
+        if encoding.get("shards") is not None:
+            if zarr_version != 3:
+                raise ValueError(
+                    f"Variable {var_name!r} configures 'shards', "
+                    "which is supported only for Zarr version 3"
+                )
+            encoding["shards"] = _normalize_chunks(encoding["shards"])
+
+            shards = encoding["shards"]
+            assert shards is not None
+            if len(shards) != len(dims):
+                raise ValueError(
+                    f"Wrong number of shard sizes for variable {var_name!r}: "
+                    f"expected {len(dims)}, found {len(shards)}"
+                )
+            chunks = encoding.get("chunks")
+            if chunks is None:
+                chunks = shape
+            if len(chunks) != len(dims):
+                raise ValueError(
+                    f"Wrong number of chunk sizes for variable {var_name!r}: "
+                    f"expected {len(dims)}, found {len(chunks)}"
+                )
+            if any(
+                shard < chunk or shard % chunk for shard, chunk in zip(shards, chunks)
+            ):
+                raise ValueError(
+                    f"Shard sizes for variable {var_name!r} must be multiples "
+                    "of, and no smaller than, chunk sizes"
+                )
+        else:
+            # Xarray running with Zarr-Python v3 reports ``shards: None`` for
+            # unsharded source arrays, including Zarr v2 targets. It is not a
+            # request to write shards and must not leak into v2 encoding.
+            encoding.pop("shards", None)
+
         # Handle case where a chunk size in None to indicate
         # dimension is not chunked.
         # See https://github.com/bcdev/zappend/issues/77
@@ -411,6 +457,7 @@ def _normalize_codec(value: Any) -> Codec:
 _ENCODING_PROPS: dict[str, Callable[[Any], Any]] = {
     "dtype": _normalize_dtype,
     "chunks": _normalize_chunks,
+    "shards": _normalize_chunks,
     "fill_value": _normalize_number,
     "_FillValue": _normalize_number,
     "scale_factor": _normalize_number,

@@ -11,7 +11,8 @@ awesome Python packages [xarray](https://docs.xarray.dev/) and [zarr](https://za
 The objective of `zappend` is enabling geodata scientists and developers to 
 robustly create large data cubes. The tool performs transaction-based dataset 
 appends to existing data cubes in the 
-[Zarr format](https://zarr.readthedocs.io/en/stable/spec/v2.html). If an error 
+[Zarr format](https://zarr.readthedocs.io/en/stable/). Targets use Zarr v2 by
+default and may opt into Zarr v3. If an error
 occurs during an append step — typically due to I/O problems or out-of-memory 
 conditions — `zappend` will automatically roll back the operation, ensuring that 
 the existing data cube maintains its structural integrity. The design drivers 
@@ -39,7 +40,8 @@ The `zappend` tool provides the following features:
   [`zappend`](cli.md) command or from Python. When used from Python using the 
   [`zappend()`](api.md) function, slice datasets can be passed as local file 
   paths, URIs, as datasets of type 
-  [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html), or as custom
+  [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html),
+  [xarray.DataTree](https://docs.xarray.dev/en/stable/generated/xarray.DataTree.html), or as custom
   [slice sources](guide.md#slice-sources).
 
 ## How It Works
@@ -47,6 +49,9 @@ The `zappend` tool provides the following features:
 At its core, `zappend` calls the [to_zarr()](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.to_zarr.html#xarray-dataset-to-zarr) method of [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html) 
 for each dataset slice it receives and either creates the target dataset if it does 
 not exist yet or updates it with the current slice, if it already exists.
+
+For nested Zarr stores, it applies the same operation to each data-bearing
+`xarray.DataTree` group as one atomic slice transaction.
 
 If there is no target dataset yet, `zappend` does the following:
 

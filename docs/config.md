@@ -76,6 +76,10 @@ Variable metadata.
                 Its value is `null`.
           - Disable chunking in all dimensions.
             Its value is `null`.
+      - `shards`:
+        Zarr v3 shard sizes for each dimension of the variable. Each shard size
+        must be a multiple of the corresponding chunk size. The items of the
+        list are positive integers.
       - `fill_value`:
         Must be one of the following:
           - Type _number_.
@@ -108,6 +112,30 @@ Variable metadata.
   - `attrs`:
     Arbitrary variable metadata attributes.
 
+### `group_variables`
+
+Type _object_.
+Optional variable-configuration overrides for individual `xarray.DataTree`
+groups. Keys are absolute Zarr group paths such as `"/group_0"` or `"/group_1"`; each
+value uses the same syntax as [`variables`](#variables).
+
+For a group, its configuration is merged over the global `variables`
+configuration. If a group has no entry here, normal zappend behavior applies:
+the global `variables` setting is used if present, otherwise encoding such as
+chunk sizes is taken from that group's first slice.
+
+```yaml
+group_variables:
+  "/group_0":
+    var_0:
+      encoding:
+        chunks: [31, 450, 450]
+  "/group_1":
+    var_0:
+      encoding:
+        chunks: [31, 450, 450]
+```
+
 ### `attrs`
 
 Type _object_.
@@ -134,8 +162,7 @@ Defaults to `"keep"`.
 
 ### `zarr_version`
 
-The Zarr version to be used.
-Its value is `2`.
+The Zarr version to be used. Allowed values are `2` and `3`.
 Defaults to `2`.
 
 ## Data I/O - Target
@@ -192,7 +219,7 @@ Must be one of the following:
 ### `slice_source`
 
 Type _string_.
-The fully qualified name of a class or function that receives a slice item as argument(s) and provides the slice dataset. If a class is given, it must be derived from `zappend.api.SliceSource`. If the function is a context manager, it must yield an `xarray.Dataset`. If a plain function is given, it must return any valid slice item type. Refer to the user guide for more information.
+The fully qualified name of a class or function that receives a slice item as argument(s) and provides a slice object. If a class is given, it must be derived from `zappend.api.SliceSource`. If the function is a context manager, it must yield an `xarray.Dataset` or `xarray.DataTree`. If a plain function is given, it must return any valid slice item type. Refer to the user guide for more information.
 
 ### `slice_source_kwargs`
 

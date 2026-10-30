@@ -21,25 +21,40 @@ class TemporarySliceSource(MemorySliceSource):
         slice_index: An index for slice identification
     """
 
-    def __init__(self, ctx: Context, slice_ds: xr.Dataset, slice_index: int):
+    def __init__(
+        self, ctx: Context, slice_ds: xr.Dataset | xr.DataTree, slice_index: int
+    ):
         super().__init__(slice_ds, slice_index)
         self._config = ctx.config
         self._temp_slice_dir: FileObj | None = None
-        self._temp_slice_ds: xr.Dataset | None = None
+        self._temp_slice_ds: xr.Dataset | xr.DataTree | None = None
 
-    def get_dataset(self) -> xr.Dataset:
+    def get_dataset(self) -> xr.Dataset | xr.DataTree:
         slice_index = self._slice_index
         temp_slice_dir = self._config.temp_dir / f"slice-{slice_index}.zarr"
         self._temp_slice_dir = temp_slice_dir
-        temp_slice_store = temp_slice_dir.fs.get_mapper(
-            temp_slice_dir.path, create=True
-        )
         logger.info(
             f"Persisting in-memory slice dataset #{slice_index} to {temp_slice_dir.uri}"
         )
-        self._slice_ds.to_zarr(temp_slice_store)
+        is_datatree = isinstance(self._slice_ds, xr.DataTree)
+        self._slice_ds.to_zarr(
+            temp_slice_dir.uri,
+            zarr_format=self._config.zarr_version,
+        )
         self._slice_ds = None
-        self._temp_slice_ds = xr.open_zarr(temp_slice_store)
+        if is_datatree:
+            self._temp_slice_ds = xr.open_datatree(
+                temp_slice_dir.uri,
+                engine="zarr",
+                zarr_format=self._config.zarr_version,
+                consolidated=self._config.zarr_version == 2,
+            )
+        else:
+            self._temp_slice_ds = xr.open_zarr(
+                temp_slice_dir.uri,
+                zarr_format=self._config.zarr_version,
+                consolidated=self._config.zarr_version == 2,
+            )
         return self._temp_slice_ds
 
     def close(self):

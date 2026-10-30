@@ -2,90 +2,80 @@
 #  Permissions are hereby granted under the terms of the MIT License:
 #  https://opensource.org/licenses/MIT.
 
-from collections.abc import Mapping, MutableMapping, Sequence
-from typing import Any
+"""Transactional wrapper for Zarr-Python v3 stores."""
 
-import zarr.context
-import zarr.storage
+from collections.abc import MutableMapping
+
+import fsspec.implementations.local
+from zarr.abc.store import Store
+from zarr.core.buffer import default_buffer_prototype
+from zarr.storage import FsspecStore, WrapperStore
 
 from zappend.fsutil.transaction import RollbackCallback
 
 
-class RollbackStore(zarr.storage.Store):
-    def __init__(self, store: MutableMapping, rollback_cb: RollbackCallback):
-        self._store = store
+class RollbackStore(WrapperStore[Store]):
+    """Record each key's pre-transaction bytes before it is changed.
+
+    This is a Zarr-Python v3 ``Store`` wrapper. The configured Zarr format
+    (v2 or v3) is intentionally unrelated to this API implementation.
+    """
+
+    def __init__(self, store: Store, rollback_cb: RollbackCallback):
+        super().__init__(store)
         self._rollback_cb = rollback_cb
+        self._recorded_keys: set[str] = set()
 
-    def _delegate_call(self, fn_name, *args, **kwargs) -> Any:
-        if hasattr(self._store, fn_name):
-            return getattr(self._store, fn_name)(*args, **kwargs)
-        else:
-            return getattr(super(), fn_name)(*args, **kwargs)
+    def _with_store(self, store: Store):
+        return type(self)(store, self._rollback_cb)
 
-    ###########################################################################
-    # collections.abc.Mapping implementations
-
-    def __getitem__(self, key: str):
-        return self._store[key]
-
-    def __len__(self):
-        return len(self._store)
-
-    def __iter__(self):
-        return iter(self._store)
-
-    ###########################################################################
-    # collections.abc.Mapping overrides
-
-    def __contains__(self, key: str):
-        return key in self._store
-
-    def __eq__(self, other: object):
-        return self is other or (
-            isinstance(other, RollbackStore)
-            and self._rollback_cb is other._rollback_cb
-            and self._store == other._store
-        )
-
-    ###########################################################################
-    # collections.abc.MutableMapping implementations
-
-    def __setitem__(self, key: str, value: bytes):
-        old_value = self._store.get(key)
-        self._store[key] = value
-        if old_value is not None:
-            self._rollback_cb("replace_file", key, old_value)
-        else:
+    async def _record_before_change(self, key: str) -> None:
+        if key in self._recorded_keys:
+            return
+        self._recorded_keys.add(key)
+        old_value = await self._store.get(key, default_buffer_prototype())
+        if old_value is None:
             self._rollback_cb("delete_file", key, None)
+        else:
+            self._rollback_cb("replace_file", key, old_value.to_bytes())
 
-    def __delitem__(self, key: str):
-        old_value = self._store.get(key)
-        del self._store[key]
-        if old_value is not None:
-            self._rollback_cb("create_file", key, old_value)
+    async def set(self, key: str, value) -> None:
+        await self._record_before_change(key)
+        await self._store.set(key, value)
 
-    ###########################################################################
-    # zarr.storage.BaseStore overrides
+    async def set_if_not_exists(self, key: str, value) -> None:
+        await self._record_before_change(key)
+        await self._store.set_if_not_exists(key, value)
 
-    # noinspection SpellCheckingInspection
-    def getitems(
-        self, keys: Sequence[str], *, contexts: Mapping[str, zarr.context.Context]
-    ) -> Mapping[str, Any]:
-        return self._delegate_call("getitems", keys, contexts)
+    async def _set_many(self, values) -> None:
+        # Zarr batches metadata and chunk writes through this method.
+        values = list(values)
+        for key, _value in values:
+            await self._record_before_change(key)
+        await self._store._set_many(values)
 
-    def rename(self, src_path: str, dst_path: str) -> None:
-        self._delegate_call("rename", src_path, dst_path)
-        self._rollback_cb("rename_file", dst_path, src_path)
+    async def delete(self, key: str) -> None:
+        await self._record_before_change(key)
+        await self._store.delete(key)
 
-    def close(self) -> None:
-        self._delegate_call("close")
+    async def delete_dir(self, prefix: str) -> None:
+        keys = [key async for key in self._store.list_prefix(prefix)]
+        for key in keys:
+            await self._record_before_change(key)
+        await self._store.delete_dir(prefix)
 
-    ###########################################################################
-    # zarr.storage.Store overrides
 
-    def listdir(self, path: str = "") -> list[str]:
-        return self._delegate_call("listdir", path)
+def make_zarr_store(store: MutableMapping) -> Store:
+    """Adapt an fsspec mapper to Zarr-Python v3's asynchronous Store API."""
+    # Zarr v3 chunk keys are nested paths (for example ``time/c/1``). The
+    # FsspecStore adapter writes them through LocalFileSystem.pipe_file(),
+    # which only creates intermediate directories when auto_mkdir is enabled.
+    # The mapper obtained from FileObj has it disabled by default.
+    if isinstance(store.fs, fsspec.implementations.local.LocalFileSystem):
+        store.fs.auto_mkdir = True
+    return FsspecStore.from_mapper(store)
 
-    def rmdir(self, path: str = "") -> None:
-        self._delegate_call("rmdir", path)
-        self._rollback_cb("delete_dir", path)
+
+def make_rollback_store(store: MutableMapping, rollback_cb: RollbackCallback):
+    """Return a transaction-recording wrapper around an fsspec mapper."""
+    return RollbackStore(make_zarr_store(store), rollback_cb)

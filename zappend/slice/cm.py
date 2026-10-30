@@ -27,7 +27,7 @@ class SliceSourceContextManager(AbstractContextManager):
     def slice_source(self) -> SliceSource:
         return self._slice_source
 
-    def __enter__(self) -> xr.Dataset:
+    def __enter__(self) -> xr.Dataset | xr.DataTree:
         return self._slice_source.get_dataset()
 
     def __exit__(self, *exception_args):
@@ -39,7 +39,7 @@ def open_slice_dataset(
     ctx: Context,
     slice_item: Any,
     slice_index: int = 0,
-) -> AbstractContextManager[xr.Dataset]:
+) -> AbstractContextManager[xr.Dataset | xr.DataTree]:
     """Open the slice source for given slice item `slice_item`.
 
     The intended and only use of the returned slice source is as context
@@ -64,7 +64,7 @@ def open_slice_dataset(
 
     * `str`: A local file path or URI pointing to a dataset file such as a
       Zarr or NetCDF. If it is a URI, the `ctx.slice_storage_options` apply.
-    * `xarray.Dataset`: An in-memory xarray dataset instance.
+    * `xarray.Dataset` or `xarray.DataTree`: An in-memory xarray object.
     * `zappend.api.FileObj`: A file object instance pointing to a dataset
       file in a predefined filesystem.
     * `zappend.api.SliceSource`: A slice source. Returned as-is.

@@ -94,6 +94,14 @@ VARIABLE_ENCODING_SCHEMA = {
                 {"description": "Disable chunking in all dimensions.", "const": None},
             ],
         },
+        "shards": {
+            "description": (
+                "Zarr v3 shard sizes for each dimension of the variable. "
+                "Each shard size must be a multiple of the corresponding chunk size."
+            ),
+            "type": "array",
+            "items": {"type": "integer", "minimum": 1},
+        },
         "fill_value": {
             "description": "Storage fill value.",
             "oneOf": [
@@ -204,6 +212,16 @@ VARIABLES_SCHEMA = {
         },
         "additionalProperties": False,
     },
+}
+
+GROUP_VARIABLES_SCHEMA = {
+    "category": "Target Outline",
+    "description": (
+        "Defines variable configuration overrides for individual absolute Zarr "
+        "group paths in a DataTree target."
+    ),
+    "type": "object",
+    "additionalProperties": VARIABLES_SCHEMA,
 }
 
 LOG_REF_URL = (
@@ -550,6 +568,7 @@ CONFIG_SCHEMA_V1 = {
             "items": {"type": "string", "minLength": 1},
         },
         "variables": VARIABLES_SCHEMA,
+        "group_variables": GROUP_VARIABLES_SCHEMA,
         "attrs": {
             "category": "Target Outline",
             "description": (
@@ -603,7 +622,7 @@ CONFIG_SCHEMA_V1 = {
         "zarr_version": {
             "category": "Target Outline",
             "description": "The Zarr version to be used.",
-            "const": DEFAULT_ZARR_VERSION,
+            "enum": [2, 3],
             "default": DEFAULT_ZARR_VERSION,
         },
         "target_dir": {
@@ -660,11 +679,11 @@ CONFIG_SCHEMA_V1 = {
             "category": "Data I/O - Slices",
             "description": (
                 "The fully qualified name of a class or function that receives a"
-                " slice item as argument(s) and provides the slice dataset."
+                " slice item as argument(s) and provides a slice object."
                 " If a class is given,"
                 " it must be derived from `zappend.api.SliceSource`."
                 " If the function is a context manager,"
-                " it must yield an `xarray.Dataset`."
+                " it must yield an `xarray.Dataset` or `xarray.DataTree`."
                 " If a plain function is given,"
                 " it must return any valid slice item type."
                 " Refer to the user guide for more information."

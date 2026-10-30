@@ -1,5 +1,10 @@
 ## Version 0.8.1 (in development)
 
+* Migrated to the Zarr v3 Python API. Supports writing Zarr v2 and v3 stores, 
+  with Zarr v2 as the default. (#111)
+* Added support for nested Zarr structures represented by `xarray.DataTree`,
+  including atomic rollback of complete DataTree slices and optional per-group
+  variable encoding configuration. (#113)
 * Replaced dev tools black and flake8 by isort and ruff. 
 * Reformatted code and fixed linter issues.
 * Added `environment.yml` to setup a conda/mamba development environment. 

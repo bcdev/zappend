@@ -2,8 +2,10 @@
 #  Permissions are hereby granted under the terms of the MIT License:
 #  https://opensource.org/licenses/MIT.
 
+import runpy
 import unittest
 
+import pytest
 from click.testing import CliRunner
 
 from zappend import __version__
@@ -23,6 +25,14 @@ class CliTest(unittest.TestCase):
         result = runner.invoke(zappend, ["--version"])
         self.assertEqual(0, result.exit_code)
         self.assertEqual(f"{__version__}\n", result.output)
+
+    def test_module_entry_point(self):
+        with pytest.MonkeyPatch.context() as monkeypatch:
+            monkeypatch.setattr("sys.argv", ["zappend", "--version"])
+            with pytest.raises(SystemExit) as error:
+                runpy.run_module("zappend.cli", run_name="__main__")
+
+        self.assertEqual(0, error.value.code)
 
     def test_help(self):
         runner = CliRunner()
