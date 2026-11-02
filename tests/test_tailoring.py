@@ -18,7 +18,7 @@ def make_context(config: dict, target_ds: xr.Dataset, write: bool = False) -> Co
     target_dir = "memory://target.zarr"
     if write:
         target_ds.to_zarr(target_dir, mode="w", zarr_format=2)
-    ctx = Context({"target_dir": target_dir, **config})
+    ctx = Context({"target_dir": target_dir, "zarr_format": 2, **config})
     ctx.target_metadata = ctx.get_dataset_metadata(target_ds)
     return ctx
 

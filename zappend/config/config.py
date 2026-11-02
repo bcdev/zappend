@@ -54,33 +54,32 @@ class Config:
             return self._effective_zarr_format
 
         zarr_format = self._config.get("zarr_format")
-        if zarr_format is not None:
-            if "zarr_version" in self._config:
+        if zarr_format is None:
+            zarr_version = self._config.get("zarr_version")
+            if zarr_version == 2:
                 warnings.warn(
-                    "Configuration setting 'zarr_version' is deprecated and "
-                    "ignored because 'zarr_format' is also set.",
+                    "Configuration setting 'zarr_version' is deprecated; "
+                    "use 'zarr_format' instead.",
                     DeprecationWarning,
                     stacklevel=2,
                 )
-            self._effective_zarr_format = zarr_format
+                zarr_format = 2
+            elif zarr_version is None:
+                raise ValueError("Missing required configuration setting 'zarr_format'")
+            else:
+                raise ValueError(
+                    "Deprecated configuration setting 'zarr_version' only supports "
+                    "Zarr format 2; use 'zarr_format' for Zarr format 3"
+                )
         elif "zarr_version" in self._config:
             warnings.warn(
-                "Configuration setting 'zarr_version' is deprecated; "
-                "use 'zarr_format' instead.",
+                "Configuration setting 'zarr_version' is deprecated and "
+                "ignored because 'zarr_format' is also set.",
                 DeprecationWarning,
                 stacklevel=2,
             )
-            self._effective_zarr_format = self._config["zarr_version"]
-        else:
-            warnings.warn(
-                "Configuration does not define 'zarr_format'; treating it as a "
-                "legacy configuration and using Zarr format 2. Set "
-                "'zarr_format' explicitly; new configurations should use 3.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            self._effective_zarr_format = 2
-        return self._effective_zarr_format
+        self._effective_zarr_format = zarr_format
+        return zarr_format
 
     @property
     def zarr_version(self) -> Literal[2, 3]:

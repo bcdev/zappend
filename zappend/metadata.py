@@ -66,7 +66,7 @@ class VariableEncoding:
                 ", ".join(unknown_settings.keys()),
             )
 
-    def to_dict(self, zarr_format: int = 3):
+    def to_dict(self, zarr_format: int = 2):
         """Convert this object into a dictionary.
         Includes attributes with value `None`,
         but excludes attributes with value `UNDEFINED`.

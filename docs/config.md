@@ -139,14 +139,13 @@ Defaults to `"keep"`.
 
 ### `zarr_format`
 
-The Zarr format to be used. Required for new configurations. If it is omitted,
-the configuration is treated as
-legacy and Zarr v2 is used with a warning. Allowed values are `2` and `3`.
+The Zarr format to be used. Required unless the deprecated `zarr_version: 2`
+setting is supplied. Allowed values are `2` and `3`.
 
 ### `zarr_version`
 
-Deprecated alias for `zarr_format`. Use `zarr_format` in new configurations.
-Allowed values are `2` and `3`.
+Deprecated legacy setting for Zarr v2 only. Use `zarr_format` in new
+configurations. Its only allowed value is `2`.
 
 ## Data I/O - Target
 

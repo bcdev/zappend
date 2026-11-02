@@ -10,10 +10,17 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from zappend.api import FileObj, SliceSource, zappend
+from zappend.api import FileObj, SliceSource
+from zappend.api import zappend as _zappend
 from zappend.fsutil.transaction import Transaction
 
 from .helpers import clear_memory_fs, make_test_dataset
+
+
+def zappend(*args, **kwargs):
+    """Use the explicit legacy format expected by this Dataset test module."""
+    kwargs.setdefault("zarr_format", 2)
+    return _zappend(*args, **kwargs)
 
 
 # noinspection PyMethodMayBeStatic

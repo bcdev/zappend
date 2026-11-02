@@ -611,19 +611,18 @@ CONFIG_SCHEMA_V1 = {
         "zarr_format": {
             "category": "Target Outline",
             "description": (
-                "The Zarr format to be used. Required for new configurations. "
-                "If it is omitted, the "
-                "configuration is treated as legacy and Zarr v2 is used with a warning."
+                "The Zarr format to be used. Required unless the deprecated "
+                "`zarr_version` setting is supplied."
             ),
             "enum": [2, 3],
         },
         "zarr_version": {
             "category": "Target Outline",
             "description": (
-                "Deprecated alias for `zarr_format`. Use `zarr_format` in new "
-                "configurations."
+                "Deprecated legacy setting for Zarr v2 only. Use `zarr_format` "
+                "in new configurations."
             ),
-            "enum": [2, 3],
+            "const": 2,
         },
         "target_dir": {
             "category": "Data I/O - Target",
@@ -783,6 +782,10 @@ CONFIG_SCHEMA_V1 = {
         "profiling": PROFILING_SCHEMA,
         "logging": LOGGING_SCHEMA,
     },
+    "anyOf": [
+        {"required": ["zarr_format"]},
+        {"required": ["zarr_version"]},
+    ],
     "additionalProperties": False,
 }
 

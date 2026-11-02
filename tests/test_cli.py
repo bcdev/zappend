@@ -19,6 +19,12 @@ class CliTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
 
+    @staticmethod
+    def _zarr_config() -> str:
+        config_uri = "memory://config.yaml"
+        FileObj(config_uri).write("zarr_format: 2\n")
+        return config_uri
+
     def test_version(self):
         runner = CliRunner()
         # noinspection PyTypeChecker
@@ -70,6 +76,8 @@ class CliTest(unittest.TestCase):
         result = runner.invoke(
             zappend,
             [
+                "--config",
+                self._zarr_config(),
                 "--target",
                 "memory://target.zarr",
                 "memory://slice-1.zarr",
@@ -91,6 +99,8 @@ class CliTest(unittest.TestCase):
         result = runner.invoke(
             zappend,
             [
+                "--config",
+                self._zarr_config(),
                 "--target",
                 "memory://target.zarr",
                 "--dry-run",
@@ -113,6 +123,8 @@ class CliTest(unittest.TestCase):
         result = runner.invoke(
             zappend,
             [
+                "--config",
+                self._zarr_config(),
                 "memory://slice-1.zarr",
                 "memory://slice-2.zarr",
                 "memory://slice-3.zarr",
@@ -134,6 +146,8 @@ class CliTest(unittest.TestCase):
         result = runner.invoke(
             zappend,
             [
+                "--config",
+                self._zarr_config(),
                 "--traceback",
                 "memory://slice-1.zarr",
                 "memory://slice-2.zarr",

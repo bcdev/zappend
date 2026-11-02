@@ -59,12 +59,18 @@ class ConfigTest(unittest.TestCase):
             ).zarr_format
         self.assertEqual(3, zarr_format)
 
-    def test_missing_zarr_format_uses_legacy_default(self):
-        with self.assertWarnsRegex(
-            DeprecationWarning, "does not define 'zarr_format'"
-        ):
-            zarr_format = Config({"target_dir": "memory://target.zarr"}).zarr_format
-        self.assertEqual(2, zarr_format)
+    def test_legacy_zarr_version_3_fails(self):
+        with self.assertRaisesRegex(ValueError, "only supports Zarr format 2"):
+            _ = Config(
+                {
+                    "target_dir": "memory://target.zarr",
+                    "zarr_version": 3,
+                }
+            ).zarr_format
+
+    def test_missing_zarr_format_or_version_fails(self):
+        with self.assertRaisesRegex(ValueError, "Missing required configuration"):
+            _ = Config({"target_dir": "memory://target.zarr"}).zarr_format
 
     def test_config_zarr_version_property_is_deprecated(self):
         with self.assertWarnsRegex(

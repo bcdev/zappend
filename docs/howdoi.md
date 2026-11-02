@@ -33,6 +33,7 @@ zappend(
     sorted(glob.glob("inputs/*.tif")),
     slice_source=get_dataset_from_geotiff,
     target_dir="output/tif-cube.zarr",
+    zarr_format=3,
 )
 ```
 

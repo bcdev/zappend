@@ -3,7 +3,13 @@
 After [installation](start.md), you can either use the `zappend` [CLI command](cli.md)
 
 ```shell
-zappend -t output/mycube.zarr inputs/*.nc
+zappend -t output/mycube.zarr -c config.yaml inputs/*.nc
+```
+
+where `config.yaml` contains the required output format:
+
+```yaml
+zarr_format: 3
 ```
 
 or the `zappend` [Python function](api.md)
@@ -21,9 +27,9 @@ zappend(
 Both invocations will create the Zarr dataset `output/mycube.zarr` by concatenating
 the "slice" datasets provided in the `inputs` directory along their `time` dimension. 
 `target_dir` must specify a directory for the Zarr dataset. (Its parent directory must 
-exist.) Both the CLI command and the Python function can be run without any further 
-configuration provided the paths of the target dataset and the source slice datasets 
-are given. The target dataset path must point to a directory that will contain a Zarr 
+exist.) Both the CLI command and the Python function can be run without any further
+configuration beyond the required `zarr_format` setting. The target dataset path must
+point to a directory that will contain a Zarr
 group to be created and updated. The slice dataset paths may be provided as Zarr as 
 well or in other data formats supported by the [xarray.open_dataset()](https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html) 
 function. Because we provided no additional configuration, the default append dimension
@@ -38,9 +44,8 @@ in section [_Data I/O_](#data-io) below.
 !!! note "Zarr formats"
     New configurations must set `zarr_format`; use `zarr_format: 3` for the
     recommended [Zarr storage specification 3](https://zarr.readthedocs.io/en/stable/spec/v3.html),
-    or `zarr_format: 2` for Zarr v2 compatibility. Configurations that omit it
-    are treated as legacy and use Zarr v2 with a warning. `zarr_version` is a
-    deprecated alias. The target's format is fixed when it is created; use the
+    or `zarr_format: 2` for Zarr v2 compatibility. `zarr_version: 2` is a
+    deprecated legacy setting; it cannot select Zarr v3. The target's format is fixed when it is created; use the
     same setting for all later appends.
 
 The tool takes care of generating the target dataset from slice datasets, but doesn't 
@@ -78,6 +83,7 @@ zappend(
     os.listdir("inputs"),
     config=["configs/base.yaml", "configs/mycube.yaml"],
     target_dir="outputs/mycube.zarr",
+    zarr_format=3,
     dry_run=True,
 )
 ```
@@ -816,6 +822,7 @@ If you use the `zappend` function, you can pass the function or class directly:
 zappend(
     ["slice-1.nc", "slice-2.nc", "slice-3.nc"],
     target_dir="target.zarr",
+    zarr_format=3,
     slice_source=MySliceSource,
 )
 ```
@@ -904,6 +911,7 @@ class MySliceSource(SliceSource):
 zappend(
     ["slice-1.nc", "slice-2.nc", "slice-3.nc"],
     target_dir="target.zarr",
+    zarr_format=3,
     slice_source=MySliceSource,
 )
 ```

@@ -16,7 +16,9 @@ from zappend.metadata import UNDEFINED, DatasetMetadata
 
 
 def make_config(config_dict: dict[str, Any]) -> Config:
-    return Config({"target_dir": "memory://target.zarr", **config_dict})
+    return Config(
+        {"target_dir": "memory://target.zarr", "zarr_format": 2, **config_dict}
+    )
 
 
 class DatasetMetadataDimsTest(unittest.TestCase):

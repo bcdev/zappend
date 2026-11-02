@@ -10,9 +10,9 @@ from zappend.config import validate_config
 
 
 class ConfigValidateTest(unittest.TestCase):
-    def test_validate_empty_ok(self):
-        config = {}
-        self.assertIs(config, validate_config(config))
+    def test_validate_without_zarr_format_or_version_fails(self):
+        with pytest.raises(ValueError, match="not valid under any of the given schemas"):
+            validate_config({})
 
     def test_validate_zarr_format_ok(self):
         config = {"version": 1, "zarr_format": 2}
@@ -34,6 +34,10 @@ class ConfigValidateTest(unittest.TestCase):
     def test_validate_legacy_zarr_version_ok(self):
         config = {"zarr_version": 2}
         self.assertIs(config, validate_config(config))
+
+    def test_validate_legacy_zarr_version_3_fails(self):
+        with pytest.raises(ValueError, match="2 was expected for zarr_version"):
+            validate_config({"zarr_version": 3})
 
     def test_validate_shards(self):
         config = {
