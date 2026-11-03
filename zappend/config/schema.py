@@ -214,6 +214,16 @@ VARIABLES_SCHEMA = {
     },
 }
 
+GROUP_VARIABLES_SCHEMA = {
+    "category": "Target Outline",
+    "description": (
+        "Defines variable configuration overrides for individual absolute Zarr "
+        "group paths in a DataTree target."
+    ),
+    "type": "object",
+    "additionalProperties": VARIABLES_SCHEMA,
+}
+
 LOG_REF_URL = (
     "https://docs.python.org/3/library/logging.config.html#logging-config-dictschema"
 )
@@ -558,6 +568,7 @@ CONFIG_SCHEMA_V1 = {
             "items": {"type": "string", "minLength": 1},
         },
         "variables": VARIABLES_SCHEMA,
+        "group_variables": GROUP_VARIABLES_SCHEMA,
         "attrs": {
             "category": "Target Outline",
             "description": (
@@ -678,11 +689,11 @@ CONFIG_SCHEMA_V1 = {
             "category": "Data I/O - Slices",
             "description": (
                 "The fully qualified name of a class or function that receives a"
-                " slice item as argument(s) and provides the slice dataset."
+                " slice item as argument(s) and provides a slice object."
                 " If a class is given,"
                 " it must be derived from `zappend.api.SliceSource`."
                 " If the function is a context manager,"
-                " it must yield an `xarray.Dataset`."
+                " it must yield an `xarray.Dataset` or `xarray.DataTree`."
                 " If a plain function is given,"
                 " it must return any valid slice item type."
                 " Refer to the user guide for more information."

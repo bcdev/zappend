@@ -90,3 +90,45 @@ def make_netcdf_slices(n_slices: int) -> None:
             engine="h5netcdf",
             encoding=encoding,
         )
+
+
+def make_datatree_slices(n_slices: int) -> None:
+    """Create *n_slices* daily nested Zarr v2 inputs with two resolutions."""
+    times = START_TIME + np.arange(n_slices) * np.timedelta64(1, "D")
+    directory = INPUT_DIR / "datatree"
+    directory.mkdir(parents=True, exist_ok=True)
+    for index, time in enumerate(times):
+        tree = xr.DataTree.from_dict(
+            {
+                "/": xr.Dataset(
+                    attrs={
+                        "title": "Zappend nested example",
+                        "description": "Two spatial resolutions of daily data",
+                    }
+                ),
+                "/0": _make_datatree_dataset(time, index, 1800, 3600),
+                "/1": _make_datatree_dataset(time, index, 900, 1800),
+            }
+        )
+        tree.to_zarr(
+            directory / f"slice-{time!s}.zarr",
+            mode="w",
+            zarr_format=2,
+            consolidated=True,
+        )
+
+
+def _make_datatree_dataset(
+    time: np.datetime64, index: int, lat_size: int, lon_size: int
+) -> xr.Dataset:
+    lat = np.linspace(-90, 90, lat_size, endpoint=False, dtype="float32")
+    lon = np.linspace(-180, 180, lon_size, endpoint=False, dtype="float32")
+    data = np.full((1, lat_size, lon_size), index, dtype="uint8")
+    return xr.Dataset(
+        data_vars={
+            "temperature": (("time", "lat", "lon"), data.astype("float32")),
+            "quality_flag": (("time", "lat", "lon"), data),
+        },
+        coords={"time": [time], "lat": lat, "lon": lon},
+        attrs={"spatial_resolution": f"{360 / lon_size:g} degrees"},
+    ).chunk({"time": 1, "lat": min(450, lat_size), "lon": min(450, lon_size)})
