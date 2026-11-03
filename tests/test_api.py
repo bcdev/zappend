@@ -28,6 +28,10 @@ class ApiTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
 
+    def test_legacy_zarr_version_warns(self):
+        with self.assertWarnsRegex(DeprecationWarning, "'zarr_version' is deprecated"):
+            _zappend([], target_dir="memory://target.zarr", zarr_version=2)
+
     def test_no_slices(self):
         target_dir = "memory://target.zarr"
         zappend([], target_dir=target_dir)

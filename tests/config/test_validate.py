@@ -11,7 +11,9 @@ from zappend.config import validate_config
 
 class ConfigValidateTest(unittest.TestCase):
     def test_validate_without_zarr_format_or_version_fails(self):
-        with pytest.raises(ValueError, match="not valid under any of the given schemas"):
+        with pytest.raises(
+            ValueError, match="not valid under any of the given schemas"
+        ):
             validate_config({})
 
     def test_validate_zarr_format_ok(self):

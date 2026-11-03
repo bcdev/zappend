@@ -79,8 +79,8 @@ Variable metadata.
       - `shards`:
         Zarr v3 shard sizes for each dimension of the variable. Each shard size
         must be a multiple of the corresponding chunk size. Ignored with a
-        warning for formats that do not support sharding. The items of the
-        list are positive integers.
+        warning for `zarr_format` equal to `2`. The items of the list are positive 
+        integers.
       - `fill_value`:
         Must be one of the following:
           - Type _number_.

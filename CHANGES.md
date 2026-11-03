@@ -1,4 +1,4 @@
-## Version 0.8.1 (in development)
+## Version 0.9.0 (in development)
 
 * Migrated to use `zarr >=3`. Supports writing Zarr v2 and v3 stores, with
   Zarr v3 as the recommended format for new configurations. The `zarr_version`

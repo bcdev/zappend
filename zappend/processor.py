@@ -2,13 +2,13 @@
 #  Permissions are hereby granted under the terms of the MIT License:
 #  https://opensource.org/licenses/MIT.
 
-import collections.abc
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import xarray as xr
 import zarr
+from zarr.abc.store import Store
 
 from .config import (
     Config,
@@ -24,7 +24,7 @@ from .context import Context
 from .fsutil.transaction import RollbackCallback, Transaction
 from .log import configure_logging, logger
 from .profiler import Profiler
-from .rollbackstore import make_rollback_store, make_zarr_store
+from .rollbackstore import RollbackStore, make_rollback_store, make_zarr_store
 from .slice import SliceItem, open_slice_dataset
 from .tailoring import tailor_slice_dataset, tailor_target_dataset
 
@@ -44,10 +44,10 @@ class Processor:
         # Validate value of slice_source later,
         # it could be a callable instead of a str
         # See https://github.com/bcdev/zappend/issues/49
-        with exclude_from_config(config, "slice_source") as c:
-            validate_config(c)
         _config = Config(config)
         config["zarr_format"] = _config.zarr_format
+        with exclude_from_config(config, "slice_source") as c:
+            validate_config(c)
         configure_logging(_config.logging)
         if _config.force_new:
             logger.warning(
@@ -210,7 +210,7 @@ def post_create_target(ctx: Context, target_ds: xr.Dataset):
         )
 
 
-def post_update_target(ctx: Context, target_store: Any, slice_ds: xr.Dataset):
+def post_update_target(ctx: Context, target_store: RollbackStore, slice_ds: xr.Dataset):
     """Post-process the target dataset given by `target_store` that has just
     been updated by `slice_ds`.
 
@@ -230,10 +230,10 @@ def post_update_target(ctx: Context, target_store: Any, slice_ds: xr.Dataset):
 
 
 def resolve_target_attrs(
-    target_store: collections.abc.MutableMapping,
+    target_store: Store,
     target_ds: xr.Dataset,
     target_attrs: dict[str, Any],
-    zarr_format: int,
+    zarr_format: Literal[2, 3],
 ):
     resolved_attrs = eval_dyn_config_attrs(
         target_attrs,

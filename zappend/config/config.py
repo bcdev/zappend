@@ -61,7 +61,7 @@ class Config:
                     "Configuration setting 'zarr_version' is deprecated; "
                     "use 'zarr_format' instead.",
                     DeprecationWarning,
-                    stacklevel=2,
+                    stacklevel=4,
                 )
                 zarr_format = 2
             elif zarr_version is None:
@@ -76,7 +76,7 @@ class Config:
                 "Configuration setting 'zarr_version' is deprecated and "
                 "ignored because 'zarr_format' is also set.",
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=4,
             )
         self._effective_zarr_format = zarr_format
         return zarr_format
