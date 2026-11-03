@@ -2,8 +2,10 @@
 #  Permissions are hereby granted under the terms of the MIT License:
 #  https://opensource.org/licenses/MIT.
 
+import runpy
 import unittest
 
+import pytest
 from click.testing import CliRunner
 
 from zappend import __version__
@@ -17,12 +19,26 @@ class CliTest(unittest.TestCase):
     def setUp(self):
         clear_memory_fs()
 
+    @staticmethod
+    def _zarr_config() -> str:
+        config_uri = "memory://config.yaml"
+        FileObj(config_uri).write("zarr_format: 2\n")
+        return config_uri
+
     def test_version(self):
         runner = CliRunner()
         # noinspection PyTypeChecker
         result = runner.invoke(zappend, ["--version"])
         self.assertEqual(0, result.exit_code)
         self.assertEqual(f"{__version__}\n", result.output)
+
+    def test_module_entry_point(self):
+        with pytest.MonkeyPatch.context() as monkeypatch:
+            monkeypatch.setattr("sys.argv", ["zappend", "--version"])
+            with pytest.raises(SystemExit) as error:
+                runpy.run_module("zappend.cli", run_name="__main__")
+
+        self.assertEqual(0, error.value.code)
 
     def test_help(self):
         runner = CliRunner()
@@ -60,6 +76,8 @@ class CliTest(unittest.TestCase):
         result = runner.invoke(
             zappend,
             [
+                "--config",
+                self._zarr_config(),
                 "--target",
                 "memory://target.zarr",
                 "memory://slice-1.zarr",
@@ -81,6 +99,8 @@ class CliTest(unittest.TestCase):
         result = runner.invoke(
             zappend,
             [
+                "--config",
+                self._zarr_config(),
                 "--target",
                 "memory://target.zarr",
                 "--dry-run",
@@ -103,6 +123,8 @@ class CliTest(unittest.TestCase):
         result = runner.invoke(
             zappend,
             [
+                "--config",
+                self._zarr_config(),
                 "memory://slice-1.zarr",
                 "memory://slice-2.zarr",
                 "memory://slice-3.zarr",
@@ -124,6 +146,8 @@ class CliTest(unittest.TestCase):
         result = runner.invoke(
             zappend,
             [
+                "--config",
+                self._zarr_config(),
                 "--traceback",
                 "memory://slice-1.zarr",
                 "memory://slice-2.zarr",

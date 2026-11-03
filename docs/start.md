@@ -58,7 +58,11 @@ Process list of local slice paths:
 ```python
 from zappend.api import zappend
 
-zappend(["slice-1.nc", "slice-2.nc", "slice-3.nc"], target_dir="target.zarr")
+zappend(
+    ["slice-1.nc", "slice-2.nc", "slice-3.nc"],
+    target_dir="target.zarr",
+    zarr_format=3,
+)
 ```
 
 Process list of slices stored in S3 [configuration](config.md) in `config`:
@@ -68,6 +72,7 @@ from zappend.api import zappend
 
 config = {
     "target_dir": "target.zarr",
+    "zarr_format": 3,
     "slice_storage_options": {
         "key": "...",
         "secret": "...",
@@ -100,6 +105,7 @@ zappend(
     ["slice-1.nc", "slice-2.nc", "slice-3.nc"],
     slice_source=get_dataset,
     target_dir="target.zarr",
+    zarr_format=3,
 )
 ```
 

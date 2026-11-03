@@ -43,6 +43,14 @@ class XArrayEncodingTest(unittest.TestCase):
         clear_memory_fs()
         self.assertFalse(FileObj(TEST_ZARR).exists())
 
+        self._dataset_to_zarr = xr.Dataset.to_zarr
+
+        def to_zarr_v2(dataset, *args, **kwargs):
+            kwargs.setdefault("zarr_format", 2)
+            return self._dataset_to_zarr(dataset, *args, **kwargs)
+
+        xr.Dataset.to_zarr = to_zarr_v2
+
         self.ds = xr.Dataset(
             data_vars={"v": xr.DataArray(np.ones(100, dtype=np.float64), dims="x")},
             coords={
@@ -79,6 +87,9 @@ class XArrayEncodingTest(unittest.TestCase):
                 )
             },
         )
+
+    def tearDown(self):
+        xr.Dataset.to_zarr = self._dataset_to_zarr
 
     def test_no_encoding_given(self):
         self.ds.to_zarr(TEST_ZARR)

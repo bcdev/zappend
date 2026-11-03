@@ -22,7 +22,7 @@ def false_slice_source_function(ctx: Context, path: str):
 
 
 def make_ctx(**config):
-    return Context(dict(target_dir="memory://target.zarr", **config))
+    return Context(dict(target_dir="memory://target.zarr", zarr_format=2, **config))
 
 
 # noinspection PyShadowingBuiltins

@@ -76,6 +76,11 @@ Variable metadata.
                 Its value is `null`.
           - Disable chunking in all dimensions.
             Its value is `null`.
+      - `shards`:
+        Zarr v3 shard sizes for each dimension of the variable. Each shard size
+        must be a multiple of the corresponding chunk size. Ignored with a
+        warning for `zarr_format` equal to `2`. The items of the list are positive 
+        integers.
       - `fill_value`:
         Must be one of the following:
           - Type _number_.
@@ -132,11 +137,15 @@ Must be one of the following:
 
 Defaults to `"keep"`.
 
+### `zarr_format`
+
+The Zarr format to be used. Required unless the deprecated `zarr_version: 2`
+setting is supplied. Allowed values are `2` and `3`.
+
 ### `zarr_version`
 
-The Zarr version to be used.
-Its value is `2`.
-Defaults to `2`.
+Deprecated legacy setting for Zarr v2 only. Use `zarr_format` in new
+configurations. Its only allowed value is `2`.
 
 ## Data I/O - Target
 

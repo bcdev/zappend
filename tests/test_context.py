@@ -6,11 +6,15 @@ import unittest
 
 import numpy as np
 
-from zappend.context import Context
+from zappend.context import Context as _Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.metadata import DatasetMetadata
 
 from .helpers import clear_memory_fs, make_test_dataset
+
+
+def Context(config: dict) -> _Context:
+    return _Context({"zarr_format": 2, **config})
 
 
 class ContextTest(unittest.TestCase):

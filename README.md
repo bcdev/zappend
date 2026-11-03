@@ -28,7 +28,10 @@ awesome Python packages [xarray](https://docs.xarray.dev/) and [zarr](https://za
 The objective of `zappend` is enabling geodata scientists and developers to 
 robustly create large data cubes. The tool performs transaction-based dataset 
 appends to existing data cubes in the 
-[Zarr format](https://zarr.readthedocs.io/en/stable/spec/v2.html). If an error 
+[Zarr format](https://zarr.readthedocs.io/en/stable/). New targets use Zarr v3
+when configured with `zarr_format: 3`; Zarr v2 remains available through
+`zarr_format: 2`. The deprecated `zarr_version: 2` setting remains accepted for
+existing Zarr v2 configurations. If an error
 occurs during an append step — typically due to I/O problems or out-of-memory 
 conditions — `zappend` will automatically roll back the operation, ensuring that 
 the existing data cube maintains its structural integrity. The design drivers 

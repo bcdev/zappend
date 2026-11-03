@@ -138,7 +138,7 @@ def make_test_dataset(
     if fs.exists(path):
         fs.rm(path, recursive=True)
     ds.to_zarr(
-        uri, storage_options=storage_options, zarr_version=2, write_empty_chunks=False
+        uri, storage_options=storage_options, zarr_format=2, write_empty_chunks=False
     )
     return xr.open_zarr(uri, storage_options=storage_options)
 

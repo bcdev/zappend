@@ -10,27 +10,48 @@ from zappend.config import validate_config
 
 
 class ConfigValidateTest(unittest.TestCase):
-    def test_validate_empty_ok(self):
-        config = {}
-        self.assertIs(config, validate_config(config))
+    def test_validate_without_zarr_format_or_version_fails(self):
+        with pytest.raises(
+            ValueError, match="not valid under any of the given schemas"
+        ):
+            validate_config({})
 
-    def test_validate_versions_ok(self):
-        config = {"version": 1, "zarr_version": 2}
+    def test_validate_zarr_format_ok(self):
+        config = {"version": 1, "zarr_format": 2}
         self.assertIs(config, validate_config(config))
 
     # noinspection PyMethodMayBeStatic
     def test_validate_versions_fail(self):
-        config = {"zarr_version": 1}
+        config = {"zarr_format": 1}
         with pytest.raises(
             ValueError,
-            match="Invalid configuration: 2 was expected for zarr_version",
+            match="Invalid configuration: 1 is not one of \\[2, 3\\] for zarr_format",
         ):
             validate_config(config)
+
+    def test_validate_zarr_v3_ok(self):
+        config = {"zarr_format": 3}
+        self.assertIs(config, validate_config(config))
+
+    def test_validate_legacy_zarr_version_ok(self):
+        config = {"zarr_version": 2}
+        self.assertIs(config, validate_config(config))
+
+    def test_validate_legacy_zarr_version_3_fails(self):
+        with pytest.raises(ValueError, match="2 was expected for zarr_version"):
+            validate_config({"zarr_version": 3})
+
+    def test_validate_shards(self):
+        config = {
+            "zarr_format": 3,
+            "variables": {"v": {"encoding": {"shards": [2, 4]}}},
+        }
+        self.assertIs(config, validate_config(config))
 
     # noinspection PyMethodMayBeStatic
     def test_validate_variable_fail(self):
         config = {
-            "zarr_version": 2,
+            "zarr_format": 2,
             "variables": {
                 "chl": {
                     "dims": [10, 20, 30],

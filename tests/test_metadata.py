@@ -12,11 +12,13 @@ import pytest
 import xarray as xr
 
 from zappend.config import Config
-from zappend.metadata import DatasetMetadata
+from zappend.metadata import UNDEFINED, DatasetMetadata
 
 
 def make_config(config_dict: dict[str, Any]) -> Config:
-    return Config({"target_dir": "memory://target.zarr", **config_dict})
+    return Config(
+        {"target_dir": "memory://target.zarr", "zarr_format": 2, **config_dict}
+    )
 
 
 class DatasetMetadataDimsTest(unittest.TestCase):
@@ -88,6 +90,51 @@ class DatasetMetadataDimsTest(unittest.TestCase):
 
 
 class DatasetMetadataVariablesTest(unittest.TestCase):
+    def test_it_ignores_shards_for_zarr_v2(self):
+        dataset = xr.Dataset({"a": xr.DataArray(np.zeros((2, 3)), dims=("time", "x"))})
+        with self.assertLogs("zappend", "WARNING") as logs:
+            metadata = DatasetMetadata.from_dataset(
+                dataset,
+                make_config(
+                    {
+                        "zarr_format": 2,
+                        "variables": {"a": {"encoding": {"shards": [2, 3]}}},
+                    }
+                ),
+            )
+        self.assertIn("Ignoring 'shards'", "\n".join(logs.output))
+        assert metadata.variables["a"].encoding.shards is UNDEFINED
+
+    def test_it_validates_zarr_v3_shards(self):
+        dataset = xr.Dataset({"a": xr.DataArray(np.zeros((2, 3)), dims=("time", "x"))})
+
+        metadata = DatasetMetadata.from_dataset(
+            dataset,
+            make_config(
+                {
+                    "zarr_format": 3,
+                    "variables": {"a": {"encoding": {"shards": [2, 3]}}},
+                }
+            ),
+        )
+        self.assertEqual((2, 3), metadata.variables["a"].encoding.shards)
+
+        for encoding, message in [
+            ({"shards": [2]}, "Wrong number of shard sizes"),
+            ({"chunks": [1], "shards": [2, 3]}, "Wrong number of chunk sizes"),
+            ({"chunks": [1, 2], "shards": [1, 3]}, "must be multiples"),
+        ]:
+            with (
+                self.subTest(encoding=encoding),
+                pytest.raises(ValueError, match=message),
+            ):
+                DatasetMetadata.from_dataset(
+                    dataset,
+                    make_config(
+                        {"zarr_format": 3, "variables": {"a": {"encoding": encoding}}}
+                    ),
+                )
+
     def test_add_missing_variables(self):
         self.assertEqual(
             {

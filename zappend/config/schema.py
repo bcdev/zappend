@@ -11,7 +11,6 @@ from .defaults import (
     DEFAULT_ATTRS_UPDATE_MODE,
     DEFAULT_SLICE_POLLING_INTERVAL,
     DEFAULT_SLICE_POLLING_TIMEOUT,
-    DEFAULT_ZARR_VERSION,
 )
 from .markdown import schema_to_markdown
 
@@ -93,6 +92,15 @@ VARIABLE_ENCODING_SCHEMA = {
                 },
                 {"description": "Disable chunking in all dimensions.", "const": None},
             ],
+        },
+        "shards": {
+            "description": (
+                "Zarr v3 shard sizes for each dimension of the variable. "
+                "Each shard size must be a multiple of the corresponding chunk size. "
+                "Ignored with a warning if `zarr_format` is `2`."
+            ),
+            "type": "array",
+            "items": {"type": "integer", "minimum": 1},
         },
         "fill_value": {
             "description": "Storage fill value.",
@@ -600,11 +608,21 @@ CONFIG_SCHEMA_V1 = {
             ],
             "default": DEFAULT_ATTRS_UPDATE_MODE,
         },
+        "zarr_format": {
+            "category": "Target Outline",
+            "description": (
+                "The Zarr format to be used. Required unless the deprecated "
+                "`zarr_version` setting is supplied."
+            ),
+            "enum": [2, 3],
+        },
         "zarr_version": {
             "category": "Target Outline",
-            "description": "The Zarr version to be used.",
-            "const": DEFAULT_ZARR_VERSION,
-            "default": DEFAULT_ZARR_VERSION,
+            "description": (
+                "Deprecated legacy setting for Zarr v2 only. Use `zarr_format` "
+                "in new configurations."
+            ),
+            "const": 2,
         },
         "target_dir": {
             "category": "Data I/O - Target",
@@ -764,6 +782,10 @@ CONFIG_SCHEMA_V1 = {
         "profiling": PROFILING_SCHEMA,
         "logging": LOGGING_SCHEMA,
     },
+    "anyOf": [
+        {"required": ["zarr_format"]},
+        {"required": ["zarr_version"]},
+    ],
     "additionalProperties": False,
 }
 

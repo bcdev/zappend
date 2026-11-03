@@ -3,7 +3,13 @@
 After [installation](start.md), you can either use the `zappend` [CLI command](cli.md)
 
 ```shell
-zappend -t output/mycube.zarr inputs/*.nc
+zappend -t output/mycube.zarr -c config.yaml inputs/*.nc
+```
+
+where `config.yaml` contains the required output format:
+
+```yaml
+zarr_format: 3
 ```
 
 or the `zappend` [Python function](api.md)
@@ -11,15 +17,19 @@ or the `zappend` [Python function](api.md)
 ```bash
 from zappend.api import zappend
 
-zappend(os.listdir("inputs"), target_dir="output/mycube.zarr")
+zappend(
+    os.listdir("inputs"),
+    target_dir="output/mycube.zarr",
+    zarr_format=3,
+)
 ```
 
 Both invocations will create the Zarr dataset `output/mycube.zarr` by concatenating
 the "slice" datasets provided in the `inputs` directory along their `time` dimension. 
 `target_dir` must specify a directory for the Zarr dataset. (Its parent directory must 
-exist.) Both the CLI command and the Python function can be run without any further 
-configuration provided the paths of the target dataset and the source slice datasets 
-are given. The target dataset path must point to a directory that will contain a Zarr 
+exist.) Both the CLI command and the Python function can be run without any further
+configuration beyond the required `zarr_format` setting. The target dataset path must
+point to a directory that will contain a Zarr
 group to be created and updated. The slice dataset paths may be provided as Zarr as 
 well or in other data formats supported by the [xarray.open_dataset()](https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html) 
 function. Because we provided no additional configuration, the default append dimension
@@ -31,10 +41,12 @@ one, if their paths are given as URIs prefixed with a filesystem protocol such a
 dedicated configuration settings. More on this is given
 in section [_Data I/O_](#data-io) below.
 
-!!! note "Zarr Format v2"
-    By default, `zappend` uses the [Zarr storage specification 2](https://zarr.readthedocs.io/en/stable/spec/v2.html)
-    and has only been tested with this version. The `zarr_version` setting can be used 
-    to change it, e,g, to `3`, but any other value than `2` is currently unsupported.
+!!! note "Zarr formats"
+    New configurations must set `zarr_format`; use `zarr_format: 3` for the
+    recommended [Zarr storage specification 3](https://zarr.readthedocs.io/en/stable/spec/v3.html),
+    or `zarr_format: 2` for Zarr v2 compatibility. `zarr_version: 2` is a
+    deprecated legacy setting; it cannot select Zarr v3. The target's format is fixed when it is created; use the
+    same setting for all later appends.
 
 The tool takes care of generating the target dataset from slice datasets, but doesn't 
 care how the slice datasets are created. Hence, when using the Python `zappend()` 
@@ -71,6 +83,7 @@ zappend(
     os.listdir("inputs"),
     config=["configs/base.yaml", "configs/mycube.yaml"],
     target_dir="outputs/mycube.zarr",
+    zarr_format=3,
     dry_run=True,
 )
 ```
@@ -335,6 +348,27 @@ persisted in remote filesystems such as S3. The chunk sizes are specified
 using the `chunks` setting in the encoding of each variable.
 The value of `chunks` can also be `null`, which means no chunking is 
 desired and the variable's data array will be persisted as one block. 
+
+For Zarr v3, `shards` may additionally be configured for a variable. A shard
+contains an integer number of regular chunks, reducing file or object counts while
+retaining smaller read/write chunks. Each shard size must be at least its
+corresponding chunk size and an exact multiple of it. Shards are not available
+for Zarr v2; if configured for an unsupported format, they are ignored with a
+warning.
+
+```json
+{
+    "zarr_format": 3,
+    "variables": {
+        "chl": {
+            "encoding": {
+                "chunks": [1, 512, 512],
+                "shards": [8, 2048, 2048]
+            }
+        }
+    }
+}
+```
 
 By default, the chunking of the coordinate variable corresponding to the append 
 dimension will be its dimension size in the first slice dataset. Often, the size 
@@ -788,6 +822,7 @@ If you use the `zappend` function, you can pass the function or class directly:
 zappend(
     ["slice-1.nc", "slice-2.nc", "slice-3.nc"],
     target_dir="target.zarr",
+    zarr_format=3,
     slice_source=MySliceSource,
 )
 ```
@@ -876,6 +911,7 @@ class MySliceSource(SliceSource):
 zappend(
     ["slice-1.nc", "slice-2.nc", "slice-3.nc"],
     target_dir="target.zarr",
+    zarr_format=3,
     slice_source=MySliceSource,
 )
 ```

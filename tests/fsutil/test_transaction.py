@@ -214,6 +214,50 @@ class TransactionTest(unittest.TestCase):
         self.assertEqual(True, delete_called)
         self.assertTrue(transaction.lock_file.exists())
 
+    def test_restores_file_from_create_action(self):
+        test_root = FileObj("memory://test")
+        test_root.mkdir()
+        transaction = Transaction(test_root, FileObj("memory://temp"))
+        transaction.rollback_dir.mkdir()
+        (transaction.rollback_dir / "backup").write(b"original")
+
+        transaction._create_file("restored.txt", "backup")
+
+        self.assertEqual(b"original", (test_root / "restored.txt").read())
+
+    def test_renames_file_during_rollback(self):
+        test_root = FileObj("memory://test")
+        test_root.mkdir()
+        source = test_root / "new.txt"
+        target = test_root / "old.txt"
+        source.write(b"data")
+        transaction = Transaction(test_root, FileObj("memory://temp"))
+
+        transaction._rename_file(source.filename, target.filename)
+
+        self.assertFalse(source.exists())
+        self.assertEqual(b"data", target.read())
+
+    def test_rollback_continues_after_a_new_file_was_not_written(self):
+        test_root = FileObj("memory://test")
+        test_root.mkdir()
+        metadata_file = test_root / "metadata"
+        metadata_file.write(b"before")
+
+        with (
+            pytest.raises(ValueError, match="simulated write failure"),
+            Transaction(test_root, FileObj("memory://temp")) as rollback_cb,
+        ):
+            rollback_cb("replace_file", "metadata", b"before")
+            metadata_file.write(b"changed")
+            # A failed asynchronous write may have recorded this action
+            # but never created the file.
+            rollback_cb("delete_file", "chunk-not-written", None)
+            raise ValueError("simulated write failure")
+
+        self.assertEqual(b"before", metadata_file.read())
+        self.assertFalse((test_root / "chunk-not-written").exists())
+
     # noinspection PyMethodMayBeStatic
     def test_it_raises_on_illegal_callback_calls(self):
         test_root = FileObj("memory://test")
@@ -270,8 +314,8 @@ class TransactionTest(unittest.TestCase):
             pytest.raises(
                 ValueError,
                 match="Value of 'action' argument must be one of"
-                " 'delete_dir',"
-                " 'delete_file', 'replace_file',"
+                " 'create_file', 'delete_dir',"
+                " 'delete_file', 'rename_file', 'replace_file',"
                 " but was 'replace_ifle'",
             ),
             Transaction(test_root, rollback_dir) as callback,

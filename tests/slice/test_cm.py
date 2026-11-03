@@ -16,13 +16,17 @@ import pytest
 import xarray as xr
 
 from tests.helpers import clear_memory_fs, make_test_dataset
-from zappend.context import Context
+from zappend.context import Context as _Context
 from zappend.fsutil.fileobj import FileObj
 from zappend.slice.cm import SliceSourceContextManager, open_slice_dataset
 from zappend.slice.source import SliceSource
 from zappend.slice.sources.memory import MemorySliceSource
 from zappend.slice.sources.persistent import PersistentSliceSource
 from zappend.slice.sources.temporary import TemporarySliceSource
+
+
+def Context(config: dict) -> _Context:
+    return _Context({"zarr_format": 2, **config})
 
 
 # noinspection PyShadowingBuiltins,PyRedeclaration,PyMethodMayBeStatic

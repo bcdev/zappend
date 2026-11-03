@@ -40,6 +40,10 @@ def zappend(
     This ensures integrity of the  target data cube `target_dir` given
     in `config` or `kwargs`.
 
+    Configurations must set ``zarr_format`` to ``3`` (the recommended format)
+    or ``2`` for compatibility. ``zarr_version: 2`` is a deprecated legacy
+    setting and cannot select Zarr v3.
+
     Each slice item in `slices` provides a slice dataset to be appended.
     The interpretation of a given slice item depends on whether a slice source
     is configured or not (setting `slice_source`).

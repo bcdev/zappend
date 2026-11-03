@@ -6,6 +6,7 @@ import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from contextlib import AbstractContextManager
+from typing import TypeAlias
 
 import xarray as xr
 
@@ -68,9 +69,10 @@ class SliceSource(ABC):
         """
 
 
-SliceItem = (
+SliceItem: TypeAlias = (
     str | FileObj | xr.Dataset | AbstractContextManager[xr.Dataset] | SliceSource
 )
+
 """The possible types that can represent a slice dataset."""
 
 SliceCallable = type[SliceSource] | Callable[[...], SliceItem]
