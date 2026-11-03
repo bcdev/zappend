@@ -6,11 +6,16 @@ import pytest
 import xarray as xr
 
 from tests.helpers import clear_memory_fs, make_test_dataset
-from zappend.api import zappend
+from zappend.api import zappend as _zappend
 from zappend.context import Context
 from zappend.fsutil import FileObj
 
 TARGET = "memory://datatree-target.zarr"
+
+
+def zappend(*args, **kwargs):
+    kwargs.setdefault("zarr_format", 2)
+    return _zappend(*args, **kwargs)
 
 
 def make_test_datatree(
@@ -37,23 +42,23 @@ def clear_memory():
     clear_memory_fs()
 
 
-@pytest.mark.parametrize("zarr_version", [2, 3])
-def test_zappend_appends_datatrees_to_nested_zarr_groups(zarr_version):
+@pytest.mark.parametrize("zarr_format", [2, 3])
+def test_zappend_appends_datatrees_to_nested_zarr_groups(zarr_format):
     trees = [make_test_datatree(0), make_test_datatree(1)]
 
-    assert zappend(trees, target_dir=TARGET, zarr_version=zarr_version) == 2
+    assert zappend(trees, target_dir=TARGET, zarr_format=zarr_format) == 2
 
     for group in ("0", "1"):
         with xr.open_zarr(
             TARGET,
             group=group,
-            zarr_format=zarr_version,
-            consolidated=zarr_version == 2,
+            zarr_format=zarr_format,
+            consolidated=zarr_format == 2,
         ) as dataset:
             assert dataset.sizes["time"] == 2
 
     with xr.open_zarr(
-        TARGET, zarr_format=zarr_version, consolidated=zarr_version == 2
+        TARGET, zarr_format=zarr_format, consolidated=zarr_format == 2
     ) as root:
         assert root.attrs == {"title": "nested test data", "source": "test"}
 
@@ -115,7 +120,7 @@ def test_context_rejects_a_non_appendable_dataset_target():
     xr.Dataset({"not_time": ("x", [1])}).to_zarr(TARGET, zarr_format=2)
 
     with pytest.raises(ValueError, match="Append dimension 'time' not found"):
-        Context({"target_dir": TARGET})
+        Context({"target_dir": TARGET, "zarr_format": 2})
 
 
 def test_zappend_rejects_an_invalid_slice_source_result():
@@ -132,15 +137,15 @@ def test_zappend_rejects_an_invalid_slice_source_result():
         )
 
 
-@pytest.mark.parametrize("zarr_version", [2, 3])
-def test_zappend_rolls_back_the_complete_failing_datatree_slice(zarr_version):
-    zappend([make_test_datatree(0)], target_dir=TARGET, zarr_version=zarr_version)
+@pytest.mark.parametrize("zarr_format", [2, 3])
+def test_zappend_rolls_back_the_complete_failing_datatree_slice(zarr_format):
+    zappend([make_test_datatree(0)], target_dir=TARGET, zarr_format=zarr_format)
 
     with pytest.raises(ValueError, match="Wrong size for dimension"):
         zappend(
             [make_test_datatree(1, group_1_shape=(4, 2))],
             target_dir=TARGET,
-            zarr_version=zarr_version,
+            zarr_format=zarr_format,
         )
 
     # Group /0 was updated before incompatible group /1 was encountered. The
@@ -149,8 +154,8 @@ def test_zappend_rolls_back_the_complete_failing_datatree_slice(zarr_version):
         with xr.open_zarr(
             TARGET,
             group=group,
-            zarr_format=zarr_version,
-            consolidated=zarr_version == 2,
+            zarr_format=zarr_format,
+            consolidated=zarr_format == 2,
         ) as dataset:
             assert dataset.sizes["time"] == 1
             assert dataset.time.values[0] == make_test_datatree(0)[group].ds.time.values[0]
@@ -175,7 +180,7 @@ def test_zappend_accepts_datatrees_from_a_slice_source():
         target_dir=TARGET,
         slice_source=make_slice,
         persist_mem_slices=True,
-        zarr_version=3,
+        zarr_format=3,
     ) == 2
 
     for group in ("0", "1"):

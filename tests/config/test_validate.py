@@ -50,6 +50,7 @@ class ConfigValidateTest(unittest.TestCase):
 
     def test_validate_group_variables(self):
         config = {
+            "zarr_format": 2,
             "group_variables": {
                 "/0": {"v": {"encoding": {"chunks": [2, 4]}}},
             }

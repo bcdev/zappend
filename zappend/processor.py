@@ -188,7 +188,7 @@ class Processor:
             xr.Dataset().to_zarr(
                 ctx.config.target_dir.uri,
                 mode="w",
-                zarr_format=ctx.config.zarr_version,
+                zarr_format=ctx.config.zarr_format,
                 consolidated=False,
                 storage_options=ctx.config.target_dir.storage_options,
             )
@@ -223,7 +223,7 @@ class Processor:
         if not root_has_data and not ctx.config.dry_run:
             update_datatree_root_attrs(ctx, tree, rollback_callback)
 
-        if not ctx.config.dry_run and ctx.config.zarr_version == 2:
+        if not ctx.config.dry_run and ctx.config.zarr_format == 2:
             zarr.consolidate_metadata(
                 make_rollback_store(
                     ctx.config.target_dir.fs.get_mapper(root=ctx.config.target_dir.path),
@@ -301,7 +301,7 @@ def update_datatree_root_attrs(
             rollback_callback,
         ),
         mode="a",
-        zarr_format=ctx.config.zarr_version,
+        zarr_format=ctx.config.zarr_format,
     )
     attrs = dict(tree.ds.attrs)
     attrs.update(ctx.config.attrs)

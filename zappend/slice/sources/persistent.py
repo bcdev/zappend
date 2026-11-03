@@ -72,7 +72,7 @@ class PersistentSliceSource(SliceSource):
                 self._slice_file.uri,
                 engine="zarr",
                 storage_options=storage_options,
-                consolidated=self._config.zarr_version == 2,
+                consolidated=self._config.zarr_format == 2,
             )
             # Preserve the existing Dataset behaviour for ordinary Zarr
             # stores, but expose actual nested stores as DataTrees.
