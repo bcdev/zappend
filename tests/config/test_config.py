@@ -72,15 +72,6 @@ class ConfigTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Missing required configuration"):
             _ = Config({"target_dir": "memory://target.zarr"}).zarr_format
 
-    def test_config_zarr_version_property_is_deprecated(self):
-        with self.assertWarnsRegex(
-            DeprecationWarning, "Config.zarr_version is deprecated"
-        ):
-            zarr_format = Config(
-                {"target_dir": "memory://target.zarr", "zarr_format": 3}
-            ).zarr_version
-        self.assertEqual(3, zarr_format)
-
     def test_append_dim(self):
         config = Config({"target_dir": "memory://target.zarr"})
         self.assertEqual("time", config.append_dim)

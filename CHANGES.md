@@ -3,7 +3,7 @@
 * Migrated to use `zarr >=3`. Supports writing Zarr v2 and v3 stores, with
   Zarr v3 as the recommended format for new configurations. The `zarr_version`
   setting is deprecated in favor of the now-required `zarr_format` and only
-  supports the legacy value `2`. (#111)
+  supports the legacy value `2`. (#111, #107)
 * Replaced dev tools black and flake8 by isort and ruff. 
 * Reformatted code and fixed linter issues.
 * Added `environment.yml` to setup a conda/mamba development environment. 

@@ -82,16 +82,6 @@ class Config:
         return zarr_format
 
     @property
-    def zarr_version(self) -> Literal[2, 3]:
-        """Deprecated alias for :attr:`zarr_format`."""
-        warnings.warn(
-            "Config.zarr_version is deprecated; use Config.zarr_format instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.zarr_format
-
-    @property
     def fixed_dims(self) -> dict[str, int] | None:
         return self._config.get("fixed_dims") or None
 
