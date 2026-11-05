@@ -26,9 +26,7 @@ def make_test_datatree(
 ) -> xr.DataTree:
     groups = {
         "/": xr.Dataset(attrs={"title": "nested test data", "source": "test"}),
-        "/0": make_test_dataset(
-            shape=(1, 2, 3), chunks=(1, 2, 3), index=time_index
-        ),
+        "/0": make_test_dataset(shape=(1, 2, 3), chunks=(1, 2, 3), index=time_index),
     }
     if include_group_1:
         groups["/1"] = make_test_dataset(
@@ -71,7 +69,6 @@ def test_zappend_rejects_datatrees_with_different_group_paths():
         )
 
 
-
 def test_zappend_rejects_unknown_group_variable_configuration():
     with pytest.raises(ValueError, match="group_variables contains paths"):
         zappend(
@@ -83,8 +80,7 @@ def test_zappend_rejects_unknown_group_variable_configuration():
 
 def test_zappend_uses_optional_group_variable_chunk_configuration():
     group_0_variables = {
-        variable: {"encoding": {"chunks": [2, 2, 3]}}
-        for variable in ("chl", "tsm")
+        variable: {"encoding": {"chunks": [2, 2, 3]}} for variable in ("chl", "tsm")
     }
     zappend(
         [make_test_datatree(0), make_test_datatree(1)],
@@ -131,7 +127,7 @@ def test_zappend_rejects_an_invalid_slice_source_result():
         def __exit__(self, *args):
             pass
 
-    with pytest.raises(TypeError, match="slice source must yield"):
+    with pytest.raises(TypeError, match="Slice source must yield"):
         zappend(
             [None], target_dir=TARGET, slice_source=lambda _: InvalidContextManager()
         )
@@ -158,7 +154,9 @@ def test_zappend_rolls_back_the_complete_failing_datatree_slice(zarr_format):
             consolidated=zarr_format == 2,
         ) as dataset:
             assert dataset.sizes["time"] == 1
-            assert dataset.time.values[0] == make_test_datatree(0)[group].ds.time.values[0]
+            assert (
+                dataset.time.values[0] == make_test_datatree(0)[group].ds.time.values[0]
+            )
 
 
 def test_zappend_removes_a_new_tree_when_a_later_group_fails():
@@ -175,13 +173,16 @@ def test_zappend_accepts_datatrees_from_a_slice_source():
     def make_slice(index: int) -> xr.DataTree:
         return make_test_datatree(index)
 
-    assert zappend(
-        [0, 1],
-        target_dir=TARGET,
-        slice_source=make_slice,
-        persist_mem_slices=True,
-        zarr_format=3,
-    ) == 2
+    assert (
+        zappend(
+            [0, 1],
+            target_dir=TARGET,
+            slice_source=make_slice,
+            persist_mem_slices=True,
+            zarr_format=3,
+        )
+        == 2
+    )
 
     for group in ("0", "1"):
         with xr.open_zarr(TARGET, group=group, zarr_format=3) as dataset:
@@ -207,14 +208,15 @@ def test_zappend_opens_a_nested_zarr_slice_as_a_datatree():
     ],
 )
 def test_zappend_rejects_mixed_dataset_and_datatree_slices(slices):
-    with pytest.raises(TypeError, match="Cannot mix xarray.Dataset and xarray.DataTree"):
+    with pytest.raises(
+        TypeError, match="Cannot mix xarray.Dataset and xarray.DataTree"
+    ):
         zappend(slices(), target_dir=TARGET)
 
 
 def test_zappend_also_supports_a_data_bearing_root():
     trees = [
-        xr.DataTree(make_test_dataset(shape=(1, 2, 3), index=index))
-        for index in (0, 1)
+        xr.DataTree(make_test_dataset(shape=(1, 2, 3), index=index)) for index in (0, 1)
     ]
 
     zappend(trees, target_dir=TARGET)
@@ -224,13 +226,13 @@ def test_zappend_also_supports_a_data_bearing_root():
 
 
 def test_zappend_force_new_replaces_complete_tree():
-    zappend(
-        [make_test_datatree(0), make_test_datatree(1)], target_dir=TARGET
-    )
+    zappend([make_test_datatree(0), make_test_datatree(1)], target_dir=TARGET)
 
     zappend([make_test_datatree(3)], target_dir=TARGET, force_new=True)
 
     for group in ("0", "1"):
         with xr.open_zarr(TARGET, group=group, zarr_format=2) as dataset:
             assert dataset.sizes["time"] == 1
-            assert dataset.time.values[0] == make_test_datatree(3)[group].ds.time.values[0]
+            assert (
+                dataset.time.values[0] == make_test_datatree(3)[group].ds.time.values[0]
+            )
