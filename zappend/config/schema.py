@@ -217,8 +217,9 @@ VARIABLES_SCHEMA = {
 GROUP_VARIABLES_SCHEMA = {
     "category": "Target Outline",
     "description": (
-        "Defines variable configuration overrides for individual absolute Zarr "
-        "group paths in a DataTree target."
+        "Defines variable configuration overrides for individual Zarr groups, "
+        "identified by absolute paths within the data tree. Group names in the "
+        "paths are separated by '/'."
     ),
     "type": "object",
     "additionalProperties": VARIABLES_SCHEMA,

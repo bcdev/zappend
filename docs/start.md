@@ -109,7 +109,8 @@ zappend(
 )
 ```
 
-For the details, please refer to the section [_Slice Sources_](guide.md#slice-sources) in the 
+For the details, please refer to the section [_Slice Sources_](guide.md#slice-sources)
+in the
 [User Guide](guide.md).
 
 

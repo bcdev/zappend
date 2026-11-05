@@ -31,7 +31,8 @@ exist.) Both the CLI command and the Python function can be run without any furt
 configuration beyond the required `zarr_format` setting. The target dataset path must
 point to a directory that will contain a Zarr
 group to be created and updated. The slice dataset paths may be provided as Zarr as 
-well or in other data formats supported by the [xarray.open_dataset()](https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html) 
+well or in other data formats supported by the
+[xarray.open_dataset()](https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html)
 function. Because we provided no additional configuration, the default append dimension
 `time` is used above.
 
@@ -45,7 +46,8 @@ in section [_Data I/O_](#data-io) below.
     New configurations must set `zarr_format`; use `zarr_format: 3` for the
     recommended [Zarr storage specification 3](https://zarr.readthedocs.io/en/stable/spec/v3.html),
     or `zarr_format: 2` for Zarr v2 compatibility. `zarr_version: 2` is a
-    deprecated legacy setting; it cannot select Zarr v3. The target's format is fixed when it is created; use the
+    deprecated legacy setting; it cannot select Zarr v3. The target's format is
+    fixed when it is created; use the
     same setting for all later appends.
 
 The tool takes care of generating the target dataset from slice datasets, but doesn't 
@@ -119,7 +121,7 @@ between the labels of a coordinate variable associated with the append dimension
 Its value can be a number for numerical labels or a timedelta value of the form
 `<count><unit>` for date/time labels. In the latter case `<count>` is an integer 
 and `<units>` is one of the possible
-[numpy datetime units](https://numpy.org/doc/stable/reference/arrays.datetime.html#datetime-units), 
+[numpy datetime units](https://numpy.org/doc/stable/reference/arrays.datetime.html#datetime-units),
 for example, `8h` (8 hours) or `2D` (two days). Numerical and timedelta values
 may be negative. `append_step` can also take the two special values `"+"` and 
 `"-"`. In this case it is just verified that the append labels are monotonically 
@@ -730,7 +732,8 @@ Nested inputs can instead be passed as
 objects. The same resource-management and persistence considerations apply.
 
 !!! note "Datasets are not closed automatically"
-    If you pass [`xarray.Dataset`](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html) objects to `zappend` they will not be
+    If you pass [`xarray.Dataset`](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html)
+    objects to `zappend` they will not be
     automatically closed. This may become be issue, if you have many datasets 
     and each one binds resources such as open file handles. Consider using a 
     _slice source_ then, see below.
@@ -1007,7 +1010,8 @@ just provide its name:
 
 If you also want logging output in a file or using a different format or if you want to
 see logging output of other Python modules, you can configure Python's logging 
-system following the [logging dictionary schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema).
+system following the [logging dictionary
+schema](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema).
 Given here is an example that logs `zappend`'s output to the console using 
 the `INFO` level (same as `"logging": true`):
 

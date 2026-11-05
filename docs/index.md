@@ -4,7 +4,8 @@
 
 `zappend` is a tool written in Python that is used for robustly creating and 
 updating Zarr datacubes from smaller dataset slices. It is built on top of the 
-awesome Python packages [xarray](https://docs.xarray.dev/) and [zarr](https://zarr.readthedocs.io/).
+awesome Python packages [xarray](https://docs.xarray.dev/) and
+[zarr](https://zarr.readthedocs.io/).
 
 ## Motivation
 
@@ -43,12 +44,15 @@ The `zappend` tool provides the following features:
   [`zappend()`](api.md) function, slice datasets can be passed as local file 
   paths, URIs, as datasets of type 
   [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html),
-  [xarray.DataTree](https://docs.xarray.dev/en/stable/generated/xarray.DataTree.html), or as custom
+  [xarray.DataTree](https://docs.xarray.dev/en/stable/generated/xarray.DataTree.html),
+  or as custom
   [slice sources](guide.md#slice-sources).
 
 ## How It Works
 
-At its core, `zappend` calls the [to_zarr()](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.to_zarr.html#xarray-dataset-to-zarr) method of [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html) 
+At its core, `zappend` calls the
+[to_zarr()](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.to_zarr.html#xarray-dataset-to-zarr)
+method of [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html)
 for each dataset slice it receives and either creates the target dataset if it does 
 not exist yet or updates it with the current slice, if it already exists.
 

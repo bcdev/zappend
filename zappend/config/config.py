@@ -4,7 +4,7 @@
 
 import tempfile
 import warnings
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import Any, Literal
 
 from ..fsutil.fileobj import FileObj
@@ -110,12 +110,12 @@ class Config:
         return self._config.get("excluded_variables") or []
 
     @property
-    def variables(self) -> dict[str, Any]:
+    def variables(self) -> dict[str, Sequence | dict]:
         """Variable definitions."""
         return self._config.get("variables") or {}
 
     @property
-    def group_variables(self) -> dict[str, dict[str, Any]]:
+    def group_variables(self) -> dict[str, dict[str, Sequence | dict]]:
         """Variable-definition overrides keyed by absolute path into the data tree composed of group names separated by "/"."""
         return self._config.get("group_variables") or {}
 

@@ -17,7 +17,8 @@ of the `zappend` tool.
   [xarray.Dataset](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html)
   or [xarray.DataTree](https://docs.xarray.dev/en/stable/generated/xarray.DataTree.html)
   or 
-  [xcube.core.mldataset.MultiLevelDataset](https://xcube.readthedocs.io/en/latest/mldatasets.html).
+  [xcube.core.mldataset.MultiLevelDataset]
+  (https://xcube.readthedocs.io/en/latest/mldatasets.html).
 * Target and slices are allowed to live in different filesystems.
 * The tool is configurable. The configuration defines 
     - the append dimension;
