@@ -116,7 +116,7 @@ class Config:
 
     @property
     def group_variables(self) -> dict[str, dict[str, Any]]:
-        """Variable-definition overrides keyed by absolute DataTree group path."""
+        """Variable-definition overrides keyed by absolute path into the data tree composed of group names separated by "/"."""
         return self._config.get("group_variables") or {}
 
     @property
