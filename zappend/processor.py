@@ -115,7 +115,7 @@ class Processor:
                 self.process_datatree_slice(ctx, slice_data)
             else:
                 raise TypeError(
-                    "slice source must yield an xarray.Dataset or xarray.DataTree, "
+                    "Slice source must yield an xarray.Dataset or xarray.DataTree, "
                     f"but yielded {type(slice_data).__name__!r}"
                 )
 
