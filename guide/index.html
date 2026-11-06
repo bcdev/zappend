@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -27,10 +27,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -551,6 +551,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#nested-zarr-groups-and-datatree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nested Zarr Groups and DataTree
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#paths-and-uris" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -562,10 +573,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#dataset-objects" class="md-nav__link">
+  <a href="#dataset-and-datatree-objects" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dataset Objects
+        Dataset and DataTree Objects
       
     </span>
   </a>
@@ -970,6 +981,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#nested-zarr-groups-and-datatree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nested Zarr Groups and DataTree
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#paths-and-uris" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -981,10 +1003,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#dataset-objects" class="md-nav__link">
+  <a href="#dataset-and-datatree-objects" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dataset Objects
+        Dataset and DataTree Objects
       
     </span>
   </a>
@@ -1056,21 +1078,29 @@
 
 <h1 id="user-guide">User Guide</h1>
 <p>After <a href="../start/">installation</a>, you can either use the <code>zappend</code> <a href="../cli/">CLI command</a></p>
-<div class="highlight"><pre><span></span><code>zappend<span class="w"> </span>-t<span class="w"> </span>output/mycube.zarr<span class="w"> </span>inputs/*.nc
+<div class="highlight"><pre><span></span><code>zappend<span class="w"> </span>-t<span class="w"> </span>output/mycube.zarr<span class="w"> </span>-c<span class="w"> </span>config.yaml<span class="w"> </span>inputs/*.nc
+</code></pre></div>
+<p>where <code>config.yaml</code> contains the required output format:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">zarr_format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 </code></pre></div>
 <p>or the <code>zappend</code> <a href="../api/">Python function</a></p>
 <div class="highlight"><pre><span></span><code>from<span class="w"> </span>zappend.api<span class="w"> </span>import<span class="w"> </span>zappend
 
-zappend<span class="o">(</span>os.listdir<span class="o">(</span><span class="s2">"inputs"</span><span class="o">)</span>,<span class="w"> </span><span class="nv">target_dir</span><span class="o">=</span><span class="s2">"output/mycube.zarr"</span><span class="o">)</span>
+zappend<span class="o">(</span>
+<span class="w">    </span>os.listdir<span class="o">(</span><span class="s2">"inputs"</span><span class="o">)</span>,
+<span class="w">    </span><span class="nv">target_dir</span><span class="o">=</span><span class="s2">"output/mycube.zarr"</span>,
+<span class="w">    </span><span class="nv">zarr_format</span><span class="o">=</span><span class="m">3</span>,
+<span class="o">)</span>
 </code></pre></div>
 <p>Both invocations will create the Zarr dataset <code>output/mycube.zarr</code> by concatenating
 the "slice" datasets provided in the <code>inputs</code> directory along their <code>time</code> dimension. 
 <code>target_dir</code> must specify a directory for the Zarr dataset. (Its parent directory must 
-exist.) Both the CLI command and the Python function can be run without any further 
-configuration provided the paths of the target dataset and the source slice datasets 
-are given. The target dataset path must point to a directory that will contain a Zarr 
+exist.) Both the CLI command and the Python function can be run without any further
+configuration beyond the required <code>zarr_format</code> setting. The target dataset path must
+point to a directory that will contain a Zarr
 group to be created and updated. The slice dataset paths may be provided as Zarr as 
-well or in other data formats supported by the <a href="https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html">xarray.open_dataset()</a> 
+well or in other data formats supported by the
+<a href="https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html">xarray.open_dataset()</a>
 function. Because we provided no additional configuration, the default append dimension
 <code>time</code> is used above.</p>
 <p>The target and slice datasets are allowed to live in filesystems other than the local
@@ -1079,10 +1109,13 @@ one, if their paths are given as URIs prefixed with a filesystem protocol such a
 dedicated configuration settings. More on this is given
 in section <a href="#data-io"><em>Data I/O</em></a> below.</p>
 <div class="admonition note">
-<p class="admonition-title">Zarr Format v2</p>
-<p>By default, <code>zappend</code> uses the <a href="https://zarr.readthedocs.io/en/stable/spec/v2.html">Zarr storage specification 2</a>
-and has only been tested with this version. The <code>zarr_version</code> setting can be used 
-to change it, e,g, to <code>3</code>, but any other value than <code>2</code> is currently unsupported.</p>
+<p class="admonition-title">Zarr formats</p>
+<p>New configurations must set <code>zarr_format</code>; use <code>zarr_format: 3</code> for the
+recommended <a href="https://zarr.readthedocs.io/en/stable/spec/v3.html">Zarr storage specification 3</a>,
+or <code>zarr_format: 2</code> for Zarr v2 compatibility. <code>zarr_version: 2</code> is a
+deprecated legacy setting; it cannot select Zarr v3. The target's format is
+fixed when it is created; use the
+same setting for all later appends.</p>
 </div>
 <p>The tool takes care of generating the target dataset from slice datasets, but doesn't 
 care how the slice datasets are created. Hence, when using the Python <code>zappend()</code> 
@@ -1109,11 +1142,13 @@ types. Configuration sequences are again merged into one.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">zappend.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">zappend</span>
 
-<span class="n">zappend</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">"inputs"</span><span class="p">),</span> 
-        <span class="n">config</span><span class="o">=</span><span class="p">[</span><span class="s2">"configs/base.yaml"</span><span class="p">,</span>
-                <span class="s2">"configs/mycube.yaml"</span><span class="p">],</span> 
-        <span class="n">target_dir</span><span class="o">=</span><span class="s2">"outputs/mycube.zarr"</span><span class="p">,</span>
-        <span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">zappend</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">"inputs"</span><span class="p">),</span>
+    <span class="n">config</span><span class="o">=</span><span class="p">[</span><span class="s2">"configs/base.yaml"</span><span class="p">,</span> <span class="s2">"configs/mycube.yaml"</span><span class="p">],</span>
+    <span class="n">target_dir</span><span class="o">=</span><span class="s2">"outputs/mycube.zarr"</span><span class="p">,</span>
+    <span class="n">zarr_format</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>The remainder of this guide explains the how to use the various <code>zappend</code> 
 <a href="../config/">configuration</a> settings.</p>
@@ -1141,7 +1176,7 @@ between the labels of a coordinate variable associated with the append dimension
 Its value can be a number for numerical labels or a timedelta value of the form
 <code>&lt;count&gt;&lt;unit&gt;</code> for date/time labels. In the latter case <code>&lt;count&gt;</code> is an integer 
 and <code>&lt;units&gt;</code> is one of the possible
-<a href="https://numpy.org/doc/stable/reference/arrays.datetime.html#datetime-units">numpy datetime units</a>, 
+<a href="https://numpy.org/doc/stable/reference/arrays.datetime.html#datetime-units">numpy datetime units</a>,
 for example, <code>8h</code> (8 hours) or <code>2D</code> (two days). Numerical and timedelta values
 may be negative. <code>append_step</code> can also take the two special values <code>"+"</code> and 
 <code>"-"</code>. In this case it is just verified that the append labels are monotonically 
@@ -1330,6 +1365,24 @@ persisted in remote filesystems such as S3. The chunk sizes are specified
 using the <code>chunks</code> setting in the encoding of each variable.
 The value of <code>chunks</code> can also be <code>null</code>, which means no chunking is 
 desired and the variable's data array will be persisted as one block. </p>
+<p>For Zarr v3, <code>shards</code> may additionally be configured for a variable. A shard
+contains an integer number of regular chunks, reducing file or object counts while
+retaining smaller read/write chunks. Each shard size must be at least its
+corresponding chunk size and an exact multiple of it. Shards are not available
+for Zarr v2; if configured for an unsupported format, they are ignored with a
+warning.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">"zarr_format"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"variables"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"chl"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"encoding"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"chunks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">512</span><span class="p">,</span><span class="w"> </span><span class="mi">512</span><span class="p">],</span>
+<span class="w">                </span><span class="nt">"shards"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">2048</span><span class="p">,</span><span class="w"> </span><span class="mi">2048</span><span class="p">]</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>By default, the chunking of the coordinate variable corresponding to the append 
 dimension will be its dimension size in the first slice dataset. Often, the size 
 will be <code>1</code> or another small number. Since <code>xarray</code> loads coordinates eagerly 
@@ -1432,8 +1485,8 @@ computed according to </p>
 </code></pre></div>
 <p>You can compute <code>scale_factor</code> and <code>add_offset</code> from given data range in physical units
 according to</p>
-<div class="highlight"><pre><span></span><code>  <span class="n">add_offset</span> <span class="o">=</span> <span class="n">memory_value_min</span>
-  <span class="n">scale_factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">memory_value_max</span> <span class="o">-</span> <span class="n">memory_value_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">num_bits</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">add_offset</span> <span class="o">=</span> <span class="n">memory_value_min</span>
+<span class="n">scale_factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">memory_value_max</span> <span class="o">-</span> <span class="n">memory_value_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">num_bits</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 </code></pre></div>
 <p>with <code>num_bits</code> being the number of bits for the integer type to be used.</p>
 <h4 id="compression">Compression</h4>
@@ -1486,6 +1539,9 @@ restore the last valid state of the target dataset. The rollback takes place
 immediately after a target dataset modification failed. The rollback include restoring 
 all changed files and removing added files. After the rollback you can analyse what
 went wrong and try to continue appending slices at the point it failed.</p>
+<p>For an <code>xarray.DataTree</code> slice, this transaction spans all data-bearing Zarr
+groups in the tree. If appending one group fails, changes already made to the
+other groups for that same slice are rolled back too.</p>
 <p>To allow for rollbacks, a slice append operation is treated as a transaction,
 hence temporary files must be written, e.g., to record required rollback actions and to
 save backup files with the original data. The location of the temporary transaction 
@@ -1552,8 +1608,22 @@ to <code>zappend</code>. Slice datasets can be provided in various ways.</p>
 </li>
 </ul>
 <p>Each slice item can be a local file path or URI of type <code>str</code> or <code>FileObj</code>, 
-a dataset of type <code>xarray.Dataset</code>, or a <code>SliceSource</code> object explained in more detail 
-below.</p>
+a dataset of type <code>xarray.Dataset</code>, a nested dataset of type <code>xarray.DataTree</code>,
+or a <code>SliceSource</code> object explained in more detail below.</p>
+<h4 id="nested-zarr-groups-and-datatree">Nested Zarr Groups and DataTree</h4>
+<p>Nested Zarr inputs are represented by
+<a href="https://docs.xarray.dev/en/stable/generated/xarray.DataTree.html"><code>xarray.DataTree</code></a>.
+Pass a DataTree directly, return one from a <code>SliceSource</code>, or pass a path to a
+nested Zarr store: zappend opens the latter as a DataTree automatically.</p>
+<p>All DataTree slices in one run must have the same group paths. DataTree and
+Dataset slices cannot be mixed in one run. Each data-bearing group is appended
+along the configured append dimension, and the complete DataTree slice is
+rolled back if any group append fails.</p>
+<p>Use <code>group_variables</code> to override variable encoding for individual absolute
+group paths. Group settings override global <code>variables</code>; groups without an
+override use global <code>variables</code>, or the encoding of their first slice when no
+global setting exists. See the <a href="../config/#group_variables">configuration reference</a>
+and <code>examples/datatree.ipynb</code> for a complete example.</p>
 <h4 id="paths-and-uris">Paths and URIs</h4>
 <p>A slice item of type <code>str</code> is interpreted as local file path or URI, in the case 
 the path has a protocol prefix, such as <code>s3://</code> as described above.</p>
@@ -1590,15 +1660,19 @@ the given timeout:</p>
 <p>An alternative to providing the slice dataset as path or URI is using the 
 <code>zappend.api.FileObj</code> class, which combines a URI with dedicated filesystem 
 storage options.</p>
-<h4 id="dataset-objects">Dataset Objects</h4>
+<h4 id="dataset-and-datatree-objects">Dataset and DataTree Objects</h4>
 <p>You can also use dataset objects of type 
 <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html"><code>xarray.Dataset</code></a> 
 as slice item. Such objects may originate from opening datasets from some storage, e.g., 
 <code>xarray.open_dataset(slice_store, ...)</code> or by composing, aggregating, resampling 
 slice datasets from other datasets and dataset variables.</p>
+<p>Nested inputs can instead be passed as
+<a href="https://docs.xarray.dev/en/stable/generated/xarray.DataTree.html"><code>xarray.DataTree</code></a>
+objects. The same resource-management and persistence considerations apply.</p>
 <div class="admonition note">
 <p class="admonition-title">Datasets are not closed automatically</p>
-<p>If you pass <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html"><code>xarray.Dataset</code></a> objects to <code>zappend</code> they will not be
+<p>If you pass <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html"><code>xarray.Dataset</code></a>
+objects to <code>zappend</code> they will not be
 automatically closed. This may become be issue, if you have many datasets 
 and each one binds resources such as open file handles. Consider using a 
 <em>slice source</em> then, see below.</p>
@@ -1624,9 +1698,10 @@ at the cost of additional i/o. It therefore defaults to <code>false</code>.</p>
 <h4 id="slice-sources">Slice Sources</h4>
 <p>A slice source gives you full control about how a slice dataset is created, loaded, 
 or generated and how its bound resources, if any, are released. In its simplest form, 
-a slice source is a plain Python function that can take any arguments and returns 
-an <code>xarray.Dataset</code>:</p>
+a slice source is a plain Python function that can take any arguments and returns
+an <code>xarray.Dataset</code> or <code>xarray.DataTree</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
 
 <span class="c1"># Slice source argument `path` is just an example.</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
@@ -1639,6 +1714,7 @@ you can turn your slice source function into a
 (new in zappend v0.7):</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
 
 <span class="c1"># Slice source argument `path` is just an example.</span>
 <span class="nd">@contextmanager</span>
@@ -1655,13 +1731,14 @@ you can turn your slice source function into a
 <p>You can also implement your slice source as a class derived from the abstract 
 <code>zappend.api.SliceSource</code> class. Its interface methods are:</p>
 <ul>
-<li><code>get_dataset()</code>: a zero-argument method that returns the slice dataset of type 
-  <code>xarray.Dataset</code>. You must implement this abstract method. </li>
+<li><code>get_dataset()</code>: a zero-argument method that returns the slice object of type
+  <code>xarray.Dataset</code> or <code>xarray.DataTree</code>. You must implement this abstract method.</li>
 <li><code>close()</code>: Optional method. Put your cleanup code here. 
   (in zappend &lt; v0.7, the <code>close</code> method was called <code>dispose</code>).</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">zappend.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">SliceSource</span>
+
 
 <span class="k">class</span><span class="w"> </span><span class="nc">MySliceSource</span><span class="p">(</span><span class="n">SliceSource</span><span class="p">):</span>
     <span class="c1"># Slice source argument `path` is just an example.</span>
@@ -1691,9 +1768,12 @@ qualified name of the slice source function or class:</p>
 <span class="p">}</span>
 </code></pre></div>
 <p>If you use the <code>zappend</code> function, you can pass the function or class directly:</p>
-<div class="highlight"><pre><span></span><code><span class="n">zappend</span><span class="p">([</span><span class="s2">"slice-1.nc"</span><span class="p">,</span> <span class="s2">"slice-2.nc"</span><span class="p">,</span> <span class="s2">"slice-3.nc"</span><span class="p">],</span>
-        <span class="n">target_dir</span><span class="o">=</span><span class="s2">"target.zarr"</span><span class="p">,</span>
-        <span class="n">slice_source</span><span class="o">=</span><span class="n">MySliceSource</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">zappend</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">"slice-1.nc"</span><span class="p">,</span> <span class="s2">"slice-2.nc"</span><span class="p">,</span> <span class="s2">"slice-3.nc"</span><span class="p">],</span>
+    <span class="n">target_dir</span><span class="o">=</span><span class="s2">"target.zarr"</span><span class="p">,</span>
+    <span class="n">zarr_format</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">slice_source</span><span class="o">=</span><span class="n">MySliceSource</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>If the slice source setting is used, each slice item passed to <code>zappend</code> is passed as 
 argument(s) to your slice source.</p>
@@ -1740,6 +1820,7 @@ file path and averages the values along the time dimension:</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">zappend.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">SliceSource</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">zappend.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">zappend</span>
 
+
 <span class="k">class</span><span class="w"> </span><span class="nc">MySliceSource</span><span class="p">(</span><span class="n">SliceSource</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span> <span class="n">slice_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">quantiles</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">extra</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"quantiles"</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">])</span>
@@ -1754,25 +1835,29 @@ file path and averages the values along the time dimension:</p>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_agg_slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slice_ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span> 
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_agg_slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slice_ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
         <span class="n">agg_slice_ds</span> <span class="o">=</span> <span class="n">slice_ds</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quantiles</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
         <span class="c1"># Re-introduce time dimension of size one</span>
         <span class="n">agg_slice_ds</span> <span class="o">=</span> <span class="n">agg_slice_ds</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="s2">"time"</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">agg_slice_ds</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mean_time</span><span class="p">(</span><span class="n">slice_ds</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">agg_slice_ds</span> 
+        <span class="k">return</span> <span class="n">agg_slice_ds</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_mean_time</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">slice_ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
         <span class="n">time</span> <span class="o">=</span> <span class="n">slice_ds</span><span class="o">.</span><span class="n">time</span>
         <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">dt</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t0</span>
-        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t0</span> <span class="o">+</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span> 
-                                     <span class="n">dtype</span><span class="o">=</span><span class="n">slice_ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> 
-                            <span class="n">dims</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t0</span> <span class="o">+</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">slice_ds</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="s2">"time"</span>
+        <span class="p">)</span>
 
-<span class="n">zappend</span><span class="p">([</span><span class="s2">"slice-1.nc"</span><span class="p">,</span> <span class="s2">"slice-2.nc"</span><span class="p">,</span> <span class="s2">"slice-3.nc"</span><span class="p">],</span>
-        <span class="n">target_dir</span><span class="o">=</span><span class="s2">"target.zarr"</span><span class="p">,</span>
-        <span class="n">slice_source</span><span class="o">=</span><span class="n">MySliceSource</span><span class="p">)</span>
+
+<span class="n">zappend</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">"slice-1.nc"</span><span class="p">,</span> <span class="s2">"slice-2.nc"</span><span class="p">,</span> <span class="s2">"slice-3.nc"</span><span class="p">],</span>
+    <span class="n">target_dir</span><span class="o">=</span><span class="s2">"target.zarr"</span><span class="p">,</span>
+    <span class="n">zarr_format</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">slice_source</span><span class="o">=</span><span class="n">MySliceSource</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
 <h2 id="profiling">Profiling</h2>
 <p>Runtime profiling is very important for understanding program runtime behavior 
@@ -1819,7 +1904,8 @@ just provide its name:</p>
 </code></pre></div>
 <p>If you also want logging output in a file or using a different format or if you want to
 see logging output of other Python modules, you can configure Python's logging 
-system following the <a href="https://docs.python.org/3/library/logging.config.html#logging-config-dictschema">logging dictionary schema</a>.
+system following the <a href="https://docs.python.org/3/library/logging.config.html#logging-config-dictschema">logging dictionary
+schema</a>.
 Given here is an example that logs <code>zappend</code>'s output to the console using 
 the <code>INFO</code> level (same as <code>"logging": true</code>):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1935,10 +2021,10 @@ the <code>INFO</code> level (same as <code>"logging": true</code>):</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
       
     
   </body>

@@ -15,7 +15,7 @@
       
       
       <link rel="icon" href="../assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -23,10 +23,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -532,13 +532,18 @@ of the <code>zappend</code> tool.</p>
 <ul>
 <li>Create a target Zarr dataset by appending Zarr dataset slices along a 
   given <em>append dimension</em>, usually <code>time</code>.   </li>
+<li>Create a target nested Zarr store by appending compatible
+  <code>xarray.DataTree</code> slices along the append dimension of every data-bearing
+  group.</li>
 <li>The tool takes care of modifying the target dataset using the slices,
   but doesn't care how the slice datasets are created.</li>
 <li>Slice datasets may be given as URIs with storage options or as 
   in-memory datasets of type 
   <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a>
+  or <a href="https://docs.xarray.dev/en/stable/generated/xarray.DataTree.html">xarray.DataTree</a>
   or 
-  <a href="https://xcube.readthedocs.io/en/latest/mldatasets.html">xcube.core.mldataset.MultiLevelDataset</a>.</li>
+  [xcube.core.mldataset.MultiLevelDataset]
+  (https://xcube.readthedocs.io/en/latest/mldatasets.html).</li>
 <li>Target and slices are allowed to live in different filesystems.</li>
 <li>The tool is configurable. The configuration defines <ul>
 <li>the append dimension;</li>
@@ -706,10 +711,10 @@ of the <code>zappend</code> tool.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
       
     
   </body>

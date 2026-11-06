@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -27,10 +27,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -777,10 +777,11 @@ use configuration setting <a href="../config/#slice_source"><code>slice_source</
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">zappend.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">zappend</span>
 
+
 <span class="k">def</span><span class="w"> </span><span class="nf">get_dataset_from_geotiff</span><span class="p">(</span><span class="n">tiff_path</span><span class="p">):</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">rxr</span><span class="o">.</span><span class="n">open_rasterio</span><span class="p">(</span><span class="n">tiff_path</span><span class="p">)</span>
     <span class="c1"># Add missing time dimension</span>
-    <span class="n">slice_time</span> <span class="o">=</span> <span class="n">get_slice_time</span><span class="p">(</span><span class="n">tiff_path</span><span class="p">)</span>  
+    <span class="n">slice_time</span> <span class="o">=</span> <span class="n">get_slice_time</span><span class="p">(</span><span class="n">tiff_path</span><span class="p">)</span>
     <span class="n">slice_ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="s2">"time"</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">slice_ds</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slice_time</span><span class="p">]),</span> <span class="n">dims</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
@@ -788,9 +789,13 @@ use configuration setting <a href="../config/#slice_source"><code>slice_source</
     <span class="k">finally</span><span class="p">:</span>
         <span class="n">ds</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-<span class="n">zappend</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"inputs/*.tif"</span><span class="p">)),</span>
-        <span class="n">slice_source</span><span class="o">=</span><span class="n">get_dataset_from_geotiff</span><span class="p">,</span>
-        <span class="n">target_dir</span><span class="o">=</span><span class="s2">"output/tif-cube.zarr"</span><span class="p">)</span>
+
+<span class="n">zappend</span><span class="p">(</span>
+    <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"inputs/*.tif"</span><span class="p">)),</span>
+    <span class="n">slice_source</span><span class="o">=</span><span class="n">get_dataset_from_geotiff</span><span class="p">,</span>
+    <span class="n">target_dir</span><span class="o">=</span><span class="s2">"output/tif-cube.zarr"</span><span class="p">,</span>
+    <span class="n">zarr_format</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>In the example above, function <code>get_slice_time()</code> returns the time label
 of a given GeoTIFF file as a value of type <code>np.datetime64</code>.</p>
@@ -804,7 +809,8 @@ is its associated time value of type <code>np.datetime64</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">slice_ds</span> <span class="o">=</span> <span class="n">image_ds</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="s2">"time"</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">slice_ds</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slice_time</span><span class="p">]),</span> <span class="n">dims</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
 </code></pre></div>
-<p>See also <a href="#create-datacubes-from-a-directory-of-geotiffs">How do I create datacubes from a directory of GeoTIFFs</a> 
+<p>See also <a href="#create-datacubes-from-a-directory-of-geotiffs">How do I create datacubes from a directory of
+GeoTIFFs</a>
 above. </p>
 <h2 id="dynamically-update-global-metadata-attributes">... dynamically update global metadata attributes</h2>
 <p>Refer to section about <a href="../guide/#attributes">target attributes</a>
@@ -860,7 +866,8 @@ any existing target dataset. The recommended way is to remove the lock file
 and any target datasets artifact. You can do that manually or use the 
 configuration setting <code>force_new</code>.</p>
 <h3 id="error-append-dimension-foo-not-found-in-dataset">Error <code>Append dimension 'foo' not found in dataset</code></h3>
-<p>Refer to <a href="#create-datacubes-from-datasets-without-append-dimension">How do I create datacubes from datasets without append dimension</a>.</p>
+<p>Refer to <a href="#create-datacubes-from-datasets-without-append-dimension">How do I create datacubes from datasets without append
+dimension</a>.</p>
 
 
 
@@ -948,10 +955,10 @@ configuration setting <code>force_new</code>.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
       
     
   </body>

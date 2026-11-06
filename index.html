@@ -17,7 +17,7 @@
       
       
       <link rel="icon" href="assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -25,10 +25,10 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -623,12 +623,16 @@
 <h1 id="zappend-documentation">zappend Documentation</h1>
 <p><code>zappend</code> is a tool written in Python that is used for robustly creating and 
 updating Zarr datacubes from smaller dataset slices. It is built on top of the 
-awesome Python packages <a href="https://docs.xarray.dev/">xarray</a> and <a href="https://zarr.readthedocs.io/">zarr</a>.</p>
+awesome Python packages <a href="https://docs.xarray.dev/">xarray</a> and
+<a href="https://zarr.readthedocs.io/">zarr</a>.</p>
 <h2 id="motivation">Motivation</h2>
 <p>The objective of <code>zappend</code> is enabling geodata scientists and developers to 
 robustly create large data cubes. The tool performs transaction-based dataset 
 appends to existing data cubes in the 
-<a href="https://zarr.readthedocs.io/en/stable/spec/v2.html">Zarr format</a>. If an error 
+<a href="https://zarr.readthedocs.io/en/stable/">Zarr format</a>. New targets use Zarr v3
+when configured with <code>zarr_format: 3</code>; Zarr v2 remains available through
+<code>zarr_format: 2</code>. The deprecated <code>zarr_version: 2</code> setting remains accepted for
+existing Zarr v2 configurations. If an error
 occurs during an append step — typically due to I/O problems or out-of-memory 
 conditions — <code>zappend</code> will automatically roll back the operation, ensuring that 
 the existing data cube maintains its structural integrity. The design drivers 
@@ -654,13 +658,19 @@ regarding filesystems, data source types, data cube outline and encoding. </p>
   <a href="cli/"><code>zappend</code></a> command or from Python. When used from Python using the 
   <a href="api/"><code>zappend()</code></a> function, slice datasets can be passed as local file 
   paths, URIs, as datasets of type 
-  <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a>, or as custom
+  <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a>,
+  <a href="https://docs.xarray.dev/en/stable/generated/xarray.DataTree.html">xarray.DataTree</a>,
+  or as custom
   <a href="guide/#slice-sources">slice sources</a>.</li>
 </ul>
 <h2 id="how-it-works">How It Works</h2>
-<p>At its core, <code>zappend</code> calls the <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.to_zarr.html#xarray-dataset-to-zarr">to_zarr()</a> method of <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a> 
+<p>At its core, <code>zappend</code> calls the
+<a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.to_zarr.html#xarray-dataset-to-zarr">to_zarr()</a>
+method of <a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html">xarray.Dataset</a>
 for each dataset slice it receives and either creates the target dataset if it does 
 not exist yet or updates it with the current slice, if it already exists.</p>
+<p>For nested Zarr stores, it applies the same operation to each data-bearing
+<code>xarray.DataTree</code> group as one atomic slice transaction.</p>
 <p>If there is no target dataset yet, <code>zappend</code> does the following:</p>
 <ul>
 <li>get target dataset outline and encoding from configuration and first slice dataset;</li>
@@ -765,10 +775,10 @@ not exist yet or updates it with the current slice, if it already exists.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": [], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": [], "search": "assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="assets/javascripts/bundle.c21346df.min.js"></script>
       
     
   </body>

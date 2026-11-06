@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../assets/logo-small.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -27,10 +27,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -653,22 +653,31 @@ directory as the current working directory execute:</p>
 <p>Process list of local slice paths:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zappend.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">zappend</span>
 
-<span class="n">zappend</span><span class="p">([</span><span class="s2">"slice-1.nc"</span><span class="p">,</span> <span class="s2">"slice-2.nc"</span><span class="p">,</span> <span class="s2">"slice-3.nc"</span><span class="p">],</span> <span class="n">target_dir</span><span class="o">=</span><span class="s2">"target.zarr"</span><span class="p">)</span>
+<span class="n">zappend</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">"slice-1.nc"</span><span class="p">,</span> <span class="s2">"slice-2.nc"</span><span class="p">,</span> <span class="s2">"slice-3.nc"</span><span class="p">],</span>
+    <span class="n">target_dir</span><span class="o">=</span><span class="s2">"target.zarr"</span><span class="p">,</span>
+    <span class="n">zarr_format</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>Process list of slices stored in S3 <a href="../config/">configuration</a> in <code>config</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">zappend.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">zappend</span>
 
-<span class="n">config</span> <span class="o">=</span> <span class="p">{</span> 
+<span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">"target_dir"</span><span class="p">:</span> <span class="s2">"target.zarr"</span><span class="p">,</span>
+    <span class="s2">"zarr_format"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
     <span class="s2">"slice_storage_options"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"key"</span><span class="p">:</span> <span class="s2">"..."</span><span class="p">,</span>               
-        <span class="s2">"secret"</span><span class="p">:</span> <span class="s2">"..."</span><span class="p">,</span>               
-    <span class="p">}</span> 
+        <span class="s2">"key"</span><span class="p">:</span> <span class="s2">"..."</span><span class="p">,</span>
+        <span class="s2">"secret"</span><span class="p">:</span> <span class="s2">"..."</span><span class="p">,</span>
+    <span class="p">},</span>
 <span class="p">}</span>
 
-<span class="n">zappend</span><span class="p">((</span><span class="sa">f</span><span class="s2">"s3:/mybucket/data/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span> 
-         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"slice-1.nc"</span><span class="p">,</span> <span class="s2">"slice-2.nc"</span><span class="p">,</span> <span class="s2">"slice-3.nc"</span><span class="p">]),</span> 
-        <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+<span class="n">zappend</span><span class="p">(</span>
+    <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"s3:/mybucket/data/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"slice-1.nc"</span><span class="p">,</span> <span class="s2">"slice-2.nc"</span><span class="p">,</span> <span class="s2">"slice-3.nc"</span><span class="p">]</span>
+    <span class="p">),</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>Slice items can also be arguments passed to your custom <em>slice source</em>, 
 a function or class that provides the actual slice to be appended:</p>
@@ -680,11 +689,16 @@ a function or class that provides the actual slice to be appended:</p>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ds</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">([</span><span class="s2">"ndvi_min"</span><span class="p">,</span> <span class="s2">"ndvi_max"</span><span class="p">])</span>
 
-<span class="n">zappend</span><span class="p">([</span><span class="s2">"slice-1.nc"</span><span class="p">,</span> <span class="s2">"slice-2.nc"</span><span class="p">,</span> <span class="s2">"slice-3.nc"</span><span class="p">],</span> 
-        <span class="n">slice_source</span><span class="o">=</span><span class="n">get_dataset</span><span class="p">,</span>
-        <span class="n">target_dir</span><span class="o">=</span><span class="s2">"target.zarr"</span><span class="p">)</span>
+
+<span class="n">zappend</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">"slice-1.nc"</span><span class="p">,</span> <span class="s2">"slice-2.nc"</span><span class="p">,</span> <span class="s2">"slice-3.nc"</span><span class="p">],</span>
+    <span class="n">slice_source</span><span class="o">=</span><span class="n">get_dataset</span><span class="p">,</span>
+    <span class="n">target_dir</span><span class="o">=</span><span class="s2">"target.zarr"</span><span class="p">,</span>
+    <span class="n">zarr_format</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
-<p>For the details, please refer to the section <a href="../guide/#slice-sources"><em>Slice Sources</em></a> in the 
+<p>For the details, please refer to the section <a href="../guide/#slice-sources"><em>Slice Sources</em></a>
+in the
 <a href="../guide/">User Guide</a>.</p>
 
 
@@ -773,10 +787,10 @@ a function or class that provides the actual slice to be appended:</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
       
     
   </body>
