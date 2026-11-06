@@ -1,4 +1,4 @@
-## Version 0.9.0 (in development)
+## Version 0.9.0
 
 * Added support for nested Zarr structures represented by `xarray.DataTree`,
   including atomic rollback of complete DataTree slices and optional per-group
