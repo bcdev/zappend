@@ -48,6 +48,15 @@ class ConfigValidateTest(unittest.TestCase):
         }
         self.assertIs(config, validate_config(config))
 
+    def test_validate_group_variables(self):
+        config = {
+            "zarr_format": 2,
+            "group_variables": {
+                "/0": {"v": {"encoding": {"chunks": [2, 4]}}},
+            }
+        }
+        self.assertIs(config, validate_config(config))
+
     # noinspection PyMethodMayBeStatic
     def test_validate_variable_fail(self):
         config = {

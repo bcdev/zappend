@@ -54,7 +54,8 @@ slice_ds = image_ds.expand_dims("time", axis=0)
 slice_ds.coords["time"] = xr.Dataset(np.array([slice_time]), dims="time")
 ```
 
-See also [How do I create datacubes from a directory of GeoTIFFs](#create-datacubes-from-a-directory-of-geotiffs) 
+See also [How do I create datacubes from a directory of
+GeoTIFFs](#create-datacubes-from-a-directory-of-geotiffs)
 above. 
 
 ## ... dynamically update global metadata attributes
@@ -125,4 +126,5 @@ configuration setting `force_new`.
 
 ### Error `Append dimension 'foo' not found in dataset`
 
-Refer to [How do I create datacubes from datasets without append dimension](#create-datacubes-from-datasets-without-append-dimension).
+Refer to [How do I create datacubes from datasets without append
+dimension](#create-datacubes-from-datasets-without-append-dimension).

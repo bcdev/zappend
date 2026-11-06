@@ -17,11 +17,11 @@ class MemorySliceSource(SliceSource):
         slice_index: An index for slice identification (logging only)
     """
 
-    def __init__(self, slice_ds: xr.Dataset, slice_index: int):
+    def __init__(self, slice_ds: xr.Dataset | xr.DataTree, slice_index: int):
         self._slice_ds = slice_ds
         self._slice_index = slice_index
 
-    def get_dataset(self) -> xr.Dataset:
+    def get_dataset(self) -> xr.Dataset | xr.DataTree:
         logger.info(f"Processing in-memory slice dataset #{self._slice_index}")
         return self._slice_ds
 

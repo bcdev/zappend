@@ -1,5 +1,8 @@
 ## Version 0.9.0 (in development)
 
+* Added support for nested Zarr structures represented by `xarray.DataTree`,
+  including atomic rollback of complete DataTree slices and optional per-group
+  variable encoding configuration. (#113)
 * Migrated to use `zarr >=3`. Supports writing Zarr v2 and v3 stores, with
   Zarr v3 as the recommended format for new configurations. The `zarr_version`
   setting is deprecated in favor of the now-required `zarr_format` and only
