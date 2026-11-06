@@ -1,3 +1,7 @@
+## Version 0.9.1 (in development)
+
+* Required `python >= 3.11` due to `zarr >=3`.
+
 ## Version 0.9.0
 
 * Added support for nested Zarr structures represented by `xarray.DataTree`,
